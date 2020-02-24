@@ -6,7 +6,7 @@
 #include <SDL_events.h>
 
 Button::Button(int x, int y, ButtonFunc func, string fontName, int size, string text, Color color)
-: TextSurface(fontName, size, text, color){
+	: TextSurface(fontName, size, text, color) {
 	pos = { static_cast<float>(x), static_cast<float>(y) };
 	frameColor = color;
 	onButtonClick = func;
@@ -18,7 +18,7 @@ Button::Button(int x, int y, ButtonFunc func, string fontName, int size, string 
 }
 
 Button::Button(VecN<int, 2> position, ButtonFunc func, string fontName, int size, string text, Color color)
-: TextSurface(fontName, size, text, color){
+	: TextSurface(fontName, size, text, color) {
 	pos = position;
 	frameColor = color;
 	onButtonClick = func;
@@ -29,13 +29,13 @@ Button::Button(VecN<int, 2> position, ButtonFunc func, string fontName, int size
 	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_MOUSE, BUTTON_PRIORITY);
 }
 
-void Button::setFrameColor(Color color){
+void Button::setFrameColor(Color color) {
 	frameColor = color;
 
 	markDirty();
 }
 
-void Button::setFrameWidth(uint width){
+void Button::setFrameWidth(uint width) {
 	frameWidth = width;
 	setTextPadding(static_cast<uint>(width * 1.25) + 3);
 
@@ -48,7 +48,7 @@ void Button::setFrameWidth(uint width){
 //	markDirty();
 //}
 
-void Button::renderTexture(){
+void Button::renderTexture() {
 	TextSurface::renderTexture();
 
 	Surface::saveRenderTarget();
@@ -56,39 +56,39 @@ void Button::renderTexture(){
 	setRenderTarget();
 	setDrawColor(frameColor);
 
-	for (uint c = 0; c < frameWidth; c++){
+	for (uint c = 0; c < frameWidth; c++) {
 		drawRect(c, c, width - 2 * c, height - 2 * c, false);
 	}
 
 	Surface::restoreRenderTarget();
 }
 
-void Button::handleEvent(EventManager::EventType evt){
+void Button::handleEvent(EventManager::EventType evt) {
 	MouseListener::handleEvent(evt);
 
-	if (evt == EventManager::EVT_MOUSEBUTTONDOWN){
+	if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {
 		VecN<int, 2> mousePos = getMousePos();
 
-		if (pos[0] <= mousePos[0] && mousePos[0] <= pos[0] + width){
-			if (pos[1] <= mousePos[1] && mousePos[1] <= pos[1] + height){
+		if (pos[0] <= mousePos[0] && mousePos[0] <= pos[0] + width) {
+			if (pos[1] <= mousePos[1] && mousePos[1] <= pos[1] + height) {
 				beingClicked = true;
 
 				if (checkMouseButtonDown(EventManager::MB_LEFT, 1000) ||
 					checkMouseButtonDown(EventManager::MB_RIGHT, 1000) ||
-					checkMouseButtonDown(EventManager::MB_CENTER, 1000)){
+					checkMouseButtonDown(EventManager::MB_CENTER, 1000)) {
 					setFrameColor(getFrameColor().inverse());
 					TextSurface::setBackgroundColor(getBackgroundColor().inverse());
 					markDirty();
 				}
 
-				if (onButtonClick){
+				if (onButtonClick) {
 					onButtonClick(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
 				}
 			}
 		}
 	}
-	else if (evt == EventManager::EVT_MOUSEBUTTONUP){
-		if (beingClicked){
+	else if (evt == EventManager::EVT_MOUSEBUTTONUP) {
+		if (beingClicked) {
 			setFrameColor(getFrameColor().inverse());
 			TextSurface::setBackgroundColor(getBackgroundColor().inverse());
 			markDirty();
@@ -99,7 +99,7 @@ void Button::handleEvent(EventManager::EventType evt){
 }
 
 Input::Input(int x, int y, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color)
-: Button(x, y, NULL, fontName, fontSize, startText, color){
+	: Button(x, y, NULL, fontName, fontSize, startText, color) {
 	inputWidth = width;
 	inputHeight = height;
 	onInputClick = func;
@@ -117,7 +117,7 @@ Input::Input(int x, int y, int width, int height, InputFunc func, string fontNam
 }
 
 Input::Input(VecN<int, 2> position, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color)
-: Button(position, NULL, fontName, fontSize, startText, color){
+	: Button(position, NULL, fontName, fontSize, startText, color) {
 	inputWidth = width;
 	inputHeight = height;
 	onInputClick = func;
@@ -134,7 +134,7 @@ Input::Input(VecN<int, 2> position, int width, int height, InputFunc func, strin
 	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_SYSTEM, INPUT_PRIORITY);
 }
 
-void Input::inputMode(){
+void Input::inputMode() {
 	input = true;
 	cursorTime = 0;
 	bool drawingCursor = false;
@@ -145,18 +145,18 @@ void Input::inputMode(){
 	//SDL_LockTexture
 	//SDL_TEXTUREACCESSSTREAMING
 
-	while (input){
+	while (input) {
 		cursorTime += timer.end();
 		timer.start();
 
 		EventManager::getSingleton().update();
 
-		if (cursorTime > INPUT_CURSOR_ACTIVE_TIME && !drawingCursor){
+		if (cursorTime > INPUT_CURSOR_ACTIVE_TIME && !drawingCursor) {
 			drawingCursor = true;
 			markDirty();
 		}
 
-		if (cursorTime > INPUT_CURSOR_MAX_TIME){
+		if (cursorTime > INPUT_CURSOR_MAX_TIME) {
 			drawingCursor = false;
 			cursorTime = 0;
 			markDirty();
@@ -173,7 +173,7 @@ void Input::inputMode(){
 	markDirty();
 }
 
-void Input::renderTexture(){
+void Input::renderTexture() {
 	TextSurface::renderTexture();
 
 	SDL_Texture* tex = texture;
@@ -195,11 +195,11 @@ void Input::renderTexture(){
 
 	setDrawColor(getFrameColor());
 
-	for (uint c = 0; c < getFrameWidth(); c++){
+	for (uint c = 0; c < getFrameWidth(); c++) {
 		drawRect(c, c, width - 2 * c, height - 2 * c, false);
 	}
 
-	if (cursorTime > INPUT_CURSOR_ACTIVE_TIME){
+	if (cursorTime > INPUT_CURSOR_ACTIVE_TIME) {
 		setDrawColor(getColor());
 
 		uint textPad = static_cast<uint>(getFrameWidth() * 1.25) + 3;
@@ -211,24 +211,24 @@ void Input::renderTexture(){
 	SDL_DestroyTexture(tex);
 }
 
-void Input::handleEvent(EventManager::EventType evt){
+void Input::handleEvent(EventManager::EventType evt) {
 	MouseListener::handleEvent(evt);
 	KeyListener::handleEvent(evt);
 
-	if (evt == EventManager::EVT_MOUSEBUTTONDOWN){
+	if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {
 		VecN<int, 2> mousePos = getMousePos();
 
 		if (pos[0] < mousePos[0] && mousePos[0] < pos[0] + width &&
-			pos[1] < mousePos[1] && mousePos[1] < pos[1] + height){
-			if (onInputClick){
+			pos[1] < mousePos[1] && mousePos[1] < pos[1] + height) {
+			if (onInputClick) {
 				onInputClick(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
 			}
-			else{
+			else {
 				inputMode();
 			}
 		}
-		else{
-			if (input){
+		else {
+			if (input) {
 				input = false;
 				EventManager::getSingleton().cancelEvent();
 			}
@@ -240,26 +240,26 @@ void Input::handleEvent(EventManager::EventType evt){
 	//		EventManager::getSingleton().cancelEvent();
 	//	}
 	//}
-	else if (evt == EventManager::EVT_KEYDOWN){
+	else if (evt == EventManager::EVT_KEYDOWN) {
 		if (eventData.keyCode == EventManager::K_ESCAPE ||
-			eventData.keyCode == EventManager::K_RETURN){
-			if (input){
+			eventData.keyCode == EventManager::K_RETURN) {
+			if (input) {
 				input = false;
 				EventManager::getSingleton().cancelEvent();
 			}
 		}
-		else if (input){
-			if (eventData.keyCode == EventManager::K_BACKSPACE){
+		else if (input) {
+			if (eventData.keyCode == EventManager::K_BACKSPACE) {
 				string text = getText();
 
-				if (text.length() > 0){
+				if (text.length() > 0) {
 					setText(string(text.begin(), text.end() - 1));
 				}
 			}
-			else{
+			else {
 				char ch = getKeySymbol(static_cast<EventManager::KeyCode>(eventData.keyCode), static_cast<EventManager::KeyMod>(eventData.mods));
 
-				if (ch != 0){
+				if (ch != 0) {
 					setText(getText() + ch);
 				}
 			}
@@ -267,25 +267,27 @@ void Input::handleEvent(EventManager::EventType evt){
 	}
 }
 
-DropDown::DropDown(int x, int y, uint w, uint h, vector<string>* values, string fontName, int size, Color color)
-: Button(x, y, NULL, fontName, size, "", color){
-	if (values){
+DropDown::DropDown(int x, int y, uint w, uint h, vector<string>* values, DropDownFunc func, string fontName, int size, Color color)
+	: Button(x, y, NULL, fontName, size, "", color) {
+	if (values && !values->empty()) {
 		options = *values;
 	}
+
+	onChange = func;
 
 	dropDownWidth = w;
 	dropDownHeight = h;
 }
 
-void DropDown::addValue(const string& val){
+void DropDown::addValue(const string& val) {
 	options.push_back(val);
 
 	markDirty();
 }
 
-void DropDown::removeValue(const string& val){
-	for (auto iter = options.begin(); iter != options.end(); iter++){
-		if (*iter == val){
+void DropDown::removeValue(const string& val) {
+	for (auto iter = options.begin(); iter != options.end(); iter++) {
+		if (*iter == val) {
 			iter = options.erase(iter);
 		}
 	}
@@ -293,9 +295,9 @@ void DropDown::removeValue(const string& val){
 	markDirty();
 }
 
-void DropDown::setValue(uint index){
+void DropDown::setValue(uint index) {
 #ifdef _DEBUG
-	if (index >= options.size()){
+	if (index >= options.size()) {
 		throw Exception("Index out of range");
 	}
 #endif
@@ -304,12 +306,11 @@ void DropDown::setValue(uint index){
 	markDirty();
 }
 
-//void DropDown::selectMode(){
-//	//
-//}
+void DropDown::renderTexture() {
+	bool optionsEmpty = options.empty();
+	size_t optionsSize = options.size();
 
-void DropDown::renderTexture(){
-	if (0 <= selection && selection < options.size()){
+	if (!optionsEmpty && 0 <= selection && selection < optionsSize) {
 		TextSurface::setText(options[selection]);
 	}
 
@@ -317,81 +318,90 @@ void DropDown::renderTexture(){
 
 	SDL_Texture* tex = texture;
 
-	if (drop){
-		texture = createTexture(MAX(width, dropDownWidth),
-			MAX(height, static_cast<int>(dropDownHeight * options.size())));
-	}
-	else{
-		texture = createTexture(MAX(width, dropDownWidth), MAX(height, dropDownHeight));
-	}
+	int maxWidth = MAX(width, dropDownWidth);
+	int maxHeight = MAX(height, dropDownHeight);
 
-	setBlendMode(BLEND_BLEND);
+	if (!optionsEmpty && drop) {
+		texture = createTexture(maxWidth,
+								maxHeight * static_cast<int>(optionsSize));
+	}
+	else {
+		texture = createTexture(maxWidth, maxHeight);
+	}
 
 	Surface::saveRenderTarget();
 
 	setRenderTarget();
+
+	setBlendMode(BLEND_BLEND);
 	clear();
 	fill(getBackgroundColor());
 
-	SDL_Rect dest = { 0, 0, width, height };
+	SDL_Rect dest = { 0, 0, width, maxHeight };
 	SDL_RenderCopy(WindowManager::getSingleton().getRenderer(), tex, NULL, &dest);
 
-	TextSurface optionsText(*this);
+	TextSurface optionsText(getFont(), getFontSize(), "", getColor());
+	optionsText.setTextPadding(getTextPadding());
+
 	int yLevel = dropDownHeight;
 
-	if (drop){
-		for (uint c = 0; c < options.size(); c++){
-			//if (c != selection){
+	if (drop) {
+		for (uint c = 0; c < optionsSize; c++) {
+			if (c != selection) {
 				optionsText.setText(options[c]);
+
 				draw(optionsText, 0, yLevel);
 
+				setDrawColor(getColor());
+				drawLine(0, yLevel, maxWidth, yLevel);
+
 				yLevel += dropDownHeight;
-			//}
+			}
 		}
 	}
 
-	width = dropDownWidth;
-	height = dropDownHeight;
+	width = maxWidth;
+	height = maxHeight;
 
 	setDrawColor(getFrameColor());
 
-	for (uint c = 0; c < getFrameWidth(); c++){
+	for (uint c = 0; c < getFrameWidth(); c++) {
 		drawRect(c, c, width - 2 * c, height - 2 * c, false);
 	}
 
 	drawRect(static_cast<int>(width * .90f), 0, static_cast<int>(width * .10f), height, true);
 
-	setDrawColor(getColor());
+	setDrawColor(getFrameColor().inverse());
 	drawTriangle(static_cast<int>(width * .95f), height / 2, static_cast<uint>(width * .05f), static_cast<uint>(height * .60f), 180.0f, true);
 
 	Surface::restoreRenderTarget();
 
 	SDL_DestroyTexture(tex);
 
-	if (drop){
-		height = dropDownHeight * options.size();
+	if (!optionsEmpty && drop) {
+		height = maxHeight * optionsSize;
 	}
 }
 
-void DropDown::handleEvent(EventManager::EventType evt){
+void DropDown::handleEvent(EventManager::EventType evt) {
 	MouseListener::handleEvent(evt);
 
-	if (evt == EventManager::EVT_MOUSEBUTTONDOWN){
-		if (eventData.mouseButton == EventManager::MB_LEFT){
+	if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {
+		if (eventData.mouseButton == EventManager::MB_LEFT) {
 			VecN<int, 2> mousePos = getMousePos();
 
-			if (pos[0] < mousePos[0] && mousePos[0] < pos[0] + width){
-				if (pos[1] < mousePos[1] && mousePos[1] < pos[1] + dropDownHeight){
+			if (pos[0] < mousePos[0] && mousePos[0] < pos[0] + width) {
+				if (pos[1] < mousePos[1] && mousePos[1] < pos[1] + dropDownHeight) {
 					drop = !drop;
 
 					markDirty();
 
 					EventManager::getSingleton().cancelEvent();
 				}
-				else if (pos[1] < mousePos[1] && mousePos[1] < pos[1] + height){
-					int sel = static_cast<int>(mousePos[1] - pos[1]) / dropDownHeight;
+				else if (pos[1] < mousePos[1] && mousePos[1] < pos[1] + height) {
+					uint sel = static_cast<uint>((mousePos[1] - pos[1]) / dropDownHeight);
 
-					if (sel == selection){
+					if (sel <= selection) {
 						sel--;
 					}
 
@@ -402,14 +412,18 @@ void DropDown::handleEvent(EventManager::EventType evt){
 					markDirty();
 
 					EventManager::getSingleton().cancelEvent();
+
+					if (onChange) {
+						onChange(*this);
+					}
 				}
-				else{
+				else {
 					drop = false;
 
 					markDirty();
 				}
 			}
-			else{
+			else {
 				drop = false;
 
 				markDirty();

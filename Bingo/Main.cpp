@@ -1,5 +1,5 @@
 //Dustin Gehm
-#define SOUNDTIMER 0
+#define SOUNDTIMER 1
 
 #include <iostream>
 
@@ -21,34 +21,34 @@
 
 using std::cerr;
 
-void initSDLModules(){
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0){
+void initSDLModules() {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
 		cerr << "SDL could not be loaded\n";
 		cerr << SDL_GetError();
 		BAIL(1);
 	}
 
 	uint SDL_IMG_Flags = IMG_INIT_PNG | IMG_INIT_JPG;
-	if (!(IMG_Init(SDL_IMG_Flags) & SDL_IMG_Flags)){
+	if (!(IMG_Init(SDL_IMG_Flags) & SDL_IMG_Flags)) {
 		cerr << "SDL_image could not be loaded\n";
 		cerr << IMG_GetError();
 		BAIL(1);
 	}
 
-	if (TTF_Init() == -1){
+	if (TTF_Init() == -1) {
 		cerr << "SDL_TTF could not be loaded\n";
 		cerr << TTF_GetError();
 		BAIL(1);
 	}
 
-	if (Mix_OpenAudio(MIXER_AUDIO_FREQ, MIX_DEFAULT_FORMAT, MIXER_AUDIO_CHANNELS, 2048) < 0){
+	if (Mix_OpenAudio(MIXER_AUDIO_FREQ, MIX_DEFAULT_FORMAT, MIXER_AUDIO_CHANNELS, 2048) < 0) {
 		cerr << "SDL_mixer could not be loaded\n";
 		cerr << Mix_GetError();
 		BAIL(1);
 	}
 }
 
-void quitSDLModules(){
+void quitSDLModules() {
 	Mix_Quit();
 	TTF_Quit();
 	IMG_Quit();
@@ -85,13 +85,13 @@ vector<AnimSurface*> statuses;
 vector<Counter*> tempTimers;
 vector<string> activeSounds;
 
-void checkInputs(){
-	for(auto iter = soundDropDowns.begin(); iter != soundDropDowns.end(); iter++){
-		uint index = std::distance(soundDropDowns.begin(), iter);
+void checkInputs() {
+	for (auto iter = soundDropDowns.begin(); iter != soundDropDowns.end(); iter++) {
+		uint index = distance(soundDropDowns.begin(), iter);
 		string filename = (*iter)->getText();
 
-		if (FileManager::getSingleton().checkFile(filename)){
-			if (!alarmsValid[index]){
+		if (FileManager::getSingleton().checkFile(filename)) {
+			if (!alarmsValid[index]) {
 #ifdef _WIN32
 				char buffer[10];
 				memset(buffer, 0, sizeof(buffer));
@@ -105,39 +105,73 @@ void checkInputs(){
 				SoundManager::getSingleton().removeSound(soundName);
 				SoundManager::getSingleton().addSound(soundName, filename);
 
-				if (Counter::isTimeStr(timeInputs[index]->getText(), "%h:%m%p")){
+				if (Counter::isTimeStr(timeInputs[index]->getText(), "%h:%m%p")) {
 					tempTimers[index]->setTime(Counter::makeTime(timeInputs[index]->getText(), "%h:%m%p"));
 
 					//if (Counter::isTimeStr(durationInputs[index]->getText(), "%m%s")){
 					statuses[index]->setClip(0);
 					alarmsValid[index] = true;
 
-						//cout << "All valid\n";
-					//}
+					//cout << "All valid\n";
 				}
 			}
+		//}
 		}
-		else{
+		else {
 			statuses[index]->setClip(1);
 			alarmsValid[index] = false;
 		}
 	}
 }
 
-void stopSounds(Button& button, EventManager::MouseButton but){
+void invalidateSound0(DropDown& dropDown) {
+	for (auto iter = soundDropDowns.begin(); iter != soundDropDowns.end(); iter++) {
+		if (*iter == &dropDown) {
+			auto index = distance(soundDropDowns.begin(), iter);
+
+			alarmsValid[index] = false;
+		}
+	}
+}
+
+void invalidateSound1(Input& input, EventManager::MouseButton mouseButton) {
+	input.inputMode();
+
+	for (auto iter = timeInputs.begin(); iter != timeInputs.end(); iter++) {
+		if (*iter == &input) {
+			auto index = distance(timeInputs.begin(), iter);
+
+			alarmsValid[index] = false;
+		}
+	}
+}
+
+void invalidateSound2(Input& input, EventManager::MouseButton mouseButton) {
+	input.inputMode();
+
+	for (auto iter = durationInputs.begin(); iter != durationInputs.end(); iter++) {
+		if (*iter == &input) {
+			auto index = distance(durationInputs.begin(), iter);
+
+			alarmsValid[index] = false;
+		}
+	}
+}
+
+void stopSounds(Button& button, EventManager::MouseButton but) {
 	auto iter = activeSounds.begin();
 
-	while (iter != activeSounds.end()){
+	while (iter != activeSounds.end()) {
 		SoundManager::getSingleton().stopSound(*iter);
 		iter = activeSounds.erase(iter);
 	}
 }
 
-void changeVolume(Slider<int>& slider){
+void changeVolume(Slider<int>& slider) {
 	SoundManager::getSingleton().setSoundVolume(slider.getValue() / 10.0f);
 }
 
-int main(int argc, char* argv[]){
+int main(int argc, char* argv[]) {
 	initSDLModules();
 
 	WindowManager myWindow(PROJ_NAME, 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -165,29 +199,32 @@ int main(int argc, char* argv[]){
 	stopButton.setBackgroundColor(WHITE);
 
 	Slider<int> volSlider(SCREEN_WIDTH - 60, 100, 40, 200, 0, 10, 1, changeVolume, "main", 20);
-	volSlider.setOrientation(Slider<int>::VERTICAL);
+	volSlider.setOrientation(Slider<int>::Orientation::VERTICAL);
 	volSlider.setBackgroundColor(LIGHTGRAY);
 	volSlider.setValue(5);
 
 	vector<string> soundFiles = fileManager.listDirectory(PROJ_NAME"/Sounds/");
 
-	for (uint c = 0; c < MAX_TIMERS; c++){
+	cout << "Royalty free music made available by www.bensound.com" << endl;
+	cout << "Thank you BenSound" << endl;
+
+	for (uint c = 0; c < MAX_TIMERS; c++) {
 		int yPos = 40 + 30 * c;
 
-		soundDropDowns.push_back(new DropDown(50, yPos, 350, 25, &soundFiles, "main", 13));
+		soundDropDowns.push_back(new DropDown(50, yPos, 350, 25, &soundFiles, invalidateSound0, "main", 13));
 		soundDropDowns.back()->setTextPadding(5);
 		soundDropDowns.back()->setBackgroundColor(WHITE);
 
-		timeInputs.push_back(new Input(425, yPos, 100, 25, NULL, "main", 13, ""));
+		timeInputs.push_back(new Input(425, yPos, 100, 25, invalidateSound1, "main", 13, ""));
 		timeInputs.back()->setTextPadding(5);
 		timeInputs.back()->setBackgroundColor(WHITE);
 
-		durationInputs.push_back(new Input(550, yPos, 100, 25, NULL, "main", 13, ""));
+		durationInputs.push_back(new Input(550, yPos, 100, 25, invalidateSound2, "main", 13, ""));
 		durationInputs.back()->setTextPadding(5);
 		durationInputs.back()->setBackgroundColor(WHITE);
 
 		statuses.push_back(new AnimSurface(PROJ_NAME"/Images/Status.png"));
-		statuses.back()->setPos({ 650, yPos - 5});
+		statuses.back()->setPos({ 650, yPos - 5 });
 		statuses.back()->addClip(0, 0, 200, 200);
 		statuses.back()->addClip(0, 200, 200, 200);
 		statuses.back()->setAnimSpeed(0);
@@ -198,17 +235,17 @@ int main(int argc, char* argv[]){
 		tempTimers.push_back(new Counter());
 	}
 
-	while (!quitListener.getDone()){
+	while (!quitListener.getDone()) {
 		eventManager.update();
 
 		//check inputs and times
-		if (Timer::getTicks() % 1000){
+		if (Timer::getTicks() % 1000) {
 			checkInputs();
 		}
 
 		//check timers, play sound if timer is up
-		for(uint c = 0; c < tempTimers.size(); c++){
-			if(tempTimers[c]->isTimeUp()){
+		for (uint c = 0; c < tempTimers.size(); c++) {
+			if (tempTimers[c]->isTimeUp()) {
 #ifdef _WIN32
 				char buffer[10];
 				memset(buffer, 0, sizeof(buffer));
@@ -220,12 +257,12 @@ int main(int argc, char* argv[]){
 				string soundName = string("sound").append(_itoa(c, NULL, 10));
 #endif
 
-				if(Counter::isTimeStr(durationInputs[c]->getText(), "%m%s")){
+				if (Counter::isTimeStr(durationInputs[c]->getText(), "%m%s")) {
 					tm dura = Counter::makeTime(durationInputs[c]->getText(), "%m%s");
 
 					soundManager.playSoundFor(soundName, dura.tm_sec + dura.tm_min * 60);
 				}
-				else{
+				else {
 					soundManager.playSound(soundName);
 				}
 
@@ -234,11 +271,11 @@ int main(int argc, char* argv[]){
 		}
 
 		//remove sounds that are done playing
-		for (auto iterSounds = activeSounds.begin(); iterSounds != activeSounds.end(); iterSounds++){
-			if (soundManager.isSoundNotPlaying(*iterSounds)){
+		for (auto iterSounds = activeSounds.begin(); iterSounds != activeSounds.end(); iterSounds++) {
+			if (soundManager.isSoundNotPlaying(*iterSounds)) {
 				iterSounds = activeSounds.erase(iterSounds);
 
-				if (iterSounds == activeSounds.end()){
+				if (iterSounds == activeSounds.end()) {
 					break;
 				}
 			}
@@ -252,8 +289,8 @@ int main(int argc, char* argv[]){
 		screen.draw(stopButton);
 		screen.draw(volSlider);
 
-		for(int c = soundDropDowns.size() - 1; c >= 0; c--){
-			if(soundDropDowns[c]){
+		for (int c = soundDropDowns.size() - 1; c >= 0; c--) {
+			if (soundDropDowns[c]) {
 				statuses[c]->update();
 
 				screen.draw(*soundDropDowns[c]);
@@ -268,7 +305,7 @@ int main(int argc, char* argv[]){
 		myWindow.update();
 	}
 
-	for(uint c = 0; c < soundDropDowns.size(); c++){
+	for (uint c = 0; c < soundDropDowns.size(); c++) {
 		delete soundDropDowns[c];
 		delete timeInputs[c];
 		delete durationInputs[c];
@@ -346,7 +383,7 @@ using namespace std;
 #define HALF_SCREEN_WIDTH SCREEN_WIDTH / 2
 #define HALF_SCREEN_HEIGHT SCREEN_HEIGHT / 2
 
-void testThreads(NBT_Compound* nbt){
+void testThreads(NBT_Compound* nbt) {
 	ATOMIC_LOCK(ThreadManager::coutLock);
 
 	cout << nbt << endl;
@@ -361,7 +398,7 @@ void testThreads(NBT_Compound* nbt){
 
 	FileManager::getSingleton().closeFile(FIL_PATH"Test1.nbt");
 
-	if (readNBT != NULL){
+	if (readNBT != NULL) {
 		ATOMIC_LOCK(ThreadManager::coutLock);
 
 		cout << readNBT << endl;
@@ -372,22 +409,30 @@ void testThreads(NBT_Compound* nbt){
 	}
 }
 
-void testButton(Button& button, EventManager::MouseButton mouseButton){
+void testButton(Button& button, EventManager::MouseButton mouseButton) {
 	static uint counter = 0;
 	button.setText("Press Me Again!");
 
 	cout << "Button Pressed!" << ++counter << endl;
 }
 
-void testSliderChanged(Slider<int>& slider){
+void testSliderChanged(Slider<int>& slider) {
 	//cout << "Slider val is " << slider.getValue() << endl;
 }
 
+void dropDownChanged(DropDown& dropDown) {
+	cout << "DropDown is " << dropDown.getValue() << endl;
+}
+
 /*
-TODO PRIORITY 0 add comments and documentation to EVERYTHING!
-TODO ensure sizeof uses types instead of instances whenever possible
+TODO PRIORITY 0 add comments and documentation to EVERYTHING!, get Doxygen
 TODO add either string arrays or something else alongside all Enums
 TODO find where ever iterators are used and make sure it cant be accomplished using indices
+	if you really need the index (e.g. access the previous or next element, printing/logging the index inside the loop etc.) or you need a stride different than 1, then I would go for the explicitly indexed-loop, otherwise I'd go for the range-for loop.
+
+	For generic algorithms on generic containers I'd go for the explicit iterator loop unless the code contained no flow control inside the loop and needed stride 1, in which case I'd go for the STL for_each + a lambda.
+
+TODO switch enums over to enum classes where applicable
 
 TODO add a 3d camera and view
 TODO add a way to have tiled backgrounds that scroll
@@ -409,10 +454,12 @@ TODO maybe add SDL_GetPerformanceCounter to Timer
 TODO maybe make it so the three event listeners can be derived from
 
 TODO find a way to copy Surface data for STATIC and PIXEL ACCESS Surfaces
+
+TODO add logging manager
 */
-int main(int argc, char* argv[]){
+int main(int argc, char* argv[]) {
 #if MAIN_TRY
-	try{
+	try {
 #endif
 		initSDLModules();
 
@@ -469,7 +516,7 @@ int main(int argc, char* argv[]){
 		MovableSurface star(IMG_PATH"GreenStar.png", 50, SCREEN_HEIGHT / 2, 10.0f, 10.0f);
 		star.setGravityEffects(true);
 		//TODO this should be changed to width/height instead of radius
-		star.setScreenBounding(true, star.getWidth() / 2, {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT});
+		star.setScreenBounding(true, star.getWidth() / 2, { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT });
 #endif
 
 #if TEST_MUSIC
@@ -488,7 +535,7 @@ int main(int argc, char* argv[]){
 
 		cout << "Listing " SND_PATH "\n";
 
-		for(auto s : files){
+		for (auto s : files) {
 			cout << s << '\n';
 		}
 
@@ -540,7 +587,7 @@ int main(int argc, char* argv[]){
 		NBT_Compound* readNbt = NULL;
 		readNbt = fileManager.readNBT(Test1);
 
-		if(readNbt != NULL){
+		if (readNbt != NULL) {
 			cout << readNbt << endl;
 		}
 
@@ -614,7 +661,7 @@ int main(int argc, char* argv[]){
 #if TEST_BNDS
 		BoundsCircle boundsCirc1({ 100, 260 }, 10, RED);
 		BoundsCircle boundsCirc2({ 500, 250 }, 10, BLUE);
-		BoundsBox boundsBox({ 320, 240 },40, 40, GREEN);
+		BoundsBox boundsBox({ 320, 240 }, 40, 40, GREEN);
 		BoundsLine boundsLine({ 220, 100 }, { 520, 100 }, PURPLE);
 
 		boundsCirc1.setVel({ 75, 0 });
@@ -631,7 +678,7 @@ int main(int argc, char* argv[]){
 
 #if TEST_MATS
 		Matrix<int, 2, 2> twoByTwo(3);
-		Matrix<double, 2, 3> twoByThree({0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f});
+		Matrix<double, 2, 3> twoByThree({ 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f });
 		Matrix<int, 5, 5> iden5 = Matrix<int, 5, 5>::identity();
 		Matrix<int, 5, 5> negIden5 = -Matrix<int, 5, 5>::identity();
 		Matrix<int, 2, 3> a({ 1, 2, 3, 4, 5, 6 });
@@ -661,7 +708,7 @@ int main(int argc, char* argv[]){
 		cout << iden5 << endl;
 		cout << negIden5 << endl;
 
-		cout << c <<endl;
+		cout << c << endl;
 
 		cout << timeTestC << endl;
 
@@ -734,7 +781,7 @@ int main(int argc, char* argv[]){
 		testSlider.setColor(ORANGE.inverse());
 		testSlider.setBackgroundColor(WHITE);
 
-		DropDown testDropDown(40, 260, 200, 40, NULL, "main", 16);
+		DropDown testDropDown(40, 260, 200, 40, NULL, dropDownChanged, "main", 16);
 		testDropDown.setFrameColor(BLUE);
 		testDropDown.setBackgroundColor(BLUE.inverseHue());
 		testDropDown.setFrameWidth(5);
@@ -746,24 +793,25 @@ int main(int argc, char* argv[]){
 		vector<string> soundFiles;
 		soundFiles.push_back("NumaNuma.wav");
 		soundFiles.push_back("baddisk.wav");
+		soundFiles.push_back("test.txt");
 
-		DropDown testDropDown2(50, 310, 350, 25, &soundFiles, "main", 13);
+		DropDown testDropDown2(50, 310, 350, 25, &soundFiles, dropDownChanged, "main", 13);
 		testDropDown2.setFrameColor(RED);
 		testDropDown2.setBackgroundColor(RED.inverseHue());
 		testDropDown2.setFrameWidth(3);
-		//TODO background of DropDown overextends from frameWidth
+		testDropDown2.setTextPadding(5);
 #endif
 
 #if TEST_TIME
 		const uint numTimes = 9;
-		const char* times[] = {"1:30p", "2:30pm", "3:45am", \
+		const char* times[] = { "1:30p", "2:30pm", "3:45am", \
 				"12 : 59 a", "melon", "123abc", \
-				"18:36", "1:05", "pumpkin"};
-		const char* formats[] = {"%h:%m%p", "%h%m%p", "%h %m %p", \
+				"18:36", "1:05", "pumpkin" };
+		const char* formats[] = { "%h:%m%p", "%h%m%p", "%h %m %p", \
 				"%h %m%p", "%y%d", "%h:%m", \
-				"%h%m", "%m%s", "%y"};
+				"%h%m", "%m%s", "%y" };
 
-		for (auto c = 0; c < numTimes; c++){
+		for (auto c = 0; c < numTimes; c++) {
 			cout << times[c] << " is time? " << Counter::isTimeStr(times[c], formats[c]) << endl;
 		}
 
@@ -780,7 +828,7 @@ int main(int argc, char* argv[]){
 		soundManager.playMusic();
 #endif
 
-		while (!quiter.getDone()){
+		while (!quiter.getDone()) {
 			eventManager.update();
 
 			screen.setRenderTarget();
@@ -830,10 +878,10 @@ int main(int argc, char* argv[]){
 			anim2.update();
 			anim3.update();
 
-			if (keyListener.checkKeyDown(EventManager::K_UP, 200)){
+			if (keyListener.checkKeyDown(EventManager::K_UP, 200)) {
 				anim3.advanceFrame();
 			}
-			else if (keyListener.checkKeyDown(EventManager::K_DOWN, 200)){
+			else if (keyListener.checkKeyDown(EventManager::K_DOWN, 200)) {
 				anim3.reverseFrame();
 			}
 
@@ -843,16 +891,16 @@ int main(int argc, char* argv[]){
 #endif
 
 #if TEST_SURF_MOVE
-			if (keyListener.checkKeyDown(EventManager::K_w)){
+			if (keyListener.checkKeyDown(EventManager::K_w)) {
 				star.move(MovableSurface::MOV_UP);
 			}
-			if (keyListener.checkKeyDown(EventManager::K_s)){
+			if (keyListener.checkKeyDown(EventManager::K_s)) {
 				star.move(MovableSurface::MOV_DOWN);
 			}
-			if (keyListener.checkKeyDown(EventManager::K_a)){
+			if (keyListener.checkKeyDown(EventManager::K_a)) {
 				star.move(MovableSurface::MOV_LEFT);
 			}
-			if (keyListener.checkKeyDown(EventManager::K_d)){
+			if (keyListener.checkKeyDown(EventManager::K_d)) {
 				star.move(MovableSurface::MOV_RIGHT);
 			}
 
@@ -862,17 +910,19 @@ int main(int argc, char* argv[]){
 #endif
 
 #if TEST_SOUND
-			if (keyListener.checkKeyDown(EventManager::K_e)){
+			if (keyListener.checkKeyDown(EventManager::K_e)) {
 				soundManager.playSound("clap");
+				//soundManager.playSound("disk");
+				//soundManager.playSound("bloop");
 			}
 #endif
 
 #if TEST_MUSIC
-			if (keyListener.checkKeyDown(EventManager::K_SPACE, 200)){
-				if (soundManager.isMusicPaused()){
+			if (keyListener.checkKeyDown(EventManager::K_SPACE, 200)) {
+				if (soundManager.isMusicPaused()) {
 					soundManager.resumeMusic();
 				}
-				else{
+				else {
 					soundManager.pauseMusic();
 				}
 			}
@@ -885,7 +935,7 @@ int main(int argc, char* argv[]){
 #endif
 
 #if TEST_BNDS
-			if (keyListener.checkKeyDown(EventManager::K_SPACE, 200)){
+			if (keyListener.checkKeyDown(EventManager::K_SPACE, 200)) {
 				boundsCirc1.setVel(boundsCirc1.getVel() * 1.2f);
 				boundsCirc2.setVel(boundsCirc2.getVel() * 1.2f);
 			}
@@ -903,10 +953,10 @@ int main(int argc, char* argv[]){
 			screen.draw(testDropDown);
 			screen.draw(testDropDown2);
 
-			if (keyListener.checkKeyDown(EventManager::K_RIGHT, 200)){
+			if (keyListener.checkKeyDown(EventManager::K_RIGHT, 200)) {
 				testSlider++;
 			}
-			else if (keyListener.checkKeyDown(EventManager::K_LEFT, 200)){
+			else if (keyListener.checkKeyDown(EventManager::K_LEFT, 200)) {
 				testSlider--;
 			}
 #endif
@@ -933,7 +983,7 @@ int main(int argc, char* argv[]){
 
 			myWindow.update();
 		}
-
+		;
 #if TEST_THREADS
 		delete nbt1;
 		delete nbt2;
@@ -943,7 +993,7 @@ int main(int argc, char* argv[]){
 
 #if MAIN_TRY
 	}
-	catch (const Exception& e){
+	catch (const Exception & e) {
 		cerr << e.what() << endl;
 		BAIL(1);
 	}
