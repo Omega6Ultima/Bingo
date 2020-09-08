@@ -3,6 +3,8 @@
 #ifndef _COORDMAP_H
 #define _COORDMAP_H
 
+#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+
 #include <hash_map>
 
 #include "VecN.h"
@@ -10,23 +12,23 @@
 using std::hash_map;
 
 template<class T>
-class CoordMap{
+class CoordMap {
 public:
-	CoordMap<T>(){
+	CoordMap<T>() {
 		//
 	}
 
 	~CoordMap<T>();
 
-	void insert(int x, int y, T val){
+	void insert(int x, int y, T val) {
 		vals[VecN<int, 2>({ x, y })] = val;
 	}
 
-	bool find(int x, int y){
+	bool find(int x, int y) {
 		return vals.find(VecN<int, 2>(x, y)) != vals.end();
 	}
 
-	T get(int x, int y){
+	T get(int x, int y) {
 		return vals[VecN<int, 2>({ x, y })];
 	}
 

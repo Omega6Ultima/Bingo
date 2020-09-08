@@ -5,7 +5,7 @@
 #include "WindowManager.h"
 
 TextSurface::TextSurface(string fontName, int size, string displayText, Color textColor)
-: Surface(1, 1){
+	: Surface(1, 1) {
 	font = fontName;
 	fontSize = size;
 	text = displayText;
@@ -18,62 +18,62 @@ TextSurface::TextSurface(string fontName, int size, string displayText, Color te
 	renderTexture();
 }
 
-TextSurface::~TextSurface(){
+TextSurface::~TextSurface() {
 	//
 }
 
-void TextSurface::setFont(string fontName){
+void TextSurface::setFont(string fontName) {
 	font = fontName;
 
 	markDirty();
 }
 
-void TextSurface::setFontSize(int size){
+void TextSurface::setFontSize(int size) {
 	fontSize = size;
 
 	markDirty();
 }
 
-void TextSurface::setText(string displayText){
+void TextSurface::setText(string displayText) {
 	text = displayText;
 
 	markDirty();
 }
 
-void TextSurface::setTextPadding(uint pad){
+void TextSurface::setTextPadding(uint pad) {
 	textPadding = pad;
 
 	markDirty();
 }
 
-void TextSurface::setColor(Color textColor){
+void TextSurface::setColor(Color textColor) {
 	color = textColor;
 
 	markDirty();
 }
 
-void TextSurface::setBackgroundColor(Color color){
+void TextSurface::setBackgroundColor(Color color) {
 	backgroundColor = color;
 
 	markDirty();
 }
 
-void TextSurface::renderTexture(){
+void TextSurface::renderTexture() {
 	Surface::renderTexture();
 
-	if (texture){
+	if (texture) {
 		SDL_DestroyTexture(texture);
 		texture = NULL;
 	}
 
-	if (!FontManager::getSingleton().hasFont(font, fontSize)){
+	if (!FontManager::getSingleton().hasFont(font, fontSize)) {
 		FontManager::getSingleton().addFont(font, fontSize);
 	}
 
-	if (text.size() > 0){
+	if (text.size() > 0) {
 		SDL_Surface* tempSurf = TTF_RenderText_Solid(FontManager::getSingleton().getFont(font, fontSize), text.c_str(), { color.getRed(), color.getGreen(), color.getBlue() });
 
-		if (tempSurf == NULL){
+		if (tempSurf == NULL) {
 			Error("Unable to render text", TTF_GetError());
 
 			return;
@@ -86,7 +86,7 @@ void TextSurface::renderTexture(){
 
 		tex = SDL_CreateTextureFromSurface(WindowManager::getSingleton().getRenderer(), tempSurf);
 
-		if (!tex){
+		if (!tex) {
 			Error("Unable to create texture from rendered text", SDL_GetError());
 		}
 
@@ -102,6 +102,7 @@ void TextSurface::renderTexture(){
 		setRenderTarget();
 		clear();
 		fill(backgroundColor);
+
 		SDL_RenderCopy(WindowManager::getSingleton().getRenderer(), tex, NULL, &dest);
 
 		Surface::restoreRenderTarget();
@@ -110,7 +111,7 @@ void TextSurface::renderTexture(){
 
 		SDL_FreeSurface(tempSurf);
 	}
-	else{
+	else {
 		width = MAX(1, 2 * textPadding);
 		height = MAX(1, 2 * textPadding);
 

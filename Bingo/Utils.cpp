@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <math.h>
-#include <xtgmath.h>
 
 #include "ThreadManager.h"
 
@@ -15,7 +14,7 @@ using std::endl;
 using std::pow;
 using std::sqrt;
 
-float round(float f, int p){
+float round(float f, int p) {
 	return (float)(floor(f * pow(10, p) + .5f) / pow(10, p));
 }
 
@@ -38,36 +37,36 @@ static string chars = "\t\t\t\t\t\t\t\t\t\t"
 "\t\t\t\t\t\t\t\t\t\t";
 static string::iterator chars_beg = chars.begin();
 
-string tabs(uint num){
+string tabs(uint num) {
 	return string(chars_beg, chars_beg + num);
 }
 
-void tokenize(string& str, char separator){
+void tokenize(string& str, char separator) {
 	enum TokenType { NONE, ALPHA, NUM, OTHER } curToken = NONE;
 	TokenType nextToken = NONE;
 
-	if (isalpha(str[0])){
+	if (isalpha(str[0])) {
 		curToken = ALPHA;
 	}
-	else if (isdigit(str[0])){
+	else if (isdigit(str[0])) {
 		curToken = NUM;
 	}
-	else{
+	else {
 		curToken = OTHER;
 	}
 
-	for (auto iter = str.begin() + 1; iter != str.end(); iter++){
-		if (isalpha(*iter)){
+	for (auto iter = str.begin() + 1; iter != str.end(); iter++) {
+		if (isalpha(*iter)) {
 			nextToken = ALPHA;
 		}
-		else if (isdigit(*iter)){
+		else if (isdigit(*iter)) {
 			nextToken = NUM;
 		}
-		else{
+		else {
 			nextToken = OTHER;
 		}
 
-		if (curToken != nextToken){
+		if (curToken != nextToken) {
 			iter = str.insert(iter, separator);
 			iter++;
 
@@ -76,33 +75,33 @@ void tokenize(string& str, char separator){
 	}
 }
 
-vector<uint> tokenize(const string& str, uint&){
+vector<uint> tokenize(const string& str, uint&) {
 	vector<uint> result;
 	enum TokenType { NONE, ALPHA, NUM, OTHER } curToken = NONE;
 	TokenType nextToken = NONE;
 
-	if (isalpha(str[0])){
+	if (isalpha(str[0])) {
 		curToken = ALPHA;
 	}
-	else if (isdigit(str[0])){
+	else if (isdigit(str[0])) {
 		curToken = NUM;
 	}
-	else{
+	else {
 		curToken = OTHER;
 	}
 
-	for (auto iter = str.begin() + 1; iter != str.end(); iter++){
-		if (isalpha(*iter)){
+	for (auto iter = str.begin() + 1; iter != str.end(); iter++) {
+		if (isalpha(*iter)) {
 			nextToken = ALPHA;
 		}
-		else if (isdigit(*iter)){
+		else if (isdigit(*iter)) {
 			nextToken = NUM;
 		}
-		else{
+		else {
 			nextToken = OTHER;
 		}
 
-		if (curToken != nextToken){
+		if (curToken != nextToken) {
 			result.push_back(distance(str.begin(), iter));
 		}
 	}
@@ -110,7 +109,7 @@ vector<uint> tokenize(const string& str, uint&){
 	return result;
 }
 
-void Error(string msg){
+void Error(string msg) {
 	ATOMIC_LOCK(ThreadManager::coutLock);
 
 	cerr << msg;
@@ -119,7 +118,7 @@ void Error(string msg){
 	ATOMIC_UNLOCK(ThreadManager::coutLock);
 }
 
-void Error(string msg, string error){
+void Error(string msg, string error) {
 	ATOMIC_LOCK(ThreadManager::coutLock);
 
 	cerr << msg << endl << error;
@@ -128,7 +127,7 @@ void Error(string msg, string error){
 	ATOMIC_UNLOCK(ThreadManager::coutLock);
 }
 
-void Warn(string msg){
+void Warn(string msg) {
 	ATOMIC_LOCK(ThreadManager::coutLock);
 
 	cerr << msg;
@@ -136,7 +135,7 @@ void Warn(string msg){
 	ATOMIC_UNLOCK(ThreadManager::coutLock);
 }
 
-void Warn(string msg, string error){
+void Warn(string msg, string error) {
 	ATOMIC_LOCK(ThreadManager::coutLock);
 
 	cerr << msg << endl << error;
@@ -144,12 +143,30 @@ void Warn(string msg, string error){
 	ATOMIC_UNLOCK(ThreadManager::coutLock);
 }
 
-bool operator==(SDL_Point& p1, SDL_Point& p2){
-	if (p1.x == p2.x){
-		if (p1.y == p2.y){
+bool operator==(SDL_Point& p1, SDL_Point& p2) {
+	if (p1.x == p2.x) {
+		if (p1.y == p2.y) {
 			return true;
 		}
 	}
 
 	return false;
+}
+
+string operator+(const string& str, int num) {
+	stringstream ss;
+
+	ss << str;
+	ss << num;
+
+	return ss.str();
+}
+
+string operator+(const string& str, uint num) {
+	stringstream ss;
+
+	ss << str;
+	ss << num;
+
+	return ss.str();
 }

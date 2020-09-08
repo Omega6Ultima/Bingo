@@ -1,7 +1,6 @@
 //Dustin Gehm
 
 //supressing warnings about tr2::filesystem
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 //#define _SILENCE_TR2_SYS_NAMESPACE_DEPRECATION_WARNING
 
 #include "FileManager.h"

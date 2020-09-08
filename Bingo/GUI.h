@@ -32,7 +32,7 @@ typedef void(*ButtonFunc)(Button& button, EventManager::MouseButton mouseButton)
 typedef void(*InputFunc)(Input& input, EventManager::MouseButton mouseButton);
 
 template<typename T>
-using SliderFunc = void(*)(Slider<T> & slider);
+using SliderFunc = void(*)(Slider<T>& slider);
 
 typedef void(*DropDownFunc)(DropDown& dropDown);
 
@@ -220,9 +220,9 @@ protected:
 		texture = createTexture(width, height);
 		setBlendMode(BLEND_BLEND);
 
-		TextSurface minText(getFont(), getFontSize(), toString(values[0]), getColor());
-		TextSurface maxText(getFont(), getFontSize(), toString(values[values.size() - 1]), getColor());
-		TextSurface curText(getFont(), getFontSize(), toString(values[curIndex]), getColor());
+		//TextSurface minText(getFont(), getFontSize(), toString(values[0]), getColor());
+		//TextSurface maxText(getFont(), getFontSize(), toString(values[values.size() - 1]), getColor());
+		//TextSurface curText(getFont(), getFontSize(), toString(values[curIndex]), getColor());
 
 		Surface::saveRenderTarget();
 
@@ -230,6 +230,7 @@ protected:
 		clear();
 		fill(getBackgroundColor());
 		setDrawColor(getColor());
+
 		drawRect(0, 0, width, height, false);
 
 		if (orientation == Orientation::HORIZONTAL) {
@@ -248,10 +249,9 @@ protected:
 
 			drawDiamond(static_cast<int>(pixelStep * (curIndex + 1)), height / 2, 10, height / 2);
 
-			//width - maxText.getWidth()
-			draw(minText, static_cast<int>(pixelStep), height - minText.getHeight());
-			draw(maxText, static_cast<int>(pixelStep * values.size()), height - maxText.getHeight());
-			draw(curText, static_cast<int>(pixelStep * (curIndex + 1)), height - curText.getHeight());
+			//draw(minText, static_cast<int>(pixelStep), height - minText.getHeight());
+			//draw(maxText, static_cast<int>(pixelStep * values.size()), height - maxText.getHeight());
+			//draw(curText, static_cast<int>(pixelStep * (curIndex + 1)), height - curText.getHeight());
 		}
 		else if (orientation == Orientation::VERTICAL) {
 			//draw the main vertical line
@@ -269,9 +269,9 @@ protected:
 
 			drawDiamond(width / 2, static_cast<int>(pixelStep * (curIndex + 1)), width / 2, 10);
 
-			draw(minText, width - minText.getWidth(), static_cast<int>(pixelStep));
-			draw(maxText, width - maxText.getWidth(), static_cast<int>(pixelStep * values.size()));
-			draw(curText, width - curText.getWidth(), static_cast<int>(pixelStep * (curIndex + 1)));
+			//draw(minText, width - minText.getWidth(), static_cast<int>(pixelStep));
+			//draw(maxText, width - maxText.getWidth(), static_cast<int>(pixelStep * values.size()));
+			//draw(curText, width - curText.getWidth(), static_cast<int>(pixelStep * (curIndex + 1)));
 		}
 
 		Surface::restoreRenderTarget();

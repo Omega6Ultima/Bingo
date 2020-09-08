@@ -70,12 +70,12 @@ typedef SDL_SpinLock AtomicLock;
 float round(float f, int p);
 
 //convert degrees to radians
-inline double degToRadians(double deg){
+inline double degToRadians(double deg) {
 	return (deg / 180.0) * PI;
 }
 
 //conver radians to degrees
-inline double radToDegrees(double rad){
+inline double radToDegrees(double rad) {
 	return (rad * PI) / 180.0;
 }
 
@@ -94,5 +94,8 @@ void Warn(string msg);
 void Warn(string msg, string errror);
 
 bool operator==(SDL_Point& p1, SDL_Point& p2);
+
+string operator+(const string& str, int num);
+string operator+(const string& str, uint num);
 
 #endif

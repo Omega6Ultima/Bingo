@@ -16,7 +16,7 @@ using std::cos;
 using std::sin;
 using std::vector;
 
-Surface::Surface(string path){
+Surface::Surface(string path) {
 	SDL_Surface* tempSurf = createSurface(path);
 
 	width = tempSurf->w;
@@ -27,7 +27,7 @@ Surface::Surface(string path){
 
 	tex = SDL_CreateTextureFromSurface(WindowManager::getSingleton().getRenderer(), tempSurf);
 
-	if (!tex){
+	if (!tex) {
 		Error("Could not load texture from surface", SDL_GetError());
 	}
 
@@ -50,7 +50,7 @@ Surface::Surface(string path){
 	initializerHelper();
 }
 
-Surface::Surface(string path, Color colorKey){
+Surface::Surface(string path, Color colorKey) {
 	SDL_Surface* tempSurf = createSurface(path);
 
 	SDL_SetColorKey(tempSurf, true, SDL_MapRGB(tempSurf->format, colorKey.getRed(), colorKey.getGreen(), colorKey.getBlue()));
@@ -63,7 +63,7 @@ Surface::Surface(string path, Color colorKey){
 
 	tex = SDL_CreateTextureFromSurface(WindowManager::getSingleton().getRenderer(), tempSurf);
 
-	if (!tex){
+	if (!tex) {
 		Error("Could not load texture from surface", SDL_GetError());
 	}
 
@@ -86,8 +86,8 @@ Surface::Surface(string path, Color colorKey){
 	initializerHelper();
 }
 
-Surface::Surface(int width, int height){
-	if (width < 1 || height < 1){
+Surface::Surface(int width, int height) {
+	if (width < 1 || height < 1) {
 		throw Exception("Cannot have a 0-dimension texture");
 	}
 
@@ -101,27 +101,27 @@ Surface::Surface(int width, int height){
 	initializerHelper();
 }
 
-Surface::Surface(const Surface& surf){
+Surface::Surface(const Surface& surf) {
 	width = surf.width;
 	height = surf.height;
 
-	for (uint c = 0; c < MAX_VIEWPORTS; c++){
-		if (surf.viewports[c]){
-			viewports[c] = new SDL_Rect{surf.viewports[c]->x, \
+	for (uint c = 0; c < MAX_VIEWPORTS; c++) {
+		if (surf.viewports[c]) {
+			viewports[c] = new SDL_Rect{ surf.viewports[c]->x, \
 				surf.viewports[c]->y, \
 				surf.viewports[c]->w, \
-				surf.viewports[c]->h};
+				surf.viewports[c]->h };
 		}
 	}
 
-	for (uint c = 0; c < MAX_CLIPS; c++){
-		if (surf.clips[c]){
+	for (uint c = 0; c < MAX_CLIPS; c++) {
+		if (surf.clips[c]) {
 			clips[c] = new SDL_Rect{ surf.clips[c]->x, \
 				surf.clips[c]->y, \
 				surf.clips[c]->w, \
 				surf.clips[c]->h };
 
-			if (surf.activeClip == surf.clips[c]){
+			if (surf.activeClip == surf.clips[c]) {
 				activeClip = clips[c];
 			}
 		}
@@ -151,16 +151,16 @@ Surface::Surface(const Surface& surf){
 	restoreRenderTarget();
 }
 
-Surface& Surface::operator =(const Surface& surf){
+Surface& Surface::operator =(const Surface& surf) {
 	width = surf.width;
 	height = surf.height;
 
-	for (uint c = 0; c < MAX_VIEWPORTS; c++){
-		if (viewports[c]){
+	for (uint c = 0; c < MAX_VIEWPORTS; c++) {
+		if (viewports[c]) {
 			delete viewports[c];
 		}
 
-		if (surf.viewports[c]){
+		if (surf.viewports[c]) {
 			viewports[c] = new SDL_Rect{ surf.viewports[c]->x, \
 				surf.viewports[c]->y, \
 				surf.viewports[c]->w, \
@@ -170,18 +170,18 @@ Surface& Surface::operator =(const Surface& surf){
 
 	activeClip = NULL;
 
-	for (uint c = 0; c < MAX_CLIPS; c++){
-		if (clips[c]){
+	for (uint c = 0; c < MAX_CLIPS; c++) {
+		if (clips[c]) {
 			delete clips[c];
 		}
 
-		if (surf.clips[c]){
+		if (surf.clips[c]) {
 			clips[c] = new SDL_Rect{ surf.clips[c]->x, \
 				surf.clips[c]->y, \
 				surf.clips[c]->w, \
 				surf.clips[c]->h };
 
-			if (surf.activeClip == surf.clips[c]){
+			if (surf.activeClip == surf.clips[c]) {
 				activeClip = clips[c];
 			}
 		}
@@ -214,15 +214,15 @@ Surface& Surface::operator =(const Surface& surf){
 	return *this;
 }
 
-Surface::~Surface(){
-	for (uint c = 0; c < MAX_VIEWPORTS; c++){
-		if (viewports[c]){
+Surface::~Surface() {
+	for (uint c = 0; c < MAX_VIEWPORTS; c++) {
+		if (viewports[c]) {
 			delete viewports[c];
 		}
 	}
 
-	for (uint c = 0; c < MAX_CLIPS; c++){
-		if (clips[c]){
+	for (uint c = 0; c < MAX_CLIPS; c++) {
+		if (clips[c]) {
 			delete clips[c];
 		}
 	}
@@ -230,7 +230,7 @@ Surface::~Surface(){
 	SDL_DestroyTexture(texture);
 }
 
-void Surface::initializerHelper(){
+void Surface::initializerHelper() {
 	memset(viewports, 0, sizeof(SDL_Rect*) * MAX_VIEWPORTS);
 	memset(clips, 0, sizeof(SDL_Rect*) * MAX_CLIPS);
 
@@ -240,7 +240,7 @@ void Surface::initializerHelper(){
 	//}
 }
 
-SDL_Surface* Surface::createSurface(string path){
+SDL_Surface* Surface::createSurface(string path) {
 	SDL_Surface* tempSurf = NULL;
 
 	ATOMIC_LOCK(ThreadManager::fileLock);
@@ -249,60 +249,60 @@ SDL_Surface* Surface::createSurface(string path){
 
 	ATOMIC_UNLOCK(ThreadManager::fileLock);
 
-	if (!tempSurf){
+	if (!tempSurf) {
 		Error("Failed to create surface", IMG_GetError());
 	}
 
 	return tempSurf;
 }
 
-SDL_Texture* Surface::createTexture(uint width, uint height){
+SDL_Texture* Surface::createTexture(uint width, uint height) {
 	SDL_Texture* tex = NULL;
 	Uint32 pixelFormat = WindowManager::getSingleton().getPixelFormat();
 
 	tex = SDL_CreateTexture(WindowManager::getSingleton().getRenderer(), pixelFormat, SDL_TEXTUREACCESS_TARGET, width, height);
 
-	if (!tex){
+	if (!tex) {
 		Error("Could not create blank texture", SDL_GetError());
 	}
 
 	return tex;
 }
 
-void Surface::checkRenderTarget(){
+void Surface::checkRenderTarget() {
 	//TODO consider replacing calls to this with save/restore render target
-	if (WindowManager::getSingleton().curRenderTarget != this){
+	if (WindowManager::getSingleton().curRenderTarget != this) {
 		Warn("The target surface isnt the current render target\n");
 	}
 }
 
-void Surface::markDirty(){
+void Surface::markDirty() {
 	dirty = true;
 }
 
-void Surface::lock(){
+void Surface::lock() {
 	SDL_LockTexture(texture, NULL, &texPixels, &texPitch);
 }
 
-void Surface::unlock(){
+void Surface::unlock() {
 	SDL_UnlockTexture(texture);
 
 	texPixels = NULL;
 	texPitch = 0;
 }
 
-void Surface::setRotation(uint angle){
+void Surface::setRotation(uint angle) {
 	rotation = angle % 360;
 }
 
-void Surface::setCenter(VecN<int, 2> point){
+void Surface::setCenter(VecN<int, 2> point) {
 	center = VecN<float, 2>({ static_cast<float>(point[0]), static_cast<float>(point[1]) });
 	sdl_center = { point[0], point[1] };
 }
 
-void Surface::setFlip(FlipMode flip){
+void Surface::setFlip(FlipMode flip) {
 #if 0
-	switch (flip){
+	switch (flip) {
 	case FLIP_NONE:
 		flipState = SDL_FLIP_NONE;
 		break;
@@ -320,9 +320,9 @@ void Surface::setFlip(FlipMode flip){
 #endif
 }
 
-Surface::FlipMode Surface::getFlip() const{
+Surface::FlipMode Surface::getFlip() const {
 #if 0
-	switch (flipState){
+	switch (flipState) {
 	case SDL_FLIP_NONE:
 		return FLIP_NONE;
 	case SDL_FLIP_HORIZONTAL:
@@ -337,56 +337,56 @@ Surface::FlipMode Surface::getFlip() const{
 #endif
 }
 
-void Surface::setRenderTarget(){
-	if (SDL_SetRenderTarget(WindowManager::getSingleton().getRenderer(), texture)){
+void Surface::setRenderTarget() {
+	if (SDL_SetRenderTarget(WindowManager::getSingleton().getRenderer(), texture)) {
 		Error("Could not change render target", SDL_GetError());
 	}
 
 	WindowManager::getSingleton().curRenderTarget = this;
 }
 
-void Surface::clearRenderTarget(){
-	if (SDL_SetRenderTarget(WindowManager::getSingleton().getRenderer(), NULL)){
+void Surface::clearRenderTarget() {
+	if (SDL_SetRenderTarget(WindowManager::getSingleton().getRenderer(), NULL)) {
 		Error("Could not change render target\n", SDL_GetError());
 	}
 
 	WindowManager::getSingleton().curRenderTarget = NULL;
 }
 
-void Surface::saveRenderTarget(){
+void Surface::saveRenderTarget() {
 	//oldRenderTarget = WindowManager::getSingleton().curRenderTarget;
-	if (nextRenderTarget >= MAX_SAVED_TARGETS){
+	if (nextRenderTarget >= MAX_SAVED_TARGETS) {
 		Warn("Too many nested saved render targets");
 	}
-	else{
+	else {
 		oldRenderTargets[nextRenderTarget] = WindowManager::getSingleton().curRenderTarget;
 	}
 
 	nextRenderTarget++;
 }
 
-void Surface::restoreRenderTarget(){
+void Surface::restoreRenderTarget() {
 	//if (oldRenderTarget){
 	//	oldRenderTarget->setRenderTarget();
 	//}
 	nextRenderTarget--;
 
-	if (nextRenderTarget >= MAX_SAVED_TARGETS){
+	if (nextRenderTarget >= MAX_SAVED_TARGETS) {
 		Warn("Restoring from too many targets");
 	}
-	else{
-		if (oldRenderTargets[nextRenderTarget]){
+	else {
+		if (oldRenderTargets[nextRenderTarget]) {
 			oldRenderTargets[nextRenderTarget]->setRenderTarget();
 			oldRenderTargets[nextRenderTarget] = NULL;
 		}
 	}
 }
 
-void Surface::setDrawColor(Color color){
+void Surface::setDrawColor(Color color) {
 	drawColor = color;
 }
 
-void Surface::fill(Color color){
+void Surface::fill(Color color) {
 	checkRenderTarget();
 	Color oldColor = WindowManager::getSingleton().getDrawColor();
 
@@ -397,7 +397,7 @@ void Surface::fill(Color color){
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-void Surface::clear(){
+void Surface::clear() {
 	checkRenderTarget();
 
 	Color oldColor = WindowManager::getSingleton().getDrawColor();
@@ -409,20 +409,20 @@ void Surface::clear(){
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-void Surface::renderTexture(){
+void Surface::renderTexture() {
 	dirty = false;
 }
 
-void Surface::draw(Surface& surf){
+void Surface::draw(Surface& surf) {
 	checkRenderTarget();
 
-	if (surf.isDirty()){
+	if (surf.isDirty()) {
 		surf.renderTexture();
 	}
 
 	SDL_Rect dest = { surf.getPosX(), surf.getPosY(), surf.getWidth(), surf.getHeight() };
 
-	if (surf.activeClip){
+	if (surf.activeClip) {
 		dest.w = surf.activeClip->w;
 		dest.h = surf.activeClip->h;
 	}
@@ -430,16 +430,16 @@ void Surface::draw(Surface& surf){
 	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
 }
 
-void Surface::draw(Surface& surf, int x, int y){
+void Surface::draw(Surface& surf, int x, int y) {
 	checkRenderTarget();
 
-	if (surf.isDirty()){
+	if (surf.isDirty()) {
 		surf.renderTexture();
 	}
 
 	SDL_Rect dest = { x, y, surf.getWidth(), surf.getHeight() };
 
-	if (surf.activeClip){
+	if (surf.activeClip) {
 		dest.w = surf.activeClip->w;
 		dest.h = surf.activeClip->h;
 	}
@@ -447,10 +447,10 @@ void Surface::draw(Surface& surf, int x, int y){
 	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
 }
 
-void Surface::drawScaled(Surface& surf, float xscale, float yscale){
+void Surface::drawScaled(Surface& surf, float xscale, float yscale) {
 	checkRenderTarget();
 
-	if (surf.isDirty()){
+	if (surf.isDirty()) {
 		surf.renderTexture();
 	}
 
@@ -458,7 +458,7 @@ void Surface::drawScaled(Surface& surf, float xscale, float yscale){
 		static_cast<int>(surf.getWidth() * xscale), \
 		static_cast<int>(surf.getHeight() * yscale) };
 
-	if (surf.activeClip){
+	if (surf.activeClip) {
 		dest.w = static_cast<int>(surf.activeClip->w * xscale);
 		dest.h = static_cast<int>(surf.activeClip->h * yscale);
 	}
@@ -466,10 +466,10 @@ void Surface::drawScaled(Surface& surf, float xscale, float yscale){
 	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
 }
 
-void Surface::drawScaled(Surface& surf, int x, int y, float xscale, float yscale){
+void Surface::drawScaled(Surface& surf, int x, int y, float xscale, float yscale) {
 	checkRenderTarget();
 
-	if (surf.isDirty()){
+	if (surf.isDirty()) {
 		surf.renderTexture();
 	}
 
@@ -477,7 +477,7 @@ void Surface::drawScaled(Surface& surf, int x, int y, float xscale, float yscale
 		static_cast<int>(surf.getWidth() * xscale), \
 		static_cast<int>(surf.getHeight() * yscale) };
 
-	if (surf.activeClip){
+	if (surf.activeClip) {
 		dest.w = static_cast<int>(surf.activeClip->w * xscale);
 		dest.h = static_cast<int>(surf.activeClip->h * yscale);
 	}
@@ -485,7 +485,7 @@ void Surface::drawScaled(Surface& surf, int x, int y, float xscale, float yscale
 	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
 }
 
-void Surface::drawPoint(int x, int y){
+void Surface::drawPoint(int x, int y) {
 	checkRenderTarget();
 
 	Color oldColor = WindowManager::getSingleton().getDrawColor();
@@ -497,7 +497,7 @@ void Surface::drawPoint(int x, int y){
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-void Surface::drawLine(int x, int y, int x2, int y2){
+void Surface::drawLine(int x, int y, int x2, int y2) {
 	checkRenderTarget();
 
 	Color oldColor = WindowManager::getSingleton().getDrawColor();
@@ -509,10 +509,10 @@ void Surface::drawLine(int x, int y, int x2, int y2){
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-void Surface::drawLines(vector<VecN<int, 2>>& points){
+void Surface::drawLines(vector<VecN<int, 2>>& points) {
 	SDL_Point* sdlPoints = new SDL_Point[points.size()];
 
-	for (uint c = 0; c < points.size(); c++){
+	for (uint c = 0; c < points.size(); c++) {
 		sdlPoints[c].x = points[c][0];
 		sdlPoints[c].y = points[c][1];
 	}
@@ -530,7 +530,7 @@ void Surface::drawLines(vector<VecN<int, 2>>& points){
 	delete[] sdlPoints;
 }
 
-void Surface::drawCircle(int x, int y, uint rad, bool filled){
+void Surface::drawCircle(int x, int y, uint rad, bool filled) {
 	checkRenderTarget();
 
 	vector<SDL_Point> points;
@@ -550,9 +550,9 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 	int ychange = 0;
 	int radError = 0;
 
-	while (xs >= ys){
-		if (filled){
-			for (int c = x - xs; c <= x + xs; c++){
+	while (xs >= ys) {
+		if (filled) {
+			for (int c = x - xs; c <= x + xs; c++) {
 				p.x = c;
 				p.y = y + ys;
 				points.push_back(p);
@@ -562,7 +562,7 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 				points.push_back(p);
 			}
 		}
-		else{
+		else {
 			p.x = x - xs;
 			p.y = y + ys;
 			points.push_back(p);
@@ -580,8 +580,8 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 			points.push_back(p);
 		}
 
-		if (filled){
-			for (int c = x - ys; c < x + ys; c++){
+		if (filled) {
+			for (int c = x - ys; c < x + ys; c++) {
 				p.x = c;
 				p.y = y + xs;
 				points.push_back(p);
@@ -591,7 +591,7 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 				points.push_back(p);
 			}
 		}
-		else{
+		else {
 			p.x = x - ys;
 			p.y = y + xs;
 			points.push_back(p);
@@ -613,7 +613,7 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 		radError += ychange;
 		ychange += 2;
 
-		if (((radError << 1) + xchange) > 0){
+		if (((radError << 1) + xchange) > 0) {
 			xs--;
 			radError += xchange;
 			xchange += 2;
@@ -624,15 +624,15 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 #else
 	uint precision = MAX(10, static_cast<uint>(rad / 1.5));
 
-	if (filled){
+	if (filled) {
 		precision *= 10;
-		for (int c = 0; c < precision; c++){
+		for (int c = 0; c < precision; c++) {
 			p.x = x;
 			p.y = y;
 			points.push_back(p);
 
-			p.x = x + static_cast<int>(rad*cos(((2 * M_PI) / precision)*c));
-			p.y = y - static_cast<int>(rad*sin(((2 * M_PI) / precision)*c));
+			p.x = x + static_cast<int>(rad * cos(((2 * M_PI) / precision) * c));
+			p.y = y - static_cast<int>(rad * sin(((2 * M_PI) / precision) * c));
 			points.push_back(p);
 		}
 
@@ -640,16 +640,16 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 		p.y = y;
 		points.push_back(p);
 	}
-	else{
-		for (int c = 0; c < precision; c++){
-			p.x = x + static_cast<int>(rad*cos(((2 * M_PI) / precision)*c));
-			p.y = y - static_cast<int>(rad*sin(((2 * M_PI) / precision)*c));
+	else {
+		for (int c = 0; c < precision; c++) {
+			p.x = x + static_cast<int>(rad * cos(((2 * M_PI) / precision) * c));
+			p.y = y - static_cast<int>(rad * sin(((2 * M_PI) / precision) * c));
 			points.push_back(p);
 		}
 	}
 
-	p.x = x + static_cast<int>(rad*cos(0));
-	p.y = y + static_cast<int>(rad*sin(0));
+	p.x = x + static_cast<int>(rad * cos(0));
+	p.y = y + static_cast<int>(rad * sin(0));
 	points.push_back(p);
 
 	SDL_RenderDrawLines(WindowManager::getSingleton().renderer, &(points[0]), points.size());
@@ -658,14 +658,14 @@ void Surface::drawCircle(int x, int y, uint rad, bool filled){
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-static void fillFlatBottomTri(SDL_Point& p0, SDL_Point& p1, SDL_Point& p2){
+static void fillFlatBottomTri(SDL_Point& p0, SDL_Point& p1, SDL_Point& p2) {
 	float slopes[] = { static_cast<float>(p1.x - p0.x) / (p1.y - p0.y),
 		static_cast<float>(p2.x - p0.x) / (p2.y - p0.y) };
 	float curX[] = { static_cast<float>(p0.x), static_cast<float>(p0.x) };
 
 	vector<SDL_Point> points;
 
-	for (int c = p0.y; c <= p1.y; c++){
+	for (int c = p0.y; c <= p1.y; c++) {
 		points.push_back({ static_cast<int>(curX[0]), c });
 		points.push_back({ static_cast<int>(curX[1]), c });
 
@@ -676,14 +676,14 @@ static void fillFlatBottomTri(SDL_Point& p0, SDL_Point& p1, SDL_Point& p2){
 	SDL_RenderDrawLines(WindowManager::getSingleton().getRenderer(), points.data(), points.size());
 }
 
-static void fillFlatTopTri(SDL_Point& p0, SDL_Point& p1, SDL_Point& p2){
+static void fillFlatTopTri(SDL_Point& p0, SDL_Point& p1, SDL_Point& p2) {
 	float slopes[] = { static_cast<float>(p2.x - p0.x) / (p2.y - p0.y),
 		static_cast<float>(p2.x - p1.x) / (p2.y - p1.y) };
 	float curX[] = { static_cast<float>(p2.x), static_cast<float>(p2.x) };
 
 	vector<SDL_Point> points;
 
-	for (int c = p2.y; c > p0.y; c--){
+	for (int c = p2.y; c > p0.y; c--) {
 		points.push_back({ static_cast<int>(curX[0]), c });
 		points.push_back({ static_cast<int>(curX[1]), c });
 
@@ -694,7 +694,7 @@ static void fillFlatTopTri(SDL_Point& p0, SDL_Point& p1, SDL_Point& p2){
 	SDL_RenderDrawLines(WindowManager::getSingleton().getRenderer(), points.data(), points.size());
 }
 
-void Surface::drawTriangle(int x, int y, uint horiz, uint vert, float angleDeg, bool filled){
+void Surface::drawTriangle(int x, int y, uint horiz, uint vert, float angleDeg, bool filled) {
 	checkRenderTarget();
 
 	Color oldColor = WindowManager::getSingleton().getDrawColor();
@@ -720,29 +720,29 @@ void Surface::drawTriangle(int x, int y, uint horiz, uint vert, float angleDeg, 
 	//setDrawColor(GREEN);
 	//drawCircle(x, y, 10, false);
 
-	if (filled){
+	if (filled) {
 #if USE_BRESENHAM_TRIANGLE
-		for (int c = 0; c < 2; c++){
-			if (points[1].y < points[0].y){
+		for (int c = 0; c < 2; c++) {
+			if (points[1].y < points[0].y) {
 				SDL_Point temp = points[1];
 				points[1] = points[0];
 				points[0] = temp;
 			}
 
-			if (points[2].y < points[1].y){
+			if (points[2].y < points[1].y) {
 				SDL_Point temp = points[2];
 				points[2] = points[1];
 				points[1] = temp;
 			}
 		}
 
-		if (points[1] == points[2]){
+		if (points[1] == points[2]) {
 			fillFlatBottomTri(points[0], points[1], points[2]);
 		}
-		else if (points[0] == points[1]){
+		else if (points[0] == points[1]) {
 			fillFlatTopTri(points[0], points[1], points[2]);
 		}
-		else{
+		else {
 			SDL_Point extraPoint = { static_cast<int>(points[0].x + (static_cast<float>(points[1].y - points[0].y) / (points[2].y - points[0].y) * (points[2].x - points[0].x))), points[1].y };
 
 			fillFlatBottomTri(points[0], points[1], extraPoint);
@@ -750,14 +750,14 @@ void Surface::drawTriangle(int x, int y, uint horiz, uint vert, float angleDeg, 
 		}
 #endif
 	}
-	else{
+	else {
 		SDL_RenderDrawLines(WindowManager::getSingleton().getRenderer(), points, 4);
 	}
 
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-void Surface::drawRect(int x, int y, int w, int h, bool filled){
+void Surface::drawRect(int x, int y, int w, int h, bool filled) {
 	checkRenderTarget();
 
 	SDL_Rect rect = { x, y, w, h };
@@ -765,17 +765,17 @@ void Surface::drawRect(int x, int y, int w, int h, bool filled){
 
 	WindowManager::getSingleton().setDrawColor(drawColor);
 
-	if (filled){
+	if (filled) {
 		SDL_RenderFillRect(WindowManager::getSingleton().getRenderer(), &rect);
 	}
-	else{
+	else {
 		SDL_RenderDrawRect(WindowManager::getSingleton().getRenderer(), &rect);
 	}
 
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-void Surface::drawDiamond(int x, int y, uint horiz, uint vert, bool filled){
+void Surface::drawDiamond(int x, int y, uint horiz, uint vert, bool filled) {
 	checkRenderTarget();
 
 	Color oldColor = WindowManager::getSingleton().getDrawColor();
@@ -792,22 +792,22 @@ void Surface::drawDiamond(int x, int y, uint horiz, uint vert, bool filled){
 	points[3] = { static_cast<int>(x - halfHoriz), y };
 	points[4] = points[0];
 
-	if (filled){
+	if (filled) {
 		fillFlatBottomTri(points[0], points[1], points[3]);
 		fillFlatTopTri(points[3], points[1], points[2]);
 	}
-	else{
+	else {
 		SDL_RenderDrawLines(WindowManager::getSingleton().getRenderer(), points, 5);
 	}
 
 	WindowManager::getSingleton().setDrawColor(oldColor);
 }
 
-void Surface::setColorMod(Color color){
+void Surface::setColorMod(Color color) {
 	SDL_SetTextureColorMod(texture, color.getRed(), color.getGreen(), color.getBlue());
 }
 
-const Color Surface::getColorMod(){
+const Color Surface::getColorMod() {
 	uchar col[3];
 
 	SDL_GetTextureColorMod(texture, col, &(col[1]), &(col[2]));
@@ -815,11 +815,11 @@ const Color Surface::getColorMod(){
 	return Color(col[0], col[1], col[2]);
 }
 
-void Surface::setAlphaMod(uchar alpha){
+void Surface::setAlphaMod(uchar alpha) {
 	SDL_SetTextureAlphaMod(texture, alpha);
 }
 
-uchar Surface::getAlphaMod(){
+uchar Surface::getAlphaMod() {
 	uchar alpha;
 
 	SDL_GetTextureAlphaMod(texture, &alpha);
@@ -827,11 +827,11 @@ uchar Surface::getAlphaMod(){
 	return alpha;
 }
 
-void Surface::setBlendMode(BlendMode blend){
+void Surface::setBlendMode(BlendMode blend) {
 #if 0
 	SDL_BlendMode mode;
 
-	switch (blend){
+	switch (blend) {
 	case BLEND_NONE:
 		mode = SDL_BLENDMODE_NONE;
 		break;
@@ -854,11 +854,11 @@ void Surface::setBlendMode(BlendMode blend){
 #endif
 }
 
-uint Surface::addViewport(int x, int y, int w, int h){
+uint Surface::addViewport(int x, int y, int w, int h) {
 	int freeSlot = -1;
 
-	for (int c = 0; c < MAX_VIEWPORTS; c++){
-		if (viewports[c] == NULL){
+	for (int c = 0; c < MAX_VIEWPORTS; c++) {
+		if (viewports[c] == NULL) {
 			freeSlot = c;
 			viewports[c] = new SDL_Rect{ x, y, w, h };
 			break;
@@ -868,37 +868,37 @@ uint Surface::addViewport(int x, int y, int w, int h){
 	return freeSlot;
 }
 
-void Surface::delViewport(uint index){
-	if (index > MAX_VIEWPORTS || viewports[index] == NULL){
+void Surface::delViewport(uint index) {
+	if (index > MAX_VIEWPORTS || viewports[index] == NULL) {
 		throw Exception("Deleting an invalid viewport index\n");
 	}
-	else{
+	else {
 		delete viewports[index];
 		viewports[index] = NULL;
 	}
 }
 
-void Surface::setViewport(uint index){
-	if (WindowManager::getSingleton().curRenderTarget != this){
+void Surface::setViewport(uint index) {
+	if (WindowManager::getSingleton().curRenderTarget != this) {
 		Warn("Setting a viewport while this surface isnt the render target\n");
 	}
 
-	if (index > MAX_VIEWPORTS || viewports[index] == NULL){
+	if (index > MAX_VIEWPORTS || viewports[index] == NULL) {
 		throw Exception("Setting an invalid viewport index\n");
 	}
 
 	SDL_RenderSetViewport(WindowManager::getSingleton().getRenderer(), viewports[index]);
 }
 
-void Surface::clearViewport(){
+void Surface::clearViewport() {
 	SDL_RenderSetViewport(WindowManager::getSingleton().getRenderer(), NULL);
 }
 
-uint Surface::addClip(int x, int y, int w, int h){
+uint Surface::addClip(int x, int y, int w, int h) {
 	int freeSlot = -1;
 
-	for (int c = 0; c < MAX_CLIPS; c++){
-		if (clips[c] == NULL){
+	for (int c = 0; c < MAX_CLIPS; c++) {
+		if (clips[c] == NULL) {
 			freeSlot = c;
 			clips[c] = new SDL_Rect{ x, y, w, h };
 			break;
@@ -908,18 +908,18 @@ uint Surface::addClip(int x, int y, int w, int h){
 	return freeSlot;
 }
 
-void Surface::delClip(uint index){
-	if (index > MAX_CLIPS || clips[index] == NULL){
+void Surface::delClip(uint index) {
+	if (index > MAX_CLIPS || clips[index] == NULL) {
 		throw Exception("Deleting an invalid clip index\n");
 	}
-	else{
+	else {
 		delete clips[index];
 		clips[index] = NULL;
 	}
 }
 
-void Surface::setClip(uint index){
-	if (index > MAX_CLIPS || clips[index] == NULL){
+void Surface::setClip(uint index) {
+	if (index > MAX_CLIPS || clips[index] == NULL) {
 		throw Exception("Setting an invalid clip index\n");
 	}
 	else {
@@ -927,7 +927,7 @@ void Surface::setClip(uint index){
 	}
 }
 
-void Surface::clearClip(){
+void Surface::clearClip() {
 	activeClip = NULL;
 }
 

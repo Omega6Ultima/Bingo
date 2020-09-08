@@ -15,14 +15,14 @@
 using std::map;
 using std::string;
 
-class SoundManager : public Singleton<SoundManager>{
+class SoundManager : public Singleton<SoundManager> {
 public:
 	SoundManager();
 	~SoundManager();
 
 	/*set the volume for all sounds, vol is between 0 and 1*/
 	void setSoundVolume(float vol);
-	inline float getSoundVolume() const{
+	inline float getSoundVolume() const {
 		return soundVolume / 128.0f;
 	}
 
@@ -37,7 +37,7 @@ public:
 	void setMusic(string musicPath);
 
 	void setMusicVolume(float vol);
-	inline float getMusicVolume() const{
+	inline float getMusicVolume() const {
 		return musicVolume / 128.0f;
 	}
 
@@ -58,8 +58,9 @@ public:
 private:
 	void channelDone(int channel);
 
-	map<string, Mix_Chunk*> chunks;
-	map<string, int> sounds;
+	map<string, string> soundNames;
+	map<string, Mix_Chunk*> soundChunks;
+	map<string, int> activeSounds;
 	Mix_Music* music = NULL;
 	int soundVolume = 128;
 	int musicVolume = 128;

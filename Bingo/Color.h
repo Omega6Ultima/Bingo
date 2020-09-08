@@ -6,9 +6,13 @@ components used in colors*/
 #ifndef _COLOR_H
 #define _COLOR_H
 
+#include <ostream>
+
 #include "Utils.h"
 
-class Color{
+using std::ostream;
+
+class Color {
 public:
 	Color(uchar r, uchar g, uchar b);
 	Color(uchar r, uchar g, uchar b, uchar a);
@@ -17,33 +21,35 @@ public:
 	/*sets the red component*/
 	void setRed(uchar r);
 	/*returns the red component*/
-	inline uchar getRed() const{
+	inline uchar getRed() const {
 		return values[0];
 	}
 
 	/*sets the green component*/
 	void setGreen(uchar g);
 	/*returns the green component*/
-	inline uchar getGreen() const{
+	inline uchar getGreen() const {
 		return values[1];
 	}
 
 	/*sets the blue component*/
 	void setBlue(uchar b);
 	/*returns the blue component*/
-	inline uchar getBlue() const{
+	inline uchar getBlue() const {
 		return values[2];
 	}
 
 	/*sets the alpha component*/
 	void setAlpha(uchar a);
 	/*returns the alpha component*/
-	inline uchar getAlpha() const{
+	inline uchar getAlpha() const {
 		return values[3];
 	}
 
 	Color inverse() const;
 	Color inverseHue() const;
+
+	friend ostream& operator<<(ostream& os, const Color& color);
 private:
 	uchar values[4];
 };

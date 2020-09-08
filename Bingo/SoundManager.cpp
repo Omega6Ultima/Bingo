@@ -9,7 +9,7 @@ SoundManager::SoundManager() {
 }
 
 SoundManager::~SoundManager() {
-	for (auto iter = chunks.begin(); iter != chunks.end(); iter++) {
+	for (auto iter = soundChunks.begin(); iter != soundChunks.end(); iter++) {
 		Mix_FreeChunk(iter->second);
 	}
 
@@ -26,7 +26,7 @@ void SoundManager::setSoundVolume(float vol) {
 }
 
 void SoundManager::addSound(string name, string sndPath) {
-	if (chunks.find(name) == chunks.end()) {
+	if (soundChunks.find(sndPath) == soundChunks.end()) {
 		ATOMIC_LOCK(ThreadManager::fileLock);
 
 		Mix_Chunk* tempSound = Mix_LoadWAV(sndPath.c_str());
@@ -37,45 +37,45 @@ void SoundManager::addSound(string name, string sndPath) {
 			Error("Could not load file: " + sndPath, Mix_GetError());
 		}
 
-		chunks[name] = tempSound;
+		soundChunks[sndPath] = tempSound;
+	}
+
+	if (soundNames.find(name) == soundNames.end()) {
+		soundNames[name] = sndPath;
 	}
 }
 
 void SoundManager::removeSound(string name) {
-	if (chunks.find(name) != chunks.end()) {
+	if (soundNames.find(name) != soundNames.end()) {
 		stopSound(name);
 
-		Mix_FreeChunk(chunks[name]);
-
-		chunks.erase(name);
+		soundNames.erase(name);
 	}
 }
 
 bool SoundManager::playSound(string name) {
-	if (isSoundLoaded(name)) {
-		if (isSoundNotPlaying(name)) {
-			int channel = Mix_PlayChannel(-1, chunks[name], 0);
-			Mix_Volume(channel, soundVolume);
+	if (isSoundLoaded(name) && isSoundNotPlaying(name)) {
+		int channel = Mix_PlayChannel(-1, soundChunks[soundNames[name]], 0);
 
-			sounds[name] = channel;
+		Mix_Volume(channel, soundVolume);
 
-			return true;
-		}
+		activeSounds[name] = channel;
+
+		return true;
 	}
 
 	return false;
 }
 
 bool SoundManager::playSoundFor(string name, uint seconds) {
-	if (isSoundLoaded(name)) {
-		if (isSoundNotPlaying(name)) {
-			int channel = Mix_PlayChannelTimed(-1, chunks[name], -1, seconds * 1000);
-			Mix_Volume(channel, soundVolume);
+	if (isSoundLoaded(name) && isSoundNotPlaying(name)) {
+		int channel = Mix_PlayChannelTimed(-1, soundChunks[soundNames[name]], -1, seconds * 1000);
 
-			sounds[name] = channel;
+		Mix_Volume(channel, soundVolume);
 
-			return true;
-		}
+		activeSounds[name] = channel;
+
+		return true;
 	}
 
 	return false;
@@ -83,19 +83,19 @@ bool SoundManager::playSoundFor(string name, uint seconds) {
 
 void SoundManager::pauseSound(string name) {
 	if (isSoundLoaded(name) && isSoundPlaying(name)) {
-		Mix_Pause(sounds[name]);
+		Mix_Pause(activeSounds[name]);
 	}
 }
 
 void SoundManager::resumeSound(string name) {
 	if (isSoundLoaded(name) && isSoundPlaying(name)) {
-		Mix_Resume(sounds[name]);
+		Mix_Resume(activeSounds[name]);
 	}
 }
 
 void SoundManager::stopSound(string name) {
 	if (isSoundLoaded(name) && isSoundPlaying(name)) {
-		Mix_HaltChannel(sounds[name]);
+		Mix_HaltChannel(activeSounds[name]);
 	}
 }
 
@@ -147,24 +147,24 @@ bool SoundManager::isMusicPaused() {
 }
 
 void SoundManager::channelDone(int channel) {
-	for (auto iter = sounds.begin(); iter != sounds.end(); iter++) {
+	for (auto iter = activeSounds.begin(); iter != activeSounds.end(); iter++) {
 		if (iter->second == channel) {
-			sounds.erase(iter);
+			activeSounds.erase(iter);
 			break;
 		}
 	}
 }
 
 bool SoundManager::isSoundLoaded(string name) {
-	return chunks.find(name) != chunks.end();
+	return soundNames.find(name) != soundNames.end();
 }
 
 bool SoundManager::isSoundPlaying(string name) {
-	return sounds.find(name) != sounds.end();
+	return activeSounds.find(name) != activeSounds.end();
 }
 
 bool SoundManager::isSoundNotPlaying(string name) {
-	return sounds.find(name) == sounds.end();
+	return activeSounds.find(name) == activeSounds.end();
 }
 
 uint SoundManager::getSoundLength(string name) {
@@ -197,13 +197,13 @@ uint SoundManager::getSoundLength(string name) {
 		specsLoaded = true;
 	}
 
-	if (chunks.find(name) != chunks.end()) {
+	if (soundNames.find(name) != soundNames.end()) {
 		if (specsLoaded) {
-			//std::cout << "alen " << chunks[name]->alen << std::endl;
+			//std::cout << "alen " << soundChunks[name]->alen << std::endl;
 			//std::cout << "freq " << freq << std::endl;
 			//std::cout << "byterate " << byterate << std::endl;
 			//std::cout << "channels " << channels << std::endl;
-			return (chunks[name]->alen) / ((freq * byterate * channels) / 1000);
+			return (soundChunks[soundNames[name]]->alen) / ((freq * byterate * channels) / 1000);
 		}
 	}
 
