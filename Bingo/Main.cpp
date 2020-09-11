@@ -1,6 +1,6 @@
 //Dustin Gehm
 //Flag for the DanceTime timer program
-#define SOUNDTIMER 1
+#define SOUNDTIMER 0
 
 #include <iostream>
 
@@ -366,8 +366,9 @@ using namespace std;
 #define TEST_BNDS 0
 #define TEST_MATS 0
 //come back to NeuralNetworks
-#define TEST_AI 0
-#define TEST_GUI 1
+#define TEST_AI 1
+//TextSurfaces within Slider not working
+#define TEST_GUI 0
 #define TEST_TIME 0
 
 //file paths and other constants
@@ -441,8 +442,6 @@ TODO switch enums over to enum classes where applicable
 TODO add a 3d camera and view
 TODO add a way to have tiled backgrounds that scroll
 
-TODO add a versatile way to prompt for user input
-
 TODO add more capability to the WindowManager for different events, more windows, and multiple displays
 
 TODO add to SoundManager to add capabilities to record audio and save as a playable sound
@@ -454,10 +453,6 @@ TODO add bounding box/circle/etc (cube/sphere/etc)
 TODO add octtree draw occlusion
 
 TODO maybe add SDL_GetPerformanceCounter to Timer
-
-TODO maybe make it so the three event listeners can be derived from
-
-TODO find a way to copy Surface data for STATIC and PIXEL ACCESS Surfaces
 
 TODO add logging manager
 */
@@ -759,7 +754,23 @@ int main(int argc, char* argv[]) {
 
 		//cout << nn.run(VecN<double, 9>({1, 2, 3, 4, 5, 6, 7, 8, 9})) << endl;
 
-		NeuralNetwork nn({ 5, 4, 3, 2 });
+		NeuralNetwork nn({ 6, 5, 4, 3, 2 });
+		//NeuralNetwork nn({ 2, 1 });
+		DynVecN<uint> input(5, { 1, 1, 0, 1, 1 });
+		//DynVecN<uint> input(2, { 0, 0 });
+		DynVecN<uint> output;
+
+		for (uint c = 0; c < 100; c++) {
+			nn.train(input, DynVecN<uint>(2, { 0, 1 }));
+		}
+
+		//for (uint c = 0; c < 100; c++) {
+		//	nn.train(input, DynVecN<uint>(1, 0));
+		//}
+
+		output = nn.run(input);
+
+		cout << "Out: " << output << endl;
 #endif
 
 #if TEST_GUI
