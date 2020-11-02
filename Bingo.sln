@@ -1,23 +1,56 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29911.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bingo", "Bingo\Bingo.vcxproj", "{6349B7FD-78F4-4122-AE5E-905CB6FC4083}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DanceTime", "DanceTime\DanceTime.vcxproj", "{61925399-65BC-44B4-9B1D-066B51295841}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6349B7FD-78F4-4122-AE5E-905CB6FC4083} = {6349B7FD-78F4-4122-AE5E-905CB6FC4083}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BingoTest", "BingoTest\BingoTest.vcxproj", "{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6349B7FD-78F4-4122-AE5E-905CB6FC4083} = {6349B7FD-78F4-4122-AE5E-905CB6FC4083}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BingoEngine", "BingoEngine\BingoEngine.vcxproj", "{6349B7FD-78F4-4122-AE5E-905CB6FC4083}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{61925399-65BC-44B4-9B1D-066B51295841}.Debug|Win32.ActiveCfg = Debug|Win32
+		{61925399-65BC-44B4-9B1D-066B51295841}.Debug|Win32.Build.0 = Debug|Win32
+		{61925399-65BC-44B4-9B1D-066B51295841}.Debug|x64.ActiveCfg = Debug|x64
+		{61925399-65BC-44B4-9B1D-066B51295841}.Debug|x64.Build.0 = Debug|x64
+		{61925399-65BC-44B4-9B1D-066B51295841}.Release|Win32.ActiveCfg = Release|Win32
+		{61925399-65BC-44B4-9B1D-066B51295841}.Release|Win32.Build.0 = Release|Win32
+		{61925399-65BC-44B4-9B1D-066B51295841}.Release|x64.ActiveCfg = Release|x64
+		{61925399-65BC-44B4-9B1D-066B51295841}.Release|x64.Build.0 = Release|x64
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Debug|Win32.Build.0 = Debug|Win32
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Debug|x64.ActiveCfg = Debug|x64
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Debug|x64.Build.0 = Debug|x64
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Release|Win32.ActiveCfg = Release|Win32
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Release|Win32.Build.0 = Release|Win32
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Release|x64.ActiveCfg = Release|x64
+		{2A8CF1DD-0B77-4F2A-B87B-164AC204BC8D}.Release|x64.Build.0 = Release|x64
 		{6349B7FD-78F4-4122-AE5E-905CB6FC4083}.Debug|Win32.ActiveCfg = Debug|Win32
 		{6349B7FD-78F4-4122-AE5E-905CB6FC4083}.Debug|Win32.Build.0 = Debug|Win32
+		{6349B7FD-78F4-4122-AE5E-905CB6FC4083}.Debug|x64.ActiveCfg = Debug|Win32
 		{6349B7FD-78F4-4122-AE5E-905CB6FC4083}.Release|Win32.ActiveCfg = Release|Win32
 		{6349B7FD-78F4-4122-AE5E-905CB6FC4083}.Release|Win32.Build.0 = Release|Win32
+		{6349B7FD-78F4-4122-AE5E-905CB6FC4083}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5BF8A6E7-3C9C-4C3A-8A66-81EA91D171EC}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
