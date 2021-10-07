@@ -4,16 +4,21 @@
 #ifndef _AI_H
 #define _AI_H
 
-#include <vector>
+#include <functional>
+#include <map>
 #include <set>
+#include <vector>
 
 #include "Exception.h"
 #include "Matrix.h"
+#include "MinHeap.h"
 #include "RandomManager.h"
 #include "Utils.h"
 #include "VecN.h"
 
 using std::make_pair;
+using std::map;
+using std::reference_wrapper;
 using std::pair;
 using std::set;
 using std::vector;
@@ -83,14 +88,17 @@ namespace Bingo {
 		public:
 			//a function to create entities
 			typedef T(*CreateFunc)();
+			//a function to crossover entities
+			typedef T(*CrossoverFunc)(const T& val1, const T& val2);
 			//a function to change the entity randomly
 			typedef T(*MutateFunc)(const T& value);
 			//a function to calculate the 'fitness' score of an entity
 			typedef int(*ScoreFunc)(const T& value);
 
-			GeneticAlgorithm(int genSize, CreateFunc cFunc, MutateFunc mFunc, ScoreFunc sFunc)
+			GeneticAlgorithm(int genSize, CreateFunc cFunc, CrossoverFunc crFunc, MutateFunc mFunc, ScoreFunc sFunc)
 				: generationSize(genSize) {
 				createFunc = cFunc;
+				crossoverFunc = crFunc;
 				mutateFunc = mFunc;
 				scoreFunc = sFunc;
 
@@ -114,8 +122,16 @@ namespace Bingo {
 				return evolveRatio;
 			}
 
-			void setEvolveRation(double ratio) {
+			void setEvolveRatio(double ratio) {
 				evolveRatio = ratio;
+			}
+
+			inline double getCrossoverRatio() const {
+				return crossoverRatio;
+			}
+
+			void setCrossoverRatio(double ratio) {
+				crossoverRatio = ratio;
 			}
 
 			inline double getMutateRatio() const {
@@ -130,18 +146,32 @@ namespace Bingo {
 				createFunc = func;
 			}
 
-			void setScoreFunc(ScoreFunc func) {
-				scoreFunc = func;
+			void setCrossoverFunc(CrossoverFunc func) {
+				crossoverFunc = func;
 			}
 
 			void setMutateFunc(MutateFunc func) {
 				mutateFunc = func;
 			}
 
+			void setScoreFunc(ScoreFunc func) {
+				scoreFunc = func;
+			}
+
+			void insertEntity(T entity) {
+				generation.push_back(entity);
+
+				scores.push_back(make_pair(scoreFunc(entity), generationSize));
+
+				//increment size last to get correct index for above
+				generationSize += 1;
+			}
+
 			//use the genetic algorithm to advance the current generation into a new generation
 			void advanceGeneration(uint num = 1) {
-				RandomManager* randMan = RandomManager::getSingletonPtr();
+				RandomManager& randMan = RandomManager::getSingleton();
 				uint evolving = static_cast<uint>(generationSize * evolveRatio);
+				uint crossover = static_cast<uint>(generationSize * crossoverRatio);
 
 				for (uint c = 0; c < num; c++) {
 					vector<T> best = getBest(evolving);
@@ -149,8 +179,21 @@ namespace Bingo {
 					//copy all entities from best
 					generation.assign(best.begin(), best.end());
 
+					//crossover the best entities
+					for (uint d = evolving; d < evolving + crossover; d++) {
+						uint i1 = 0;
+						uint i2 = 0;
+
+						do {
+							i1 = randMan.randInt(0, evolving - 1);
+							i2 = randMan.randInt(0, evolving - 1);
+						} while (i1 == i2);
+
+						generation.push_back(crossoverFunc(generation[i1], generation[i2]));
+					}
+
 					//fill the rest in with new entities
-					for (uint d = evolving; d < generationSize; d++) {
+					for (uint d = evolving + crossover; d < generationSize; d++) {
 						generation.push_back(createFunc());
 					}
 
@@ -159,7 +202,7 @@ namespace Bingo {
 					set<uint> mutated;
 
 					while (mutating) {
-						uint index = randMan->randInt(0, generationSize - 1);
+						uint index = randMan.randInt(0, generationSize - 1);
 
 						if (mutated.find(index) == mutated.end()) {
 							mutated.insert(index);
@@ -192,15 +235,85 @@ namespace Bingo {
 				return best;
 			}
 		private:
-			const uint generationSize;
-			double evolveRatio = 0.5;
+			uint generationSize;
+			double evolveRatio = 0.20;
+			double crossoverRatio = 0.6;
 			double mutateRatio = 0.75;
 			vector<T> generation;
 			vector<pair<int, uint>> scores;
 			CreateFunc createFunc;
+			CrossoverFunc crossoverFunc;
 			MutateFunc mutateFunc;
 			ScoreFunc scoreFunc;
 		};
+
+		namespace InternalUse {
+			class SearchNode;
+		}
+
+		class A_StarNode {
+		public:
+			A_StarNode(int value);
+			~A_StarNode();
+
+			//adds node to the neighbor list
+			void addNeighbor(int cost, A_StarNode* node);
+
+			bool operator==(const A_StarNode& other) const;
+
+		public:
+			int id;
+
+		private:
+			bool visited = false;
+			map<int, A_StarNode*> neighs;
+			InternalUse::SearchNode* searchNode = NULL;
+
+			friend class A_StarSolver;
+		};
+
+		namespace InternalUse {
+			class SearchNode {
+			public:
+				SearchNode* parent;
+				A_StarNode* graphNode;
+				int cost = 0;
+
+				bool operator<(const SearchNode& node) {
+					return cost < node.cost;
+				}
+
+				bool operator>=(const SearchNode& node) {
+					return cost >= node.cost;
+				}
+
+				bool operator==(const SearchNode& node) {
+					return cost == node.cost;
+				}
+			};
+
+			typedef pair<int*, reference_wrapper<A_StarNode>> OpenType;
+		}
+
+		class A_StarSolver {
+		public:
+			A_StarSolver(vector<A_StarNode>& nodes);
+			~A_StarSolver();
+
+			vector<A_StarNode*> solve(uint start, uint end);
+
+		private:
+			vector<A_StarNode> graph;
+
+			MinHeap<InternalUse::OpenType> openList;
+
+			static int dummyCost;
+			static A_StarNode dummyNode;
+		};
+
+		bool operator< (InternalUse::OpenType val1, InternalUse::OpenType val2);
+		bool operator>=(InternalUse::OpenType val1, InternalUse::OpenType val2);
+		bool operator==(InternalUse::OpenType val1, InternalUse::OpenType val2);
 
 	}
 

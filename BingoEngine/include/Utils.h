@@ -98,11 +98,17 @@ namespace Bingo {
 		//return a vector of indices where different token types begin
 		vector<uint> tokenize(const string& str, const TokenizeType dummy);
 		//remove whitespace from left side of the string
-		string& lstrip(string& s);
+		string lstrip(const string& s);
 		//remove whitespace from right side of the string
-		string& rstrip(string& s);
+		string rstrip(const string& s);
 		//remove whitespace from both sides of the string
-		string& strip(string& s);
+		string strip(const string& s);
+		//separate the string into strings wherever separator occurs
+		vector<string> split(const string& s, string separator = " ");
+
+		inline string getLineAfter(const string& line, const string val) {
+			return line.substr(line.find(val) + val.size());
+		}
 
 		void Error(string msg);
 		void Error(string msg, string error);

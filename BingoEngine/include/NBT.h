@@ -134,7 +134,11 @@ namespace Bingo {
 			dirty = true;
 		}
 
-		T getData() const {
+		T& getData() {
+			return data;
+		}
+
+		const T& getData() const {
 			return data;
 		}
 
@@ -238,6 +242,11 @@ namespace Bingo {
 	}
 
 	template<>
+	NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<int, 1>>::getType() {
+		return NBT_Base::NBT_INT_ARRAY;
+	}
+
+	template<>
 	NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<int>>::getType() {
 		return NBT_Base::NBT_INT_ARRAY;
 	}
@@ -245,6 +254,11 @@ namespace Bingo {
 	template<>
 	NBT_Base::NBT_Type NBT_Tag<vector<int>>::getType() {
 		return NBT_Base::NBT_INT_ARRAY;
+	}
+
+	template<>
+	NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<double, 1>>::getType() {
+		return NBT_Base::NBT_DOUBLE_ARRAY;
 	}
 
 	template<>

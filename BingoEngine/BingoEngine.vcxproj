@@ -100,12 +100,15 @@
     <ClInclude Include="include\FileManager.h" />
     <ClInclude Include="include\FontManager.h" />
     <ClInclude Include="include\GUI.h" />
+    <ClInclude Include="include\MeshManager.h" />
     <ClInclude Include="include\Matrix.h" />
+    <ClInclude Include="include\MinHeap.h" />
     <ClInclude Include="include\MovableSurface.h" />
     <ClInclude Include="include\NBT.h" />
     <ClInclude Include="include\ParticleEngine.h" />
     <ClInclude Include="include\PhysicalObject.h" />
     <ClInclude Include="include\Positional.h" />
+    <ClInclude Include="include\Quaternion.h" />
     <ClInclude Include="include\RandomManager.h" />
     <ClInclude Include="include\Singleton.h" />
     <ClInclude Include="include\SoundManager.h" />
@@ -118,6 +121,7 @@
     <ClInclude Include="include\VecN.h" />
     <ClInclude Include="include\WindowManager.h" />
     <ClInclude Include="include\_DefaultDefines.h" />
+    <ClInclude Include="ScriptManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AI.cpp" />
@@ -132,11 +136,14 @@
     <ClCompile Include="src\FontManager.cpp" />
     <ClCompile Include="src\GUI.cpp" />
     <ClCompile Include="src\Matrix.cpp" />
+    <ClCompile Include="src\MinHeap.cpp" />
     <ClCompile Include="src\MovableSurface.cpp" />
     <ClCompile Include="src\NBT.cpp" />
+    <ClCompile Include="src\MeshManager.cpp" />
     <ClCompile Include="src\ParticleEngine.cpp" />
     <ClCompile Include="src\PhysicalObject.cpp" />
     <ClCompile Include="src\Positional.cpp" />
+    <ClCompile Include="src\Quaternion.cpp" />
     <ClCompile Include="src\RandomManager.cpp" />
     <ClCompile Include="src\SoundManager.cpp" />
     <ClCompile Include="src\Surface.cpp" />

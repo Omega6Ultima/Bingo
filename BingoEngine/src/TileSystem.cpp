@@ -5,6 +5,7 @@
 #include "WindowManager.h"
 
 using std::ifstream;
+using std::getline;
 using std::streamsize;
 using std::stoi;
 
@@ -55,17 +56,13 @@ void TileSystem::render(Surface& screen) {
 
 void TileSystem::parseMapFile(string mapFile) {
 	ifstream infile(mapFile, std::ios::in);
-	char lineBuffer[1000];
 	string line;
 	streamsize numRead = 0;
 	int rowInd = 0;
 	uint maxCol = 0;
 
-	while (infile.getline(lineBuffer, sizeof(lineBuffer))) {
+	while (getline(infile, line)) {
 		int colInd = 0;
-		numRead = infile.gcount();
-		line = string(lineBuffer, static_cast<uint>(numRead));
-
 		vector<uint> inds = tokenize(line, TokenizeType::RetVec);
 
 		for (auto iter = inds.begin(); iter != inds.end(); iter++) {

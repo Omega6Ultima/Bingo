@@ -4,8 +4,6 @@
 #ifndef _MATRIX_H
 #define _MATRIX_H
 
-#define DEBUG_VALS 1
-
 #include <initializer_list>
 #include <ostream>
 #include <sstream>
@@ -36,23 +34,13 @@ namespace Bingo {
 		class Matrix {
 		public:
 			Matrix() {
-#if DEBUG_VALS
-				//
-#else
 				memset(vals, 0, sizeof(T) * h * w);
-#endif
 			}
 
 			Matrix(T val) {
-#if DEBUG_VALS
 				for (uint c = 0; c < h * w; c++) {
 					vals[c] = val;
 				}
-#else
-				for (uint c = 0; c < h * w; c++) {
-					vals[c] = val;
-				}
-#endif
 			}
 
 			Matrix(initializer_list<T> list) {
@@ -61,21 +49,12 @@ namespace Bingo {
 					throw Exception("Not enough elements in initializer_list to fill Matrix");
 				}
 #endif
-#if DEBUG_VALS
 				uint c = 0;
 
 				for (auto elem : list) {
 					vals[c] = elem;
 					c++;
 				}
-#else
-				uint c = 0;
-
-				for (auto elem : list) {
-					vals[c] = elem;
-					c++;
-				}
-#endif
 			}
 
 			Matrix(VecN<T, h* w>& vec) {
@@ -86,7 +65,7 @@ namespace Bingo {
 
 			Matrix(const DynMatrix<T>& mat) {
 #if _DEBUG
-				if (h != mat.h || w != mat.w) {
+				if (h != mat.getH() || w != mat.getW()) {
 					throw Exception("Matrix dimensions and DynMatrix dimensions are not the same.");
 				}
 #endif
@@ -96,11 +75,7 @@ namespace Bingo {
 			}
 
 			~Matrix() {
-#if DEBUG_VALS
 				//
-#else
-				//
-#endif
 			}
 
 			static Matrix<T, h, w> identity() {
@@ -142,7 +117,7 @@ namespace Bingo {
 			}
 
 			VecN<T, h> getCol(uint colInd) {
-				VecN<T, h> result(0);
+				VecN<T, h> result;
 
 				for (uint c = 0; c < h; c++) {
 					result[c] = get(c, colInd);
@@ -151,7 +126,20 @@ namespace Bingo {
 				return result;
 			}
 
-			void setCol(uint colInd, VecN<T, h>& vec) {
+			void setCol(uint colInd, const VecN<T, h>& vec) {
+				for (uint c = 0; c < h; c++) {
+					get(c, colInd) = vec[c];
+				}
+			}
+
+			void setCol(uint colInd, const vector<T>& vec) {
+#if _DEBUG
+				if (vec.size() != h) {
+					Warn("Setting a matrix col with a vector of a different size\n");
+
+					return;
+				}
+#endif
 				for (uint c = 0; c < h; c++) {
 					get(c, colInd) = vec[c];
 				}
@@ -167,7 +155,20 @@ namespace Bingo {
 				return result;
 			}
 
-			void setRow(uint rowInd, VecN<T, w>& vec) {
+			void setRow(uint rowInd, const VecN<T, w>& vec) {
+				for (uint c = 0; c < w; c++) {
+					get(rowInd, c) = vec[c];
+				}
+			}
+
+			void setRow(uint rowInd, const vector<T>& vec) {
+#if _DEBUG
+				if (vec.size() != w) {
+					Warn("Setting a matrix col with a vector of a different size\n");
+
+					return;
+				}
+#endif
 				for (uint c = 0; c < w; c++) {
 					get(rowInd, c) = vec[c];
 				}
@@ -202,6 +203,70 @@ namespace Bingo {
 				}
 
 				return result;
+			}
+
+			T determinant() const {
+#if _DEBUG
+				if (w != h) {
+					throw Exception("Invalid call to determinant, not a square matrix");
+				}
+#endif
+
+				return determinant(0);
+			}
+
+			Matrix<T, h, w> inverse() const {
+				T det = determinant();
+#if _DEBUG
+				if (det == 0) {
+					throw Exception("Cannot invert matrix with a determinant of 0");
+				}
+#endif
+				Matrix<T, h, w> classAdjoint;
+
+				for (uint c = 0; c < w; c++) {
+					for (uint d = 0; d < h; d++) {
+						classAdjoint.get(d, c) = cofactor(d, c) / det;
+					}
+				}
+
+				return classAdjoint.transpose();
+			}
+
+			Matrix<T, h - 1, w - 1> minor(uint row, uint col) const {
+				Matrix<T, h - 1, w - 1> result;
+#if _DEBUG
+				if (row > h || col > w) {
+					throw Exception("Invalid row and col to make minor");
+				}
+#endif
+				for (uint c = 0, c2 = 0; c < w; c++) {
+					if (c == col) {
+						continue;
+					}
+
+					for (uint d = 0, d2 = 0; d < h; d++) {
+						if (d == row) {
+							continue;
+						}
+
+						result.get(d2, c2) = get(d, c);
+						d2++;
+					}
+
+					c2++;
+				}
+
+				return result;
+			}
+
+			T cofactor(uint row, uint col) const {
+				if ((row + col) % 2 == 0) {
+					return minor(row, col).determinant();
+				}
+				else {
+					return -1 * minor(row, col).determinant();
+				}
 			}
 
 			Matrix<T, h, w> operator -() const {
@@ -249,6 +314,22 @@ namespace Bingo {
 
 				for (uint c = 0; c < h * w; c++) {
 					result.vals[c] *= other.vals[c];
+				}
+
+				return result;
+			}
+
+			VecN<T, h> operator *(const VecN < T, w>& other) {
+				VecN<T, h> result(0);
+
+				for (uint c = 0; c < h; c++) {
+					T prod = 0;
+
+					for (uint d = 0; d < w; d++) {
+						prod += get(c, d) * other[d];
+					}
+
+					result[c] = prod;
 				}
 
 				return result;
@@ -351,11 +432,17 @@ namespace Bingo {
 			}
 
 		private:
-#if DEBUG_VALS
-			VecN<T, h* w> vals;
-#else
+			T determinant(uint start) const {
+				if ((w - start) == 2) {
+					return (get(start, start) * get(w - 1, w - 1)) - (get(start, w - 1) * get(w - 1, start));
+				}
+				else {
+					return static_cast<T>(pow(-1, start)) * get(start, start) * determinant(start + 1);
+				}
+			}
+
+		private:
 			T vals[w * h];
-#endif
 
 			friend class Matrix;
 		};
@@ -543,7 +630,8 @@ namespace Bingo {
 			}
 
 			DynVecN<T> getCol(uint colInd) {
-				DynVecN<T> result(h, static_cast<T>(0));
+				DynVecN<T> result(h);
+				result.fill(0);
 
 				for (uint c = 0; c < result.getSize(); c++) {
 					result[c] = get(c, colInd);
@@ -552,7 +640,7 @@ namespace Bingo {
 				return result;
 			}
 
-			void setCol(uint colInd, DynVecN<T>& vec) {
+			void setCol(uint colInd, const DynVecN<T>& vec) {
 #if _DEBUG
 				if (vec.getSize() != h) {
 					Warn("Setting a matrix col with a DynVecN of a different size\n");
@@ -565,8 +653,22 @@ namespace Bingo {
 				}
 			}
 
+			void setCol(uint colInd, const vector<T>& vec) {
+#if _DEBUG
+				if (vec.size() != h) {
+					Warn("Setting a matrix col with a vector of a different size\n");
+
+					return;
+				}
+#endif
+				for (uint c = 0; c < h; c++) {
+					get(c, colInd) = vec[c];
+				}
+			}
+
 			DynVecN<T> getRow(uint rowInd) {
-				DynVecN<T> result(w, static_cast<T>(0));
+				DynVecN<T> result(w);
+				result.fill(0);
 
 				for (uint c = 0; c < result.getSize(); c++) {
 					result[c] = get(rowInd, c);
@@ -575,7 +677,7 @@ namespace Bingo {
 				return result;
 			}
 
-			void setRow(uint rowInd, DynVecN<T>& vec) {
+			void setRow(uint rowInd, const DynVecN<T>& vec) {
 #if _DEBUG
 				if (vec.getSize() != w) {
 					Warn("Setting a matrix row with a DynVecN of a different size\n");
@@ -584,6 +686,19 @@ namespace Bingo {
 				}
 #endif
 				for (uint c = 0; c < vec.getSize(); c++) {
+					get(rowInd, c) = (vec[c]);
+				}
+			}
+
+			void setRow(uint rowInd, const vector<T>& vec) {
+#if _DEBUG
+				if (vec.size() != w) {
+					Warn("Setting a matrix row with a vector of a different size\n");
+
+					return;
+				}
+#endif
+				for (uint c = 0; c < w; c++) {
 					get(rowInd, c) = (vec[c]);
 				}
 			}
@@ -620,6 +735,68 @@ namespace Bingo {
 				}
 
 				return result;
+			}
+
+			T determinant() const {
+				if (w != h) {
+					throw Exception("Invalid call to determinant, not a square matrix");
+				}
+
+				return determinant(0);
+			}
+
+			DynMatrix<T> inverse() const {
+				T det = determinant();
+
+				if (det == 0) {
+					throw Exception("Cannot invert matrix with a determinant of 0");
+				}
+
+				DynMatrix<T> classAdjoint(h, w);
+
+				for (uint c = 0; c < w; c++) {
+					for (uint d = 0; d < h; d++) {
+						classAdjoint.get(d, c) = cofactor(d, c) / det;
+					}
+				}
+
+				return classAdjoint.transpose();
+			}
+
+			DynMatrix<T> minor(uint row, uint col) const {
+				DynMatrix<T> result(h - 1, w - 1);
+
+				if (row > h || col > w) {
+					throw Exception("Invalid row and col to make minor");
+				}
+
+				for (uint c = 0, c2 = 0; c < w; c++) {
+					if (c == col) {
+						continue;
+					}
+
+					for (uint d = 0, d2 = 0; d < h; d++) {
+						if (d == row) {
+							continue;
+						}
+
+						result.get(d2, c2) = get(d, c);
+						d2++;
+					}
+
+					c2++;
+				}
+
+				return result;
+			}
+
+			T cofactor(uint row, uint col) const {
+				if ((row + col) % 2 == 0) {
+					return minor(row, col).determinant();
+				}
+				else {
+					return -1 * minor(row, col).determinant();
+				}
 			}
 
 			DynMatrix<T> operator -() const {
@@ -810,6 +987,16 @@ namespace Bingo {
 				os << "\b\b}";
 
 				return os;
+			}
+
+		private:
+			T determinant(uint start) const {
+				if ((w - start) == 2) {
+					return (get(start, start) * get(w - 1, w - 1)) - (get(start, w - 1) * get(w - 1, start));
+				}
+				else {
+					return static_cast<T>(pow(-1, start)) * get(start, start) * determinant(start + 1);
+				}
 			}
 
 		private:

@@ -14,6 +14,7 @@
 using std::acos;
 using std::initializer_list;
 using std::ostream;
+using std::to_string;
 
 namespace Bingo {
 
@@ -27,13 +28,6 @@ namespace Bingo {
 		public:
 			VecN()
 				: vals{} {
-			}
-
-			VecN(T val)
-				: vals{} {
-				for (uint c = 0; c < size; c++) {
-					vals[c] = val;
-				}
 			}
 
 			//Note for future Dustin, do not try to make this initializer_list a reference, it breaks everryything
@@ -76,6 +70,12 @@ namespace Bingo {
 				//
 			}
 
+			void fill(T val) {
+				for (uint c = 0; c < size; c++) {
+					vals[c] = val;
+				}
+			}
+
 			T operator [](const uint index) const {
 #if _DEBUG
 				if (index >= size) {
@@ -94,20 +94,80 @@ namespace Bingo {
 				return vals[index];
 			}
 
-			const T* const data() const {
-				return vals;
-			}
-
-			VecN<T, size> set(uint index, const T& val) const {
-				VecN<T, size> result(*this);
+			inline T getX() const {
 #if _DEBUG
-				if (index >= size) {
-					throw Exception("Invalid index with VecN");
+				if (size < 0) {
+					throw Exception("VecN has no X value");
 				}
 #endif
-				result.vals[index] = val;
+				return vals[0];
+			}
 
-				return result;
+			inline T& getX() {
+#if _DEBUG
+				if (size < 0) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[0];
+			}
+
+			inline T getY() const {
+#if _DEBUG
+				if (size < 1) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[1];
+			}
+
+			inline T& getY() {
+#if _DEBUG
+				if (size < 1) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[1];
+			}
+
+			inline T getZ() const {
+#if _DEBUG
+				if (size < 2) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[2];
+			}
+
+			inline T& getZ() {
+#if _DEBUG
+				if (size < 2) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[2];
+			}
+
+			inline T getW() const {
+#if _DEBUG
+				if (size < 3) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[3];
+			}
+
+			inline T& getW() {
+#if _DEBUG
+				if (size < 3) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[3];
+			}
+
+			const T* const data() const {
+				return vals;
 			}
 
 			VecN<T, size> addTo(uint index, const T& val) const {
@@ -294,30 +354,34 @@ namespace Bingo {
 				return result;
 			}
 
-			double getVecLength() const {
+			double magnitude() const {
 				double length = 0;
 
 				for (uint c = 0; c < size; c++) {
 					length += vals[c] * vals[c];
 				}
 
-				return pow(length, 1.0f / size);
+				return sqrt(length);
 			}
 
 			void normalize() {
-				double len = getVecLength();
+				double len = magnitude();
 
-				for (uint c = 0; c < size; c++) {
-					vals[c] = static_cast<T>(vals[c] / len);
+				if (len != 0.0) {
+					for (uint c = 0; c < size; c++) {
+						vals[c] = static_cast<T>(vals[c] / len);
+					}
 				}
 			}
 
 			VecN<T, size> normalizeCopy() const {
 				VecN<T, size> result(*this);
-				double len = getVecLength();
+				double len = magnitude();
 
-				for (uint c = 0; c < size; c++) {
-					result.vals[c] = static_cast<T>(result.vals[c] / len);
+				if (len != 0.0) {
+					for (uint c = 0; c < size; c++) {
+						result.vals[c] = static_cast<T>(result.vals[c] / len);
+					}
 				}
 
 				return result;
@@ -333,9 +397,36 @@ namespace Bingo {
 				return result;
 			}
 
+			VecN<T, size> cross(const VecN<T, size>& other) const {
+				VecN<T, size> result;
+
+				if (size == 3) {
+					result[0] = (vals[1] * other.vals[2]) - (vals[2] * other.vals[1]);
+					result[1] = (vals[2] * other.vals[0]) - (vals[0] * other.vals[2]);
+					result[2] = (vals[0] * other.vals[1]) - (vals[1] * other.vals[0]);
+				}
+
+				//a = (v1.y * v2.z) - (v1.z * v2.y)
+				//b = (v1.z * v2.x) - (v1.x * v2.z)
+				//c = (v1.x * v2.y) - (v1.y * v2.x)
+
+				//TODO implement for any size
+				//for (uint c = 0; c < size; c++) {
+				//	for (uint d = 0; d < c; d++) {
+				//		//
+				//	}
+
+				//	for (uint d = c + 1; d < size; d++) {
+				//		//
+				//	}
+				//}
+
+				return result;
+			}
+
 			//returns the angle in radians
 			double angleBetween(const VecN<T, size>& other) const {
-				return acos(dot(other) / (getVecLength() * other.getVecLength()));
+				return acos(dot(other) / (magnitude() * other.magnitude()));
 			}
 
 			VecN<T, size> reverse() const {
@@ -355,6 +446,10 @@ namespace Bingo {
 				result[1] = -vals[0];
 
 				return result;
+			}
+
+			VecN<T, size> projectOnto(VecN<T, size>& other) {
+				return dot(other) * other;
 			}
 
 			friend ostream& operator <<(ostream& os, const VecN<T, size>& vec) {
@@ -389,15 +484,6 @@ namespace Bingo {
 				vals = new T[size];
 
 				memset(vals, 0, sizeof(T) * size);
-			}
-
-			DynVecN(uint len, T val) {
-				size = len;
-				vals = new T[size];
-
-				for (uint c = 0; c < size; c++) {
-					vals[c] = val;
-				}
 			}
 
 			DynVecN(initializer_list<T> list) {
@@ -505,6 +591,12 @@ namespace Bingo {
 				delete[] vals;
 			}
 
+			void fill(T val) {
+				for (uint c = 0; c < size; c++) {
+					vals[c] = val;
+				}
+			}
+
 			inline uint getSize() const {
 				return size;
 			}
@@ -541,18 +633,6 @@ namespace Bingo {
 
 			const T* const data() const {
 				return vals;
-			}
-
-			DynVecN<T> set(uint index, const T& val) const {
-				DynVecN<T> result(*this);
-#if _DEBUG
-				if (index >= size) {
-					throw Exception("Invalid index with VecN");
-				}
-#endif
-				result.vals[index] = val;
-
-				return result;
 			}
 
 			DynVecN<T> addTo(uint index, const T& val) const {
@@ -715,7 +795,7 @@ namespace Bingo {
 					throw Exception("Incompatible sizes for DynVecN");
 				}
 #endif
-				return getVecLength() < other.getVecLength();
+				return magnitude() < other.magnitude();
 			}
 
 			bool operator <=(const DynVecN<T>& other) const {
@@ -724,7 +804,7 @@ namespace Bingo {
 					throw Exception("Incompatible sizes for DynVecN");
 				}
 #endif
-				return getVecLength() <= other.getVecLength();
+				return magnitude() <= other.magnitude();
 			}
 
 			bool operator >(const DynVecN<T>& other) const {
@@ -733,7 +813,7 @@ namespace Bingo {
 					throw Exception("Incompatible sizes for DynVecN");
 				}
 #endif
-				return getVecLength() > other.getVecLength();
+				return magnitude() > other.magnitude();
 			}
 
 			bool operator >=(const DynVecN<T>& other) const {
@@ -742,7 +822,7 @@ namespace Bingo {
 					throw Exception("Incompatible sizes for DynVecN");
 				}
 #endif
-				return getVecLength() >= other.getVecLength();
+				return magnitude() >= other.magnitude();
 			}
 
 			bool operator ==(const DynVecN<T>& other) const {
@@ -779,18 +859,18 @@ namespace Bingo {
 				return result;
 			}
 
-			double getVecLength() const {
+			double magnitude() const {
 				double length = 0;
 
 				for (uint c = 0; c < size; c++) {
 					length += vals[c] * vals[c];
 				}
 
-				return pow(length, 1.0f / size);
+				return sqrt(length);
 			}
 
 			void normalize() {
-				double len = getVecLength();
+				double len = magnitude();
 
 				for (uint c = 0; c < size; c++) {
 					vals[c] = static_cast<T>(vals[c] / len);
@@ -799,7 +879,7 @@ namespace Bingo {
 
 			DynVecN<T> normalizeCopy() const {
 				DynVecN<T> result(*this);
-				double len = getVecLength();
+				double len = magnitude();
 
 				for (uint c = 0; c < size; c++) {
 					result.vals[c] = static_cast<T>(result.vals[c] / len);
@@ -829,7 +909,7 @@ namespace Bingo {
 					throw Exception("Incompatible sizes for DynVecN");
 				}
 #endif
-				return acos(dot(other) / (getVecLength() * other.getVecLength()));
+				return acos(dot(other) / (magnitude() * other.magnitude()));
 			}
 
 			DynVecN<T> reverse() const {
@@ -849,6 +929,14 @@ namespace Bingo {
 				result[1] = -vals[0];
 
 				return result;
+			}
+
+			DynVecN<T> projectOnto(DynVecN<T>& other) {
+				if (size != other.size) {
+					throw Exception("Trying to project DynVecN's with different sizes");
+				}
+
+				return dot(other) * other;
 			}
 
 			friend ostream& operator <<(ostream& os, const DynVecN<T>& vec) {

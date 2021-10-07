@@ -58,6 +58,8 @@ namespace Bingo {
 			uchar values[4];
 		};
 
+		ostream& operator<<(ostream& os, const Color& color);
+
 		const Color BLACK(0, 0, 0);
 		const Color WHITE(255, 255, 255);
 		const Color RED(255, 0, 0);

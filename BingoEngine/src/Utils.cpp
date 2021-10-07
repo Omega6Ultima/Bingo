@@ -114,32 +114,60 @@ vector<uint> Bingo::Utils::tokenize(const string& str, const TokenizeType) {
 	return result;
 }
 
-string& Bingo::Utils::lstrip(string& s) {
-	auto iter = s.begin();
+string Bingo::Utils::lstrip(const string& s) {
+	string str(s);
+	auto iter = str.begin();
 
-	while (iter != s.end() && (isspace(*iter) || *iter == 0)) {
-		iter = s.erase(iter);
+	while (iter != str.end() && (isspace(*iter) || *iter == 0)) {
+		iter = str.erase(iter);
 	}
 
-	return s;
+	return str;
 }
 
-string& Bingo::Utils::rstrip(string& s) {
-	auto iter = s.rbegin();
+string Bingo::Utils::rstrip(const string& s) {
+	string str(s);
+	auto iter = str.rbegin();
 
-	while (iter != s.rend() && (isspace(*iter) || *iter == 0)) {
+	while (iter != str.rend() && (isspace(*iter) || *iter == 0)) {
 		iter++;
-		s.pop_back();
+		str.pop_back();
 	}
 
-	return s;
+	return str;
 }
 
-string& Bingo::Utils::strip(string& s) {
-	lstrip(s);
-	rstrip(s);
+string Bingo::Utils::strip(const string& s) {
+	string str(s);
 
-	return s;
+	str = lstrip(str);
+	str = rstrip(str);
+
+	return str;
+}
+
+vector<string> Bingo::Utils::split(const string& s, string separator) {
+	vector<string> result;
+	vector<uint> foundIndices;
+	uint found = s.find(separator.c_str());
+
+	while (found != string::npos) {
+		foundIndices.push_back(found);
+
+		found = s.find(separator.c_str(), found + 1);
+	}
+
+	foundIndices.push_back(string::npos);
+
+	uint offset = 0;
+
+	for (uint c = 0; c < foundIndices.size(); c++) {
+		result.push_back(s.substr(offset, foundIndices[c] - offset));
+
+		offset = foundIndices[c] + 1;
+	}
+
+	return result;
 }
 
 void Bingo::Utils::Error(string msg) {

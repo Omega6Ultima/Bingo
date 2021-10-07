@@ -65,9 +65,12 @@ void quitSDLModules() {
 #include "FontManager.h"
 #include "GUI.h"
 #include "Matrix.h"
+#include "MeshManager.h"
+#include "MinHeap.h"
 #include "MovableSurface.h"
 #include "NBT.h"
 #include "ParticleEngine.h"
+#include "Quaternion.h"
 #include "RandomManager.h"
 #include "SoundManager.h"
 #include "Surface.h"
@@ -98,32 +101,37 @@ using namespace Bingo;
 #define TEST_SURF_MOVE 0
 
 #define TEST_SOUND 0
-#define TEST_MUSIC 1
+#define TEST_MUSIC 0
 #define TEST_FILE 0
 #define TEST_FILE_DIAG 0
 #define TEST_NBT 0
 #define TEST_PART 1
 #define TEST_THREADS 0
+#define TEST_MESH 1
 //come back to testing bounds
 #define TEST_BNDS 0
-#define TEST_MATS 0
+#define TEST_MATS 1
+#define TEST_QUAT 1
 #define TEST_SORT 0
 //come back to NeuralNetworks
-#define TEST_AI 0
+#define TEST_AI 1
 //sub-tests
 #define TEST_AI_IMAGER 0
 #define TEST_AI_NN 0
 #define TEST_AI_GA 0
+#define TEST_AI_AS 1
 //TextSurfaces within Slider not working
 #define TEST_GUI 0
 #define TEST_TIME 0
 #define TEST_TILE 0
+#define TEST_MINHEAP 0
 
 //file paths and other constants
 #define IMG_PATH "resources/images/"
 #define FNT_PATH "resources/fonts/"
 #define SND_PATH "resources/audio/"
 #define FIL_PATH "resources/nbt/"
+#define MSH_PATH "resources/models/"
 
 #ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 640
@@ -210,6 +218,22 @@ LottoNumbers CreateLN() {
 	return ln;
 }
 
+LottoNumbers CrossoverLN(const LottoNumbers& val1, const LottoNumbers& val2) {
+	RandomManager& randMan = RandomManager::getSingleton();
+	LottoNumbers ln;
+	uint crossoverPoint = randMan.randInt(0, 5);
+
+	for (uint c = 0; c < crossoverPoint; c++) {
+		ln.nums[c] = val1.nums[c];
+	}
+
+	for (uint c = crossoverPoint; c < 5; c++) {
+		ln.nums[c] = val2.nums[c];
+	}
+
+	return ln;
+}
+
 LottoNumbers MutateLN(const LottoNumbers& val) {
 	LottoNumbers ln;
 
@@ -278,8 +302,18 @@ TODO find where ever iterators are used and make sure it cant be accomplished us
 
 TODO switch enums over to enum classes where applicable
 
+TODO Scene Management
+TODO Sprite Fields
+TODO Cutscenes?
+TODO A*
+TODO Collisions
+TODO Scripting engine?
+
+TODO EntityManager
+
 TODO add a 3d camera and view
 TODO add a way to have tiled backgrounds that scroll
+TODO Perlin noise
 
 TODO add more capability to the WindowManager for different events, more windows, and multiple displays
 
@@ -296,7 +330,11 @@ TODO maybe add SDL_GetPerformanceCounter to Timer
 TODO add logging manager
 
 TODO add max/min bounds to PhysicalObject/Positional
+
+TODO come back to MeshManager/AI-A*
 */
+
+//page 239, 345
 int main(int argc, char* argv[]) {
 #if MAIN_TRY
 	try {
@@ -314,6 +352,7 @@ int main(int argc, char* argv[]) {
 		ThreadManager threadManager;
 		RandomManager randomManager;
 		BoundsManager boundsManager;
+		MeshManager meshManager(MSH_PATH);
 
 		Surfaces::Surface screen(SCREEN_WIDTH, SCREEN_HEIGHT);
 		//Surface image1(IMG_PATH"image1.png", Color(254, 254, 137));
@@ -697,6 +736,33 @@ int main(int argc, char* argv[]) {
 		cout << dynC << endl;
 
 		cout << dynTimeTestC << endl;
+
+		Math::Matrix<int, 3, 3> testDet({ 3, -2, 0,  1, 4, -3,  -1, 0, 2 });
+
+		cout << "Matrix\n" << testDet << "\n has det: " << testDet.determinant() << endl;
+
+		Math::Matrix<int, 4, 4> testMinor({ 1, 2, 3, 4,  5, 6, 7, 8,  9, 10, 11, 12,  13, 14, 15, 16 });
+
+		cout << "Matrix\n" << testMinor << "\n has minor(1, 1):\n" << testMinor.minor(1, 1) << endl;
+
+		Math::Matrix<double, 3, 3> testInverse({ -4, -3, 3,  0, 2, -2,  1, 4, -1 });
+
+		cout << "Matrix\n" << testInverse << "\n has inverse:\n" << testInverse.inverse() << endl;
+#endif
+
+#if TEST_QUAT
+		Math::Quaternion test;
+		Math::Quaternion test2(1, 2, 3, 4);
+
+		Math::Quaternion rot1({ 0, 1, 0 }, 30);
+		Math::Quaternion rot2({ 0, 1, 0 }, 45);
+
+		cout << "Magnitudes: " << rot1.magnitude() << ", " << rot2.magnitude() << endl;
+		cout << "Conjugates: " << rot1.conjugate() << ", " << rot2.conjugate() << endl;
+		cout << "Inverses: " << rot1.inverse() << ", " << rot2.inverse() << endl;
+		cout << "Dot product: " << rot1.dot(rot2) << endl;
+		cout << "Pow: " << Math::pow(rot1, .5) << endl;
+		cout << "Slerp: " << Math::slerp(rot1, rot2, .5) << endl;
 #endif
 
 #if TEST_SORT
@@ -867,9 +933,9 @@ int main(int argc, char* argv[]) {
 #endif
 
 #if TEST_AI_GA
-		AI::GeneticAlgorithm<LottoNumbers> testGenAlg(100, CreateLN, MutateLN, ScoreLN);
+		AI::GeneticAlgorithm<LottoNumbers> testGenAlg(100, CreateLN, CrossoverLN, MutateLN, ScoreLN);
 
-		testGenAlg.advanceGeneration(1000);
+		testGenAlg.advanceGeneration(100);
 
 		vector<LottoNumbers> results = testGenAlg.getBest(5);
 
@@ -877,6 +943,52 @@ int main(int argc, char* argv[]) {
 			cout << *iter << endl;
 		}
 #endif
+
+#if TEST_AI_AS
+		vector<AI::A_StarNode> nodes;
+		for (uint c = 0; c < 10; c++) {
+			nodes.push_back(AI::A_StarNode(10 * c));
+		}
+
+		nodes[0].addNeighbor(2, &nodes[1]);
+		nodes[1].addNeighbor(2, &nodes[2]);
+		nodes[2].addNeighbor(2, &nodes[3]);
+		nodes[3].addNeighbor(2, &nodes[4]);
+
+		nodes[1].addNeighbor(2, &nodes[3]);
+		nodes[2].addNeighbor(2, &nodes[4]);
+
+
+		AI::A_StarSolver solver(nodes);
+
+		vector<AI::A_StarNode*> solvedPath = solver.solve(0, 4);
+
+		for (auto iter = solvedPath.begin(); iter != solvedPath.end(); iter++) {
+			cout << (*iter)->id << '\n';
+		}
+#endif
+#endif
+
+#if TEST_MINHEAP
+		Math::VecN<int, 6> heapValues({ 5, 4, 3, 2, 1, 0 });
+		MinHeap<int> heap(INT_MIN);
+
+		for (uint c = 0; c < 6; c++) {
+			heap.push(heapValues[c]);
+		}
+
+		for (uint c = 0; c < 6; c++) {
+			cout << heap.pop() << '\n';
+		}
+#endif
+
+#if TEST_MESH
+		OBJ_Mesh* cubeMesh = meshManager.loadOBJ_Model("Cube.obj");
+
+		//cubeMesh->setRotation(45);
+		//cubeMesh->setTranslation({ 50.0, 60.0, 50.0 });
+
+		Surfaces::Surface meshSurf(400, 400);
 #endif
 
 #if TEST_GUI
@@ -955,8 +1067,6 @@ int main(int argc, char* argv[]) {
 			eventManager.update();
 
 			screen.setRenderTarget();
-			//screen.fill(WHITE);
-			//screen.fill(BLACK);
 			screen.fill(Colors::TAN);
 
 #if TEST_SURF_GEOM
@@ -1170,6 +1280,13 @@ int main(int argc, char* argv[]) {
 			testTiles.update(TimeConvert::ms_to_sec(tilesTimer.diff()));
 			testTiles.render(screen);
 #endif
+
+#if TEST_MESH
+			meshManager.draw(meshSurf, cubeMesh);
+
+			screen.draw(meshSurf);
+#endif
+
 			fpsSurf.setText(to_string(myWindow.getFPS()) + " fps");
 			screen.draw(title, HALF_SCREEN_WIDTH - title.getWidth() / 2, 0);
 			screen.draw(fpsSurf, SCREEN_WIDTH - fpsSurf.getWidth(), SCREEN_HEIGHT - fpsSurf.getHeight());

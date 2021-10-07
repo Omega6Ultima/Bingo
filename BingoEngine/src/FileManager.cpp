@@ -191,9 +191,13 @@ NBT_Compound* FileManager::readNBT(string fileName) {
 
 		ATOMIC_LOCK(ThreadManager::fileLock);
 
-		SDL_RWread(files[fileName].second, &type, sizeof(NBT_Base::NBT_Type), 1);
+		int numRead = SDL_RWread(files[fileName].second, &type, sizeof(NBT_Base::NBT_Type), 1);
 
 		ATOMIC_UNLOCK(ThreadManager::fileLock);
+
+		if (numRead == 0) {
+			return nbt;
+		}
 
 		if (type != NBT_Base::NBT_COMPOUND) {
 			Error("NBT file is not in the correct format. Maybe its corrupted?", fileName);
@@ -386,7 +390,16 @@ void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 
 				SDL_RWread(file, dataArray, SZ_INT, arraySize);
 
-				nbt->setTag(new NBT_Tag<DynVecN<int>>(nameArr, DynVecN<int>(arraySize, dataArray)));
+				NBT_Tag<vector<int>>* readTag = new NBT_Tag<vector<int>>(nameArr, vector<int>(arraySize));
+
+				for (int c = 0; c < arraySize; c++) {
+					//readTag->getData()[c] = dataArray[c];
+					readTag->getData().at(c) = dataArray[c];
+				}
+
+				nbt->setTag(readTag);
+
+				delete[] dataArray;
 
 				break;
 			}
@@ -399,7 +412,15 @@ void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 
 				SDL_RWread(file, dataArray, SZ_DOUBLE, arraySize);
 
-				nbt->setTag(new NBT_Tag<DynVecN<double>>(nameArr, DynVecN<double>(arraySize, dataArray)));
+				NBT_Tag<vector<double>>* readTag = new NBT_Tag<vector<double>>(nameArr, vector<double>(arraySize));
+
+				for (int c = 0; c < arraySize; c++) {
+					readTag->getData()[c] = dataArray[c];
+				}
+
+				nbt->setTag(readTag);
+
+				delete[] dataArray;
 
 				break;
 			}

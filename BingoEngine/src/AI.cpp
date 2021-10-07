@@ -8,11 +8,17 @@
 #include "NBT.h"
 #include "Utils.h"
 
+using std::make_pair;
+using std::reverse;
 using std::pow;
 using std::to_string;
 
 using Bingo::AI::GeneticAlgorithm;
 using Bingo::AI::NeuralNetwork;
+using Bingo::AI::A_StarNode;
+using Bingo::AI::InternalUse::OpenType;
+using Bingo::AI::InternalUse::SearchNode;
+using Bingo::AI::A_StarSolver;
 using Bingo::Math::DynVecN;
 using Bingo::Utils::Warn;
 
@@ -189,7 +195,7 @@ void NeuralNetwork::load(string filename) {
 		NBT_Compound* matrix = static_cast<NBT_Compound*>(layers->getTag("Matrix" + to_string(c)));
 
 		for (uint d = 0; d < matrix->getTagCount(); d++) {
-			DynVecN<double> row = static_cast<NBT_Tag<DynVecN<double>>*>(matrix->getTag("Row" + to_string(d)))->getData();
+			vector<double> row = static_cast<NBT_Tag<vector<double>>*>(matrix->getTag("Row" + to_string(d)))->getData();
 
 			layerWeights[c].setRow(d, row);
 		}
@@ -260,4 +266,114 @@ DynVecN<double> NeuralNetwork::runInput(DynVecN<uint>& inputs, bool training) {
 	}
 
 	return output;
+}
+
+A_StarNode::A_StarNode(int value) {
+	id = value;
+}
+
+A_StarNode::~A_StarNode() {
+	if (searchNode) {
+		delete searchNode;
+	}
+}
+
+void A_StarNode::addNeighbor(int cost, A_StarNode* node) {
+	neighs[cost] = node;
+}
+
+bool A_StarNode::operator==(const A_StarNode& other) const {
+	return id == other.id;
+}
+
+A_StarSolver::A_StarSolver(vector<A_StarNode>& nodes)
+	: openList(pair<int*, A_StarNode&>(&dummyCost, dummyNode)) {
+	graph = nodes;
+}
+
+A_StarSolver::~A_StarSolver() {
+	//
+}
+
+vector<A_StarNode*> A_StarSolver::solve(uint start, uint end) {
+	vector<A_StarNode*> result;
+
+	//add starting node to Open as cost 0
+	graph[start].searchNode = new SearchNode();
+	graph[start].searchNode->parent = NULL;
+	graph[start].searchNode->graphNode = &graph[start];
+	graph[start].searchNode->cost = 0;
+
+	openList.push(make_pair(&graph[start].searchNode->cost, reference_wrapper<A_StarNode>(graph[start])));
+
+	while (!openList.empty()) {
+		auto curPair = openList.pop();
+		int* curCost = curPair.first;
+		A_StarNode& curNode = curPair.second.get();
+
+		curNode.visited = true;
+
+		if (curNode == graph[end]) {
+			result.push_back(&curNode);
+
+			SearchNode* parent = curNode.searchNode->parent;
+
+			while (parent) {
+				result.push_back(parent->graphNode);
+
+				parent = parent->parent;
+			}
+
+			reverse(result.begin(), result.end());
+
+			return result;
+		}
+
+		for (auto iter = curNode.neighs.begin(); iter != curNode.neighs.end(); iter++) {
+			if (!iter->second->visited) {
+				iter->second->searchNode = new SearchNode();
+				iter->second->searchNode->parent = curNode.searchNode;
+				iter->second->searchNode->graphNode = iter->second;
+				iter->second->searchNode->cost = *curCost + curNode.searchNode->cost;
+
+				openList.push(make_pair(const_cast<int*>(&iter->first), reference_wrapper<A_StarNode>(*iter->second)));
+			}
+			else if (openList.exist(make_pair(const_cast<int*>(&iter->first), reference_wrapper<A_StarNode>(*iter->second)))) {
+				if (iter->second->searchNode->parent && curNode.searchNode->parent) {
+					if (iter->second->searchNode->parent->cost > curNode.searchNode->cost) {
+						iter->second->searchNode->parent = curNode.searchNode;
+						iter->second->searchNode->cost = *curCost + curNode.searchNode->cost;
+					}
+				}
+			}
+			else if (iter->second->visited) {
+				if (iter->second->searchNode->parent && curNode.searchNode->parent) {
+					if (iter->second->searchNode->parent->cost > curNode.searchNode->cost) {
+						iter->second->visited = false;
+						iter->second->searchNode->parent = curNode.searchNode;
+						iter->second->searchNode->cost = *curCost + curNode.searchNode->cost;
+
+						openList.push(make_pair(const_cast<int*>(&iter->first), reference_wrapper<A_StarNode>(*iter->second)));
+					}
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+int A_StarSolver::dummyCost(INT_MIN);
+A_StarNode A_StarSolver::dummyNode(INT_MIN);
+
+bool Bingo::AI::operator<(OpenType val1, OpenType val2) {
+	return val1.first < val2.first;
+}
+
+bool Bingo::AI::operator>=(OpenType val1, OpenType val2) {
+	return val1.first >= val2.first;
+}
+
+bool Bingo::AI::operator==(OpenType val1, OpenType val2) {
+	return val1.first == val2.first;
 }
