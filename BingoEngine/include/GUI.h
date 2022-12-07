@@ -29,12 +29,14 @@ namespace Bingo {
 		using Events::KeyListener;
 		using Events::MouseListener;
 		using Math::VecN;
+		using Surfaces::Surface;
 		using Surfaces::TextSurface;
 		using Time::Timer;
 
 		typedef TextSurface Label;
 
 		class Button;
+		class ButtonText;
 		class Input;
 
 		template<typename T>
@@ -43,6 +45,7 @@ namespace Bingo {
 		class DropDown;
 
 		typedef void(*ButtonFunc)(Button& button, EventManager::MouseButton mouseButton);
+		typedef void(*ButtonTextFunc)(ButtonText& button, EventManager::MouseButton mouseButton);
 		typedef void(*InputFunc)(Input& input, EventManager::MouseButton mouseButton);
 
 		template<typename T>
@@ -50,26 +53,57 @@ namespace Bingo {
 
 		typedef void(*DropDownFunc)(DropDown& dropDown);
 
-		class Button : public TextSurface, public MouseListener {
+		class GuiBase /*: public MouseListener*/ {
 		public:
-			Button(int x, int y, ButtonFunc func, string fontName, int size, string text, Color color = BLACK);
-			Button(VecN<int, 2> position, ButtonFunc func, string fontName, int size, string text, Color color = BLACK);
-			~Button() = default;
-
-			void setFrameColor(Color color);
+			virtual void setFrameColor(Color color);
 			inline Color getFrameColor() const {
 				return frameColor;
 			}
 
-			void setFrameWidth(uint width);
+			virtual void setFrameWidth(uint width);
 			inline uint getFrameWidth() const {
 				return frameWidth;
 			}
 
-			//void setShadowText(string str);
-			//inline string getShadowText() const{
-			//	return shadowText;
-			//}
+			void enable();
+			void disable();
+
+			inline bool getEnabled() const {
+				return enabled;
+			}
+
+			inline bool getDisabled() const {
+				return !enabled;
+			}
+
+			virtual void hide();
+			virtual void show();
+
+			inline bool getHidden() const {
+				return hidden;
+			}
+
+		private:
+			//virtual void handleEvent(EventManager::EventType evt) = 0;
+
+		private:
+			Color frameColor = BLACK;
+			uint frameWidth = 1;
+			bool enabled = true;
+			bool hidden = false;
+		};
+
+		class Button : public GuiBase, public Surface, public MouseListener {
+		public:
+			Button(int x, int y, ButtonFunc func, uint width, uint height, Color color = BLACK);
+			Button(int x, int y, ButtonFunc func, string imgFile, Color color = BLACK);
+			~Button() = default;
+
+			virtual void setFrameColor(Color color) override;
+			virtual void setFrameWidth(uint width) override;
+
+			virtual void hide();
+			virtual void show();
 
 		protected:
 			virtual void renderTexture() override;
@@ -78,13 +112,32 @@ namespace Bingo {
 			virtual void handleEvent(EventManager::EventType evt) override;
 
 		private:
-			Color frameColor = BLACK;
 			bool beingClicked = false;
-			uint frameWidth = 1;
 			ButtonFunc onButtonClick;
 		};
 
-		class Input : public Button, public KeyListener {
+		class ButtonText : public GuiBase, public TextSurface, public MouseListener {
+		public:
+			ButtonText(int x, int y, ButtonTextFunc func, string fontName, int size, string text, Color color = BLACK);
+			ButtonText(VecN<int, 2> position, ButtonTextFunc func, string fontName, int size, string text, Color color = BLACK);
+			~ButtonText() = default;
+
+			void setFrameColor(Color color);
+
+			void setFrameWidth(uint width);
+
+		protected:
+			virtual void renderTexture() override;
+
+		private:
+			virtual void handleEvent(EventManager::EventType evt) override;
+
+		private:
+			bool beingClicked = false;
+			ButtonTextFunc onButtonClick;
+		};
+
+		class Input : public ButtonText, public KeyListener {
 		public:
 			Input(int x, int y, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color = BLACK);
 			Input(VecN<int, 2> position, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color = BLACK);
@@ -109,7 +162,7 @@ namespace Bingo {
 		};
 
 		template<typename T>
-		class Slider : public Button {
+		class Slider : public ButtonText {
 		public:
 			enum class Orientation {
 				HORIZONTAL,
@@ -117,7 +170,7 @@ namespace Bingo {
 			};
 
 			Slider(int x, int y, int w, int h, T start, T stop, T step, SliderFunc<T> func, string fontName, int fontSize, Color color = BLACK)
-				: Button(x, y, NULL, fontName, fontSize, "", color) {
+				: ButtonText(x, y, NULL, fontName, fontSize, "", color) {
 				width = w;
 				height = h;
 
@@ -132,7 +185,7 @@ namespace Bingo {
 			}
 
 			Slider(VecN<int, 2> position, int width, int height, T start, T stop, T step, SliderFunc<T> func, string fontName, int fontSize, Color color = BLACK)
-				: Button(position, NULL, fontName, fontSize, "", color) {
+				: ButtonText(position, NULL, fontName, fontSize, "", color) {
 				width = width;
 				height = height;
 
@@ -224,6 +277,10 @@ namespace Bingo {
 
 		protected:
 			virtual void renderTexture() override {
+				if (getHidden()) {
+					return;
+				}
+
 				if (texture) {
 					SDL_DestroyTexture(texture);
 					texture = NULL;
@@ -295,6 +352,10 @@ namespace Bingo {
 
 		private:
 			virtual void handleEvent(EventManager::EventType evt) override {
+				if (getDisabled()) {
+					return;
+				}
+
 				MouseListener::handleEvent(evt);
 
 				if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {
@@ -333,115 +394,20 @@ namespace Bingo {
 			Orientation orientation = Orientation::HORIZONTAL;
 		};
 
-		string Slider<char>::toString(char val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
+		string Slider<char>::toString(char val);
+		string Slider<uchar>::toString(uchar val);
+		string Slider<short>::toString(short val);
+		string Slider<ushort>::toString(ushort val);
+		string Slider<int>::toString(int val);
+		string Slider<uint>::toString(uint val);
+		string Slider<long>::toString(long val);
+		string Slider<ulong>::toString(ulong val);
+		string Slider<ullong>::toString(ullong val);
+		string Slider<float>::toString(float val);
+		string Slider<double>::toString(double val);
+		string Slider<ldouble>::toString(ldouble val);
 
-			sprintf_s(result, "%c", val);
-
-			return result;
-		}
-
-		string Slider<uchar>::toString(uchar val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%c", val);
-
-			return result;
-		}
-
-		string Slider<short>::toString(short val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%d", val);
-
-			return result;
-		}
-
-		string Slider<ushort>::toString(ushort val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%d", val);
-
-			return result;
-		}
-
-		string Slider<int>::toString(int val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%d", val);
-
-			return result;
-		}
-
-		string Slider<uint>::toString(uint val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%d", val);
-
-			return result;
-		}
-
-		string Slider<long>::toString(long val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%d", val);
-
-			return result;
-		}
-
-		string Slider<ulong>::toString(ulong val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%d", val);
-
-			return result;
-		}
-
-		string Slider<ullong>::toString(ullong val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%llu", val);
-
-			return result;
-		}
-
-		string Slider<float>::toString(float val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%f", val);
-
-			return result;
-		}
-
-		string Slider<double>::toString(double val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%f", val);
-
-			return result;
-		}
-
-		string Slider<ldouble>::toString(ldouble val) {
-			char result[33];
-			memset(result, 0, sizeof(result));
-
-			sprintf_s(result, "%f", val);
-
-			return result;
-		}
-
-		class DropDown : public Button {
+		class DropDown : public ButtonText {
 		public:
 			DropDown(int x, int y, uint w, uint h, vector<string>* values, DropDownFunc func, string fontName, int size, Color color = BLACK);
 			~DropDown() = default;

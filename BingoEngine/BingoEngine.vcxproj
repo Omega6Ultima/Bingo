@@ -35,19 +35,21 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common_all.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common_all.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\SDL2-2.0.12\include;C:\SDL2_image-2.0.5\include;C:\SDL2_mixer-2.0.4\include;C:\SDL2_ttf-2.0.15\include;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\BingoEngine\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\SDL2-2.0.12\lib\x86;C:\SDL2_image-2.0.5\lib\x86;C:\SDL2_mixer-2.0.4\lib\x86;C:\SDL2_ttf-2.0.15\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>C:\SDL2-2.0.12\lib\x86;C:\SDL2_image-2.0.5\lib\x86;C:\SDL2_mixer-2.0.4\lib\x86;C:\SDL2_ttf-2.0.15\lib\x86;C:\Users\dgehm\source\repos\tinyfiledialogs\extras_dll_cs_lua_fortran;C:\Program Files %28x86%29\Lua\5.1\lib;C:\Program Files %28x86%29\Python39\libs;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\Debug;C:\Program Files (x86)\Lua\5.1\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\SDL2-2.0.12\include;C:\SDL2_image-2.0.5\include;C:\SDL2_mixer-2.0.4\include;C:\SDL2_ttf-2.0.15\include;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\BingoEngine\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\SDL2-2.0.12\lib\x86;C:\SDL2_image-2.0.5\lib\x86;C:\SDL2_mixer-2.0.4\lib\x86;C:\SDL2_ttf-2.0.15\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>C:\SDL2-2.0.12\lib\x86;C:\SDL2_image-2.0.5\lib\x86;C:\SDL2_mixer-2.0.4\lib\x86;C:\SDL2_ttf-2.0.15\lib\x86;C:\Users\dgehm\source\repos\tinyfiledialogs\extras_dll_cs_lua_fortran;C:\Program Files %28x86%29\Lua\5.1\lib;C:\Program Files %28x86%29\Python39\libs;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\Debug;C:\Program Files (x86)\Lua\5.1\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -56,7 +58,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\dgehm\source\repos\tinyfiledialogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -74,7 +77,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\dgehm\source\repos\tinyfiledialogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -97,9 +101,11 @@
     <ClInclude Include="include\CoordMap.h" />
     <ClInclude Include="include\EventManager.h" />
     <ClInclude Include="include\Exception.h" />
+    <ClInclude Include="include\ExtraData.h" />
     <ClInclude Include="include\FileManager.h" />
     <ClInclude Include="include\FontManager.h" />
     <ClInclude Include="include\GUI.h" />
+    <ClInclude Include="include\Mathematics.h" />
     <ClInclude Include="include\MeshManager.h" />
     <ClInclude Include="include\Matrix.h" />
     <ClInclude Include="include\MinHeap.h" />
@@ -110,6 +116,7 @@
     <ClInclude Include="include\Positional.h" />
     <ClInclude Include="include\Quaternion.h" />
     <ClInclude Include="include\RandomManager.h" />
+    <ClInclude Include="include\ScriptManager.h" />
     <ClInclude Include="include\Singleton.h" />
     <ClInclude Include="include\SoundManager.h" />
     <ClInclude Include="include\Surface.h" />
@@ -121,7 +128,6 @@
     <ClInclude Include="include\VecN.h" />
     <ClInclude Include="include\WindowManager.h" />
     <ClInclude Include="include\_DefaultDefines.h" />
-    <ClInclude Include="ScriptManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AI.cpp" />
@@ -132,9 +138,11 @@
     <ClCompile Include="src\CoordMap.cpp" />
     <ClCompile Include="src\EventManager.cpp" />
     <ClCompile Include="src\Exception.cpp" />
+    <ClCompile Include="src\ExtraData.cpp" />
     <ClCompile Include="src\FileManager.cpp" />
     <ClCompile Include="src\FontManager.cpp" />
     <ClCompile Include="src\GUI.cpp" />
+    <ClCompile Include="src\Mathematics.cpp" />
     <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\MinHeap.cpp" />
     <ClCompile Include="src\MovableSurface.cpp" />

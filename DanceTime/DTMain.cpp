@@ -31,7 +31,7 @@ using Bingo::EventManager;
 using Bingo::FileManager;
 using Bingo::Events::QuitListener;
 using Bingo::FontManager;
-using Bingo::Guis::Button;
+using Bingo::Guis::ButtonText;
 using Bingo::Guis::DropDown;
 using Bingo::Guis::Input;
 using Bingo::Guis::Slider;
@@ -92,7 +92,7 @@ void quitSDLModules() {
 	SDL_Quit();
 }
 
-vector<Button*> testSoundButtons;
+vector<ButtonText*> testSoundButtons;
 vector<DropDown*> soundDropDowns;
 vector<Input*> timeInputs;
 vector<Input*> durationInputs;
@@ -130,7 +130,7 @@ void CheckInputs() {
 	}
 }
 
-void TestSound(Button& button, EventManager::MouseButton mouseButton) {
+void TestSound(ButtonText& button, EventManager::MouseButton mouseButton) {
 	for (auto iter = testSoundButtons.begin(); iter != testSoundButtons.end(); iter++) {
 		if (*iter == &button) {
 			auto index = distance(testSoundButtons.begin(), iter);
@@ -178,7 +178,7 @@ void InvalidateSound2(Input& input, EventManager::MouseButton mouseButton) {
 	}
 }
 
-void StopSounds(Button& button, EventManager::MouseButton but) {
+void StopSounds(ButtonText& button, EventManager::MouseButton but) {
 	auto iter = activeSounds.begin();
 
 	while (iter != activeSounds.end()) {
@@ -191,7 +191,7 @@ void ChangeVolume(Slider<int>& slider) {
 	SoundManager::getSingleton().setSoundVolume(slider.getValue() / 10.0f);
 }
 
-void SaveStuff(Button& button, EventManager::MouseButton but) {
+void SaveStuff(ButtonText& button, EventManager::MouseButton but) {
 	FileManager* fileMan = FileManager::getSingletonPtr();
 	vector<string> fileFilter;
 	fileFilter.push_back("*.nbt");
@@ -234,7 +234,7 @@ void SaveStuff(Button& button, EventManager::MouseButton but) {
 	delete nbt;
 }
 
-void LoadStuff(Button& button, EventManager::MouseButton but) {
+void LoadStuff(ButtonText& button, EventManager::MouseButton but) {
 	FileManager* fileMan = FileManager::getSingletonPtr();
 	vector<string> fileFilter;
 	fileFilter.push_back("*.nbt");
@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
 	TextSurface durationLabel("main", 20, "Duration", BLACK);
 	durationLabel.setPos({ 525, 10 });
 
-	Button stopButton(SCREEN_WIDTH - 80, 20, StopSounds, "main", 20, "Stop");
+	ButtonText stopButton(SCREEN_WIDTH - 80, 20, StopSounds, "main", 20, "Stop");
 	stopButton.setTextPadding(5);
 	stopButton.setBackgroundColor(WHITE);
 
@@ -304,11 +304,11 @@ int main(int argc, char* argv[]) {
 	volSlider.setColor(RED);
 	volSlider.setValue(5);
 
-	Button saveButton(SCREEN_WIDTH - 80, SCREEN_HEIGHT - 120, SaveStuff, "main", 20, "Save");
+	ButtonText saveButton(SCREEN_WIDTH - 80, SCREEN_HEIGHT - 120, SaveStuff, "main", 20, "Save");
 	saveButton.setTextPadding(5);
 	saveButton.setBackgroundColor(WHITE);
 
-	Button loadButton(SCREEN_WIDTH - 80, SCREEN_HEIGHT - 60, LoadStuff, "main", 20, "Load");
+	ButtonText loadButton(SCREEN_WIDTH - 80, SCREEN_HEIGHT - 60, LoadStuff, "main", 20, "Load");
 	loadButton.setTextPadding(5);
 	loadButton.setBackgroundColor(WHITE);
 
@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
 	for (uint c = 0; c < MAX_TIMERS; c++) {
 		int yPos = 40 + 30 * c;
 
-		testSoundButtons.push_back(new Button(10, yPos, TestSound, "main", 13, "T"));
+		testSoundButtons.push_back(new ButtonText(10, yPos, TestSound, "main", 13, "T"));
 		testSoundButtons.back()->setTextPadding(5);
 		testSoundButtons.back()->setBackgroundColor(WHITE);
 
@@ -338,6 +338,7 @@ int main(int argc, char* argv[]) {
 
 		statuses.push_back(new AnimSurface("resources/Images/Status.png"));
 		statuses.back()->setPos({ 650, yPos - 5 });
+		statuses.back()->setScale(.15f);
 		statuses.back()->addClip(0, 0, 200, 200);
 		statuses.back()->addClip(0, 200, 200, 200);
 		statuses.back()->setAnimSpeed(0);
@@ -403,7 +404,8 @@ int main(int argc, char* argv[]) {
 				screen.draw(*soundDropDowns[c]);
 				screen.draw(*timeInputs[c]);
 				screen.draw(*durationInputs[c]);
-				screen.drawScaled(*statuses[c], .15f, .15f);
+				//screen.drawScaled(*statuses[c], .15f, .15f);
+				screen.draw(*statuses[c]);
 			}
 		}
 

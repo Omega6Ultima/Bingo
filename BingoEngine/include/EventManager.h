@@ -221,9 +221,6 @@ namespace Bingo {
 		void unregisterListener(Events::EventListener* listener, EventListenType type);
 		void cancelEvent();
 	private:
-		//vector<EventListener*> keyListeners;
-		//vector<EventListener*> mouseListeners;
-		//vector<EventListener*> systemListeners;
 		map<uint, vector<Events::EventListener*>> keyListeners;
 		map<uint, vector<Events::EventListener*>> mouseListeners;
 		map<uint, vector<Events::EventListener*>> systemListeners;

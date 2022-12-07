@@ -31,6 +31,11 @@ namespace Bingo {
 			//get the current number of milliseconds since program start
 			static uint getTicks();
 
+			// Called every update, this will return true only when X seconds have passed
+			bool everyXSeconds(uint sec);
+			// Called every update, this will return true only when X milliseconds have passed
+			bool everyXMillis(uint ms);
+
 			static inline void DelayMS(uint ms) {
 				SDL_Delay(ms);
 			}
@@ -42,7 +47,8 @@ namespace Bingo {
 			uint endTicks = 0;
 			uint lastDiff = 0;
 			TimerState state = INIT;
-			};
+			uint timeAccumulator = 0;
+		};
 
 		class CountDownTimer {
 		public:
@@ -63,7 +69,7 @@ namespace Bingo {
 
 		typedef CountDownTimer Counter;
 
-		}
+	}
 
 	namespace TimeConvert {
 		inline time_t struct2Stamp(const tm& timeStruct) {
@@ -128,6 +134,6 @@ namespace Bingo {
 		}
 	}
 
-	}
+}
 
 #endif

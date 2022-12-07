@@ -111,7 +111,13 @@
     <ClInclude Include="include\Quaternion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScriptManager.h">
+    <ClInclude Include="include\ScriptManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Mathematics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ExtraData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -204,6 +210,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Quaternion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mathematics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ExtraData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -64,6 +64,7 @@ void quitSDLModules() {
 #include "FileManager.h"
 #include "FontManager.h"
 #include "GUI.h"
+#include "Mathematics.h"
 #include "Matrix.h"
 #include "MeshManager.h"
 #include "MinHeap.h"
@@ -72,6 +73,7 @@ void quitSDLModules() {
 #include "ParticleEngine.h"
 #include "Quaternion.h"
 #include "RandomManager.h"
+#include "ScriptManager.h"
 #include "SoundManager.h"
 #include "Surface.h"
 #include "TextSurface.h"
@@ -107,24 +109,28 @@ using namespace Bingo;
 #define TEST_NBT 0
 #define TEST_PART 1
 #define TEST_THREADS 0
-#define TEST_MESH 1
-//come back to testing bounds
+//***come back to testing meshes
+#define TEST_MESH 0
+//***come back to testing bounds
 #define TEST_BNDS 0
-#define TEST_MATS 1
-#define TEST_QUAT 1
+#define TEST_MATS 0
+#define TEST_QUAT 0
 #define TEST_SORT 0
-//come back to NeuralNetworks
+//***come back to NeuralNetworks
 #define TEST_AI 1
 //sub-tests
 #define TEST_AI_IMAGER 0
 #define TEST_AI_NN 0
 #define TEST_AI_GA 0
-#define TEST_AI_AS 1
-//TextSurfaces within Slider not working
-#define TEST_GUI 0
+//***come back to testing A*
+#define TEST_AI_AS 0
+//***TextSurfaces within Slider not working
+#define TEST_GUI 1
 #define TEST_TIME 0
 #define TEST_TILE 0
 #define TEST_MINHEAP 0
+//***python still a little buggy, drop?
+#define TEST_SCRIPT 0
 
 //file paths and other constants
 #define IMG_PATH "resources/images/"
@@ -132,6 +138,7 @@ using namespace Bingo;
 #define SND_PATH "resources/audio/"
 #define FIL_PATH "resources/nbt/"
 #define MSH_PATH "resources/models/"
+#define SCRIPT_PATH "resources/scripts/"
 
 #ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 640
@@ -173,7 +180,7 @@ void testThreads(NBT_Compound* nbt) {
 #endif
 
 #if TEST_GUI
-void testButton(Guis::Button& button, EventManager::MouseButton mouseButton) {
+void testButton(Guis::ButtonText& button, EventManager::MouseButton mouseButton) {
 	static uint counter = 0;
 	button.setText("Press Me Again!");
 
@@ -290,6 +297,31 @@ int ScoreLN(const LottoNumbers& val) {
 }
 #endif
 
+#if TEST_SCRIPT
+#if S_LANG_LUA
+int TestScript_lua(lua_State* state) {
+	lua_pushfstring(state, "testing567");
+
+	return 1;
+}
+#endif
+
+#if S_LANG_PY
+void TestScript_py() {
+	cout << "Hello Python!" << endl;
+}
+
+void TestScript2_py() {
+	cout << "Hello World!" << endl;
+}
+
+PY_REG_START(Bingo, "The Python module for the Bingo Engine")
+PY_REG_FUNC(TestScript, TestScript_py, "Function to test calling C++ functions from Python")
+PY_REG_FUNC(TestScript2, TestScript2_py, "Function to test")
+PY_REG_END()
+#endif
+#endif
+
 /*
 TODO PRIORITY 0 add comments and documentation to EVERYTHING!, get Doxygen
 TODO while in InputMode from one Input, you can click another Input and "nest" InputMode
@@ -332,9 +364,12 @@ TODO add logging manager
 TODO add max/min bounds to PhysicalObject/Positional
 
 TODO come back to MeshManager/AI-A*
+
+TODO surface color key removes other surfaces
 */
 
 //page 239, 345
+//battleship?
 int main(int argc, char* argv[]) {
 #if MAIN_TRY
 	try {
@@ -353,6 +388,12 @@ int main(int argc, char* argv[]) {
 		RandomManager randomManager;
 		BoundsManager boundsManager;
 		MeshManager meshManager(MSH_PATH);
+#if S_LANG_LUA
+		Script::Lua::ScriptManager_Lua scriptManagerL(SCRIPT_PATH);
+#endif
+#if S_LANG_PY
+		Script::Python::ScriptManager_Py scriptManagerP(SCRIPT_PATH);
+#endif
 
 		Surfaces::Surface screen(SCREEN_WIDTH, SCREEN_HEIGHT);
 		//Surface image1(IMG_PATH"image1.png", Color(254, 254, 137));
@@ -375,6 +416,18 @@ int main(int argc, char* argv[]) {
 
 		Surfaces::TextSurface title("main", 36, "Bingo Engine", Colors::BLACK);
 		Surfaces::TextSurface fpsSurf("main", 20, "0.0 fps", Colors::BLACK);
+
+#if TEST_SCRIPT
+#if S_LANG_LUA
+		scriptManagerL.registerFunction("TestScript", TestScript_lua);
+		scriptManagerL.execute("Hello.lua");
+#endif
+
+#if S_LANG_PY
+		scriptManagerP.execute("Hello.py");
+		//scriptManagerP.executeStr(R"(print("Testing234");)");
+#endif
+#endif
 
 #if TEST_TILE
 		vector<Math::VecN<int, 4>> tileClips;
@@ -401,9 +454,9 @@ int main(int argc, char* argv[]) {
 		wavy.setLifeBoost(1.5f);
 
 		//partEngine.setBehavior(&wavy);
-		partEngine.setParticleGravity(true);
-		partEngine.setParticleBounds(true, { -HALF_SCREEN_WIDTH, -HALF_SCREEN_HEIGHT, HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT });
-		partEngine.remakePartices();
+		//partEngine.setParticleGravity(true);
+		//partEngine.setParticleBounds(true, { -HALF_SCREEN_WIDTH, -HALF_SCREEN_HEIGHT, HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT });
+		partEngine.remakeParticles();
 
 		vector<Math::VecN<int, 4>> rotPartClips;
 		rotPartClips.push_back({ 0, 0, 4, 4 });
@@ -426,9 +479,9 @@ int main(int argc, char* argv[]) {
 
 		animPartEngine.setBehavior(&animBehav);
 		//animPartEngine.setParticleGravity(true);
-		animPartEngine.setParticleBounds(true, { -HALF_SCREEN_WIDTH, -HALF_SCREEN_HEIGHT, HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT });
+		//animPartEngine.setParticleBounds(true, { -HALF_SCREEN_WIDTH, -HALF_SCREEN_HEIGHT, HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT });
 		animPartEngine.setAnimSpeed(10);
-		animPartEngine.remakePartices();
+		animPartEngine.remakeParticles();
 
 		vector<Math::VecN<int, 4>> fireClips;
 		fireClips.push_back({ 5, 2, 13, 21 });
@@ -447,9 +500,9 @@ int main(int argc, char* argv[]) {
 		fireBehav.setLifeBoost(0.5f);
 
 		firePartEngine.setBehavior(&fireBehav);
-		firePartEngine.setParticleBounds(true, { -HALF_SCREEN_WIDTH, -HALF_SCREEN_HEIGHT, HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT });
+		//firePartEngine.setParticleBounds(true, { -HALF_SCREEN_WIDTH, -HALF_SCREEN_HEIGHT, HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT });
 		firePartEngine.setAnimSpeed(5);
-		firePartEngine.remakePartices();
+		firePartEngine.remakeParticles();
 #endif
 
 #if TEST_SURF_MOVE
@@ -992,7 +1045,7 @@ int main(int argc, char* argv[]) {
 #endif
 
 #if TEST_GUI
-		Guis::Button button(40, 40, testButton, "main", 16, "Press Me");
+		Guis::ButtonText button(40, 40, testButton, "main", 16, "Press Me");
 		button.setColor(Colors::BLUE);
 		button.setFrameColor(Colors::RED);
 		button.setBackgroundColor(Colors::GREEN.inverse());
@@ -1189,9 +1242,9 @@ int main(int argc, char* argv[]) {
 			animPartEngine.update();
 			firePartEngine.update();
 
-			partEngine.render(screen);
-			animPartEngine.render(screen);
-			firePartEngine.render(screen);
+			partEngine.draw(screen);
+			animPartEngine.draw(screen);
+			firePartEngine.draw(screen);
 #endif
 
 #if TEST_BNDS

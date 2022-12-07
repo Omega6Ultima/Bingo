@@ -35,6 +35,22 @@ uint Timer::getTicks() {
 	return SDL_GetTicks();
 }
 
+bool Timer::everyXSeconds(uint sec) {
+	return everyXMillis(sec * 1000);
+}
+
+bool Timer::everyXMillis(uint ms) {
+	timeAccumulator += end();
+	start();
+
+	if (timeAccumulator > ms) {
+		timeAccumulator -= ms;
+		return true;
+	}
+
+	return false;
+}
+
 CountDownTimer::CountDownTimer() {
 	memset(&targetTime, 0, sizeof(targetTime));
 }

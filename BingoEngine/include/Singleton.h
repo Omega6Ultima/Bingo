@@ -19,7 +19,7 @@ namespace Bingo {
 
 	template<class T>
 	class Singleton {
-	public:
+	protected:
 		Singleton<T>() {
 #if _DEBUG
 			if (mSingleton) {
@@ -37,6 +37,11 @@ namespace Bingo {
 			}
 #endif
 		}
+
+		Singleton(const Singleton<T>& sing) = delete;
+		Singleton& operator =(const Singleton<T>& sing) = delete;
+
+	public:
 		/*returns a reference to the singleton instance*/
 		static T& getSingleton() {
 #ifdef _DEBUG
@@ -57,11 +62,9 @@ namespace Bingo {
 #endif
 			return mSingleton;
 		}
+
 	protected:
 		static T* mSingleton;
-	private:
-		Singleton(const Singleton<T>& sing);
-		Singleton& operator =(const Singleton<T>& sing);
 	};
 
 	template<class T>

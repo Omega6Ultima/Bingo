@@ -54,7 +54,7 @@ Surface::Surface(string path) {
 
 	SDL_FreeSurface(tempSurf);
 
-	initializerHelper();
+	//initializerHelper();
 }
 
 Surface::Surface(string path, Color colorKey) {
@@ -90,7 +90,7 @@ Surface::Surface(string path, Color colorKey) {
 
 	SDL_FreeSurface(tempSurf);
 
-	initializerHelper();
+	//initializerHelper();
 }
 
 Surface::Surface(int width, int height) {
@@ -105,14 +105,14 @@ Surface::Surface(int width, int height) {
 	texture = createTexture(width, height);
 	setBlendMode(BLEND_BLEND);
 
-	initializerHelper();
+	//initializerHelper();
 }
 
 Surface::Surface(const Surface& surf) {
 	width = surf.width;
 	height = surf.height;
 
-	initializerHelper();
+	//initializerHelper();
 
 	for (auto iter = surf.newViewports.begin(); iter != surf.newViewports.end(); iter++) {
 		newViewports.push_back(new SDL_Rect{ (*iter)->x,
@@ -152,7 +152,7 @@ Surface& Surface::operator =(const Surface& surf) {
 	width = surf.width;
 	height = surf.height;
 
-	initializerHelper();
+	//initializerHelper();
 
 	for (auto iter = newViewports.begin(); iter != newViewports.end(); iter++) {
 		if (*iter) {
@@ -228,9 +228,9 @@ Surface::~Surface() {
 	SDL_DestroyTexture(texture);
 }
 
-void Surface::initializerHelper() {
-	//
-}
+//void Surface::initializerHelper() {
+//	//
+//}
 
 SDL_Surface* Surface::createSurface(string path) {
 	SDL_Surface* tempSurf = NULL;
@@ -309,6 +309,18 @@ Color Surface::getPixelAt(uint x, uint y) {
 
 void Surface::setRotation(uint angle) {
 	rotation = angle % 360;
+}
+
+void Surface::setScale(float factor) {
+	scaleFactor = { factor, factor };
+}
+
+void Surface::setScaleX(float factor) {
+	scaleFactor[0] = factor;
+}
+
+void Surface::setScaleY(float factor) {
+	scaleFactor[1] = factor;
 }
 
 void Surface::setCenter(VecN<int, 2> point) {
@@ -435,8 +447,8 @@ void Surface::draw(Surface& surf) {
 	SDL_Rect dest = { surf.getPosX(), surf.getPosY(), surf.getWidth(), surf.getHeight() };
 
 	if (surf.activeClip) {
-		dest.w = surf.activeClip->w;
-		dest.h = surf.activeClip->h;
+		dest.w = static_cast<int>(surf.activeClip->w * surf.scaleFactor[0]);
+		dest.h = static_cast<int>(surf.activeClip->h * surf.scaleFactor[1]);
 	}
 
 	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
@@ -452,50 +464,50 @@ void Surface::draw(Surface& surf, int x, int y) {
 	SDL_Rect dest = { x, y, surf.getWidth(), surf.getHeight() };
 
 	if (surf.activeClip) {
-		dest.w = surf.activeClip->w;
-		dest.h = surf.activeClip->h;
+		dest.w = static_cast<int>(surf.activeClip->w * surf.scaleFactor[0]);
+		dest.h = static_cast<int>(surf.activeClip->h * surf.scaleFactor[1]);
 	}
 
 	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
 }
 
-void Surface::drawScaled(Surface& surf, float xscale, float yscale) {
-	checkRenderTarget();
-
-	if (surf.isDirty()) {
-		surf.renderTexture();
-	}
-
-	SDL_Rect dest = { surf.getPosX(), surf.getPosY(), \
-		static_cast<int>(surf.getWidth() * xscale), \
-		static_cast<int>(surf.getHeight() * yscale) };
-
-	if (surf.activeClip) {
-		dest.w = static_cast<int>(surf.activeClip->w * xscale);
-		dest.h = static_cast<int>(surf.activeClip->h * yscale);
-	}
-
-	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
-}
-
-void Surface::drawScaled(Surface& surf, int x, int y, float xscale, float yscale) {
-	checkRenderTarget();
-
-	if (surf.isDirty()) {
-		surf.renderTexture();
-	}
-
-	SDL_Rect dest = { x, y, \
-		static_cast<int>(surf.getWidth() * xscale), \
-		static_cast<int>(surf.getHeight() * yscale) };
-
-	if (surf.activeClip) {
-		dest.w = static_cast<int>(surf.activeClip->w * xscale);
-		dest.h = static_cast<int>(surf.activeClip->h * yscale);
-	}
-
-	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
-}
+//void Surface::drawScaled(Surface& surf, float xscale, float yscale) {
+//	checkRenderTarget();
+//
+//	if (surf.isDirty()) {
+//		surf.renderTexture();
+//	}
+//
+//	SDL_Rect dest = { surf.getPosX(), surf.getPosY(), \
+//		static_cast<int>(surf.getWidth() * xscale), \
+//		static_cast<int>(surf.getHeight() * yscale) };
+//
+//	if (surf.activeClip) {
+//		dest.w = static_cast<int>(surf.activeClip->w * xscale);
+//		dest.h = static_cast<int>(surf.activeClip->h * yscale);
+//	}
+//
+//	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
+//}
+//
+//void Surface::drawScaled(Surface& surf, int x, int y, float xscale, float yscale) {
+//	checkRenderTarget();
+//
+//	if (surf.isDirty()) {
+//		surf.renderTexture();
+//	}
+//
+//	SDL_Rect dest = { x, y, \
+//		static_cast<int>(surf.getWidth() * xscale), \
+//		static_cast<int>(surf.getHeight() * yscale) };
+//
+//	if (surf.activeClip) {
+//		dest.w = static_cast<int>(surf.activeClip->w * xscale);
+//		dest.h = static_cast<int>(surf.activeClip->h * yscale);
+//	}
+//
+//	SDL_RenderCopyEx(WindowManager::getSingleton().getRenderer(), surf.texture, surf.activeClip, &dest, surf.rotation, &surf.sdl_center, surf.flipState);
+//}
 
 void Surface::drawClip(Surface& surf, uint clip) {
 	checkRenderTarget();
@@ -758,13 +770,13 @@ void Surface::drawTriangle(int x, int y, uint horiz, uint vert, float angleDeg, 
 	points[2] = { x + static_cast<int>(halfHoriz * c) - static_cast<int>(halfVert * s), y + static_cast<int>(halfHoriz * s) + static_cast<int>(halfVert * c) };
 	points[3] = points[0];
 
-	//drawCircle(points[0].x, points[0].y, 10, false);
-	//setDrawColor(BLUE);
-	//drawCircle(points[1].x, points[1].y, 8, false);
-	//setDrawColor(RED);
-	//drawCircle(points[2].x, points[2].y, 10, false);
-	//setDrawColor(GREEN);
-	//drawCircle(x, y, 10, false);
+	drawCircle(points[0].x, points[0].y, 10, false);
+	setDrawColor(Bingo::Colors::BLUE);
+	drawCircle(points[1].x, points[1].y, 8, false);
+	setDrawColor(Bingo::Colors::RED);
+	drawCircle(points[2].x, points[2].y, 10, false);
+	setDrawColor(Bingo::Colors::GREEN);
+	drawCircle(x, y, 10, false);
 
 	if (filled) {
 #if USE_BRESENHAM_TRIANGLE

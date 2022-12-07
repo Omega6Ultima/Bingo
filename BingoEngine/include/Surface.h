@@ -45,9 +45,9 @@ namespace Bingo {
 			Surface& operator =(const Surface& surf);
 			~Surface();
 
-		private:
-			/*contains code to be called by all constructors*/
-			void initializerHelper();
+			//private:
+			//	/*contains code to be called by all constructors*/
+			//	void initializerHelper();
 
 		protected:
 			SDL_Surface* createSurface(string path);
@@ -75,11 +75,11 @@ namespace Bingo {
 
 			/*returns the width of the surface*/
 			inline int getWidth() const {
-				return width;
+				return static_cast<int>(width * scaleFactor[0]);
 			}
 			/*returns the height of the surface*/
 			inline int getHeight() const {
-				return height;
+				return static_cast<int>(height * scaleFactor[1]);
 			}
 			/*returns the draw color of the surface*/
 			inline const Color& getDrawColor() const {
@@ -91,6 +91,18 @@ namespace Bingo {
 			/*Get the rotation angle for the surface*/
 			inline uint getRotation() const {
 				return rotation;
+			}
+
+			void setScale(float factor);
+			void setScaleX(float factor);
+			void setScaleY(float factor);
+
+			inline float getScaleX() const {
+				return scaleFactor[0];
+			}
+
+			inline float getScaleY() const {
+				return scaleFactor[1];
 			}
 
 			/*Sets the center for the surface, the point the surface rotates around
@@ -120,7 +132,7 @@ namespace Bingo {
 
 			/*fills the entire surface with the draw color*/
 			void fill(Color color);
-			/*fills the clears all the pixels of the surface*/
+			/*clears all the pixels of the surface*/
 			void clear();
 			/*causes the Surface to redraw its texture*/
 			virtual void renderTexture();
@@ -134,17 +146,17 @@ namespace Bingo {
 				draw(surf, pos[0], pos[1]);
 			}
 
-			/*draw a scaled copy of surf onto the current render target at is own position
-			scale is measured between 0 and 1*/
-			void drawScaled(Surface& surf, float xscale, float yscale);
-			/*draw a scaled copy of surf onto the current render target at (x, y)
-			scale is measured between 0 and 1*/
-			void drawScaled(Surface& surf, int x, int y, float xscale, float yscale);
-			/*draw a scaled copy of surf onto the current render target at (x, y)
-			scale is measured between 0 and 1*/
-			inline void drawScaled(Surface& surf, VecN<int, 2> pos, float xscale, float yscale) {
-				drawScaled(surf, pos[0], pos[1], xscale, yscale);
-			}
+			///*draw a scaled copy of surf onto the current render target at is own position
+			//scale is measured between 0 and 1*/
+			//void drawScaled(Surface& surf, float xscale, float yscale);
+			///*draw a scaled copy of surf onto the current render target at (x, y)
+			//scale is measured between 0 and 1*/
+			//void drawScaled(Surface& surf, int x, int y, float xscale, float yscale);
+			///*draw a scaled copy of surf onto the current render target at (x, y)
+			//scale is measured between 0 and 1*/
+			//inline void drawScaled(Surface& surf, VecN<int, 2> pos, float xscale, float yscale) {
+			//	drawScaled(surf, pos[0], pos[1], xscale, yscale);
+			//}
 
 			/*draw the clip of surf onto the current render target at its own position*/
 			void drawClip(Surface& surf, uint clip);
@@ -252,6 +264,7 @@ namespace Bingo {
 			vector<SDL_Rect*> newClips;
 			SDL_Rect* activeClip = NULL;
 			uint rotation = 0;
+			VecN<float, 2> scaleFactor = { 1.0f, 1.0f };
 			VecN<float, 2> center;
 			SDL_Point sdl_center;
 			SDL_RendererFlip flipState = SDL_FLIP_NONE;

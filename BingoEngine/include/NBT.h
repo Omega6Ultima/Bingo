@@ -166,185 +166,33 @@ namespace Bingo {
 		T data;
 	};
 
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<bool>::getType() {
-		return NBT_Base::NBT_BOOL;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<char>::getType() {
-		return NBT_Base::NBT_CHAR;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<uchar>::getType() {
-		return NBT_Base::NBT_UCHAR;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<short>::getType() {
-		return NBT_Base::NBT_SHORT;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<ushort>::getType() {
-		return NBT_Base::NBT_USHORT;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<int>::getType() {
-		return NBT_Base::NBT_INT;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<uint>::getType() {
-		return NBT_Base::NBT_UINT;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<long>::getType() {
-		return NBT_Base::NBT_LONG;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<ulong>::getType() {
-		return NBT_Base::NBT_ULONG;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<llong>::getType() {
-		return NBT_Base::NBT_LLONG;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<ullong>::getType() {
-		return NBT_Base::NBT_ULLONG;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<float>::getType() {
-		return NBT_Base::NBT_FLOAT;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<double>::getType() {
-		return NBT_Base::NBT_DOUBLE;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<string>::getType() {
-		return NBT_Base::NBT_STRING;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<void*>::getType() {
-		return NBT_Base::NBT_POINTER;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<int, 1>>::getType() {
-		return NBT_Base::NBT_INT_ARRAY;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<int>>::getType() {
-		return NBT_Base::NBT_INT_ARRAY;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<vector<int>>::getType() {
-		return NBT_Base::NBT_INT_ARRAY;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<double, 1>>::getType() {
-		return NBT_Base::NBT_DOUBLE_ARRAY;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<double>>::getType() {
-		return NBT_Base::NBT_DOUBLE_ARRAY;
-	}
-
-	template<>
-	NBT_Base::NBT_Type NBT_Tag<vector<double>>::getType() {
-		return NBT_Base::NBT_DOUBLE_ARRAY;
-	}
-
-	template<>
-	void NBT_Tag<string>::writeData(SDL_RWops* file) {
-		int nameSize = name.size();
-		int tagSize = data.size();
-
-		SDL_RWwrite(file, &type, sizeof(type), 1);
-		SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-		SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-		SDL_RWwrite(file, &tagSize, SZ_INT, 1);
-		SDL_RWwrite(file, data.data(), SZ_CHAR, tagSize);
-	}
-
-	template<>
-	void NBT_Tag<Bingo::Math::DynVecN<int>>::writeData(SDL_RWops* file) {
-		int nameSize = name.size();
-		int tagSize = data.getSize();
-
-		SDL_RWwrite(file, &type, sizeof(type), 1);
-		SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-		SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-		SDL_RWwrite(file, &tagSize, SZ_INT, 1);
-		SDL_RWwrite(file, data.data(), SZ_INT, tagSize);
-	}
-
-	template<>
-	void NBT_Tag<vector<int>>::writeData(SDL_RWops* file) {
-		int nameSize = name.size();
-		int tagSize = data.size();
-
-		SDL_RWwrite(file, &type, sizeof(type), 1);
-		SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-		SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-		SDL_RWwrite(file, &tagSize, SZ_INT, 1);
-		SDL_RWwrite(file, data.data(), SZ_INT, tagSize);
-	}
-
-	template<>
-	void NBT_Tag<Bingo::Math::DynVecN<double>>::writeData(SDL_RWops* file) {
-		int nameSize = name.size();
-		int tagSize = data.getSize();
-
-		SDL_RWwrite(file, &type, sizeof(type), 1);
-		SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-		SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-		SDL_RWwrite(file, &tagSize, SZ_INT, 1);
-		SDL_RWwrite(file, data.data(), SZ_DOUBLE, tagSize);
-	}
-
-	template<>
-	void NBT_Tag<vector<double>>::writeData(SDL_RWops* file) {
-		int nameSize = name.size();
-		int tagSize = data.size();
-
-		SDL_RWwrite(file, &type, sizeof(type), 1);
-		SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-		SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-		SDL_RWwrite(file, &tagSize, SZ_INT, 1);
-		SDL_RWwrite(file, data.data(), SZ_DOUBLE, tagSize);
-	}
-
-	template<>
-	string NBT_Tag<void*>::toString() {
-		if (dirty) {
-			stringstream str;
-
-			str << "NBT_Tag{" << name << ":0x" << hex << data << "}";
-
-			builtStr = str.str();
-			dirty = false;
-		}
-
-		return builtStr;
-	}
-
+	template<> NBT_Base::NBT_Type NBT_Tag<bool>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<char>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<uchar>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<short>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<ushort>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<int>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<uint>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<long>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<ulong>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<llong>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<ullong>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<float>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<double>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<string>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<void*>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<int, 1>>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<int>>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<vector<int>>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<double, 1>>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<double>>::getType();
+	template<> NBT_Base::NBT_Type NBT_Tag<vector<double>>::getType();
+	template<> void NBT_Tag<string>::writeData(SDL_RWops* file);
+	template<> void NBT_Tag<Bingo::Math::DynVecN<int>>::writeData(SDL_RWops* file);
+	template<> void NBT_Tag<vector<int>>::writeData(SDL_RWops* file);
+	template<> void NBT_Tag<Bingo::Math::DynVecN<double>>::writeData(SDL_RWops* file);
+	template<> void NBT_Tag<vector<double>>::writeData(SDL_RWops* file);
+	template<> string NBT_Tag<void*>::toString();
 }
 
 #endif

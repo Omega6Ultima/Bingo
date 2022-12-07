@@ -29,12 +29,6 @@ void EventManager::update() {
 
 		switch (event.type) {
 		case SDL_QUIT:
-			//for (uint c = 0; c < systemListeners.size(); c++){
-			//	memset(&systemListeners[c]->eventData, 0, sizeof(EventListener::EventData));
-			//	systemListeners[c]->eventData.windowCode = event.window.event;
-			//	systemListeners[c]->handleEvent(EVT_QUIT);
-			//}
-
 			for (auto riter = systemListeners.rbegin(); riter != systemListeners.rend(); riter++) {
 				if (riter->second.size() == 0) {
 					continue;
@@ -57,12 +51,6 @@ void EventManager::update() {
 
 			break;
 		case SDL_WINDOWEVENT:
-			//for (uint c = 0; c < systemListeners.size(); c++){
-			//	memset(&systemListeners[c]->eventData, 0, sizeof(EventListener::EventData));
-			//	systemListeners[c]->eventData.windowCode = event.window.event;
-			//	systemListeners[c]->handleEvent(EVT_WINDOWEVENT);
-			//}
-
 			for (auto riter = systemListeners.rbegin(); riter != systemListeners.rend(); riter++) {
 				if (riter->second.size() == 0) {
 					continue;
@@ -85,13 +73,6 @@ void EventManager::update() {
 
 			break;
 		case SDL_KEYDOWN:
-			//for (uint c = 0; c < keyListeners.size(); c++){
-			//	memset(&keyListeners[c]->eventData, 0, sizeof(EventListener::EventData));
-			//	keyListeners[c]->eventData.keyCode = event.key.keysym.sym;
-			//	keyListeners[c]->eventData.keyRepeat = event.key.repeat;
-			//	keyListeners[c]->handleEvent(EVT_KEYDOWN);
-			//}
-
 			for (auto riter = keyListeners.rbegin(); riter != keyListeners.rend(); riter++) {
 				if (riter->second.size() == 0) {
 					continue;
@@ -116,13 +97,6 @@ void EventManager::update() {
 
 			break;
 		case SDL_KEYUP:
-			//for (uint c = 0; c < keyListeners.size(); c++){
-			//	memset(&keyListeners[c]->eventData, 0, sizeof(EventListener::EventData));
-			//	keyListeners[c]->eventData.keyCode = event.key.keysym.sym;
-			//	keyListeners[c]->eventData.keyRepeat = event.key.repeat;
-			//	keyListeners[c]->handleEvent(EVT_KEYUP);
-			//}
-
 			for (auto riter = keyListeners.rbegin(); riter != keyListeners.rend(); riter++) {
 				if (riter->second.size() == 0) {
 					continue;
@@ -147,13 +121,6 @@ void EventManager::update() {
 
 			break;
 		case SDL_MOUSEMOTION:
-			//for (uint c = 0; c < mouseListeners.size(); c++){
-			//	memset(&mouseListeners[c]->eventData, 0, sizeof(EventListener::EventData));
-			//	mouseListeners[c]->eventData.mouseDelta[0] = event.motion.xrel;
-			//	mouseListeners[c]->eventData.mouseDelta[1] = event.motion.yrel;
-			//	mouseListeners[c]->handleEvent(EVT_MOUSEMOVE);
-			//}
-
 			for (auto riter = mouseListeners.rbegin(); riter != mouseListeners.rend(); riter++) {
 				if (riter->second.size() == 0) {
 					continue;
@@ -177,16 +144,8 @@ void EventManager::update() {
 
 			break;
 		case SDL_MOUSEBUTTONDOWN:
-			//for (uint c = 0; c < mouseListeners.size(); c++){
-			//	memset(&mouseListeners[c]->eventData, 0, sizeof(EventListener::EventData));
-			//	mouseListeners[c]->eventData.mouseButton = event.button.button;
-			//	mouseListeners[c]->handleEvent(EVT_MOUSEBUTTONDOWN);
-			//}
-
 			for (auto riter = mouseListeners.rbegin(); riter != mouseListeners.rend(); riter++) {
-				//cerr << riter->second.size() << std::endl;
 				if (riter->second.size() == 0) {
-					//cerr << "size 0\n";
 					continue;
 				}
 
@@ -207,12 +166,6 @@ void EventManager::update() {
 
 			break;
 		case SDL_MOUSEBUTTONUP:
-			//for (uint c = 0; c < mouseListeners.size(); c++){
-			//	memset(&mouseListeners[c]->eventData, 0, sizeof(EventListener::EventData));
-			//	mouseListeners[c]->eventData.mouseButton = event.button.button;
-			//	mouseListeners[c]->handleEvent(EVT_MOUSEBUTTONUP);
-			//}
-
 			for (auto riter = mouseListeners.rbegin(); riter != mouseListeners.rend(); riter++) {
 				if (riter->second.size() == 0) {
 					continue;
@@ -241,34 +194,23 @@ void EventManager::update() {
 void EventManager::registerListener(EventListener* listener, EventListenType type, uint priority) {
 	switch (type) {
 	case EventManager::LISTEN_SYSTEM:
-		//systemListeners.push_back(listener);
 		systemListeners[priority].push_back(listener);
 		break;
 	case EventManager::LISTEN_KEY:
-		//keyListeners.push_back(listener);
 		keyListeners[priority].push_back(listener);
 		break;
 	case EventManager::LISTEN_MOUSE:
-		//mouseListeners.push_back(listener);
 		mouseListeners[priority].push_back(listener);
 		break;
 	default:
 		Error("Invalid EventListenType: " + type);
 	}
-
-	//cerr << "Registering \t" << listener << ": " << type << std::endl;
 }
 
 void EventManager::unregisterListener(EventListener* listener, EventListenType type) {
-	//cerr << "Unregistering \t" << listener << ": " << type << std::endl;
-
 	switch (type) {
 	case EventManager::LISTEN_SYSTEM:
 		for (auto iter = systemListeners.begin(); iter != systemListeners.end(); iter++) {
-			//if (*iter == listener){
-			//	systemListeners.erase(iter);
-			//	break;
-			//}
 			for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); iter2++) {
 				if (*iter2 == listener) {
 					iter2 = iter->second.erase(iter2);
@@ -290,11 +232,6 @@ void EventManager::unregisterListener(EventListener* listener, EventListenType t
 		break;
 	case EventManager::LISTEN_KEY:
 		for (auto iter = keyListeners.begin(); iter != keyListeners.end(); iter++) {
-			//if (*iter == listener){
-			//	keyListeners.erase(iter);
-			//	break;
-			//}
-
 			for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); iter2++) {
 				if (*iter2 == listener) {
 					iter2 = iter->second.erase(iter2);
@@ -316,11 +253,6 @@ void EventManager::unregisterListener(EventListener* listener, EventListenType t
 		break;
 	case EventManager::LISTEN_MOUSE:
 		for (auto iter = mouseListeners.begin(); iter != mouseListeners.end(); iter++) {
-			//if (*iter == listener){
-			//	mouseListeners.erase(iter);
-			//	break;
-			//}
-
 			for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); iter2++) {
 				if (*iter2 == listener) {
 					iter2 = iter->second.erase(iter2);

@@ -96,7 +96,9 @@ void PhysicalObject::update(float dtime) {
 	vel += acc;
 
 	//apply friction to the acceleration
-	acc *= frictionCoeff;
+	// TODO add option for this or something
+	//acc *= frictionCoeff;
+	acc *= 0.9375;
 
 	//If gravity effects are on, add it to the y acceleration
 	if (gravityEffects) {

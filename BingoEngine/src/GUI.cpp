@@ -5,17 +5,44 @@
 
 #include <SDL_events.h>
 
+using Bingo::Guis::GuiBase;
 using Bingo::Guis::Button;
+using Bingo::Guis::ButtonText;
 using Bingo::Guis::DropDown;
 using Bingo::Guis::Input;
 using Bingo::Guis::Slider;
 using Bingo::Surfaces::WindowManager;
 
-Button::Button(int x, int y, ButtonFunc func, string fontName, int size, string text, Color color)
-	: TextSurface(fontName, size, text, color) {
-	pos = { static_cast<float>(x), static_cast<float>(y) };
+void GuiBase::setFrameColor(Color color) {
 	frameColor = color;
+}
+
+void GuiBase::setFrameWidth(uint width) {
+	frameWidth = width;
+}
+
+void GuiBase::enable() {
+	enabled = true;
+}
+
+void GuiBase::disable() {
+	enabled = false;
+}
+
+void GuiBase::hide() {
+	hidden = true;
+}
+
+void GuiBase::show() {
+	hidden = false;
+}
+
+Button::Button(int x, int y, ButtonFunc func, uint width, uint height, Color color)
+	: Surface(width, height) {
+	pos = { static_cast<float>(x), static_cast<float>(y) };
 	onButtonClick = func;
+
+	setFrameColor(color);
 
 	renderTexture();
 
@@ -23,11 +50,12 @@ Button::Button(int x, int y, ButtonFunc func, string fontName, int size, string 
 	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_MOUSE, BUTTON_PRIORITY);
 }
 
-Button::Button(VecN<int, 2> position, ButtonFunc func, string fontName, int size, string text, Color color)
-	: TextSurface(fontName, size, text, color) {
-	pos = position;
-	frameColor = color;
+Button::Button(int x, int y, ButtonFunc func, string imgFile, Color color)
+	: Surface(imgFile) {
+	pos = { static_cast<float>(x), static_cast<float>(y) };
 	onButtonClick = func;
+
+	setFrameColor(color);
 
 	renderTexture();
 
@@ -36,33 +64,42 @@ Button::Button(VecN<int, 2> position, ButtonFunc func, string fontName, int size
 }
 
 void Button::setFrameColor(Color color) {
-	frameColor = color;
+	GuiBase::setFrameColor(color);
 
 	markDirty();
 }
 
 void Button::setFrameWidth(uint width) {
-	frameWidth = width;
-	setTextPadding(static_cast<uint>(width * 1.25) + 3);
+	GuiBase::setFrameWidth(width);
 
 	markDirty();
 }
 
-//void Button::setShadowText(string str){
-//	shadowText = str;
-//
-//	markDirty();
-//}
+void Button::hide() {
+	GuiBase::hide();
+
+	markDirty();
+}
+
+void Button::show() {
+	GuiBase::show();
+
+	markDirty();
+}
 
 void Button::renderTexture() {
-	TextSurface::renderTexture();
+	if (getHidden()) {
+		return;
+	}
+
+	Surface::renderTexture();
 
 	Surface::saveRenderTarget();
 
 	setRenderTarget();
-	setDrawColor(frameColor);
+	setDrawColor(getFrameColor());
 
-	for (uint c = 0; c < frameWidth; c++) {
+	for (uint c = 0; c < getFrameWidth(); c++) {
 		drawRect(c, c, width - 2 * c, height - 2 * c, false);
 	}
 
@@ -70,6 +107,112 @@ void Button::renderTexture() {
 }
 
 void Button::handleEvent(EventManager::EventType evt) {
+	if (getDisabled()) {
+		return;
+	}
+
+	MouseListener::handleEvent(evt);
+
+	if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {
+		VecN<int, 2> mousePos = getMousePos();
+
+		if (pos[0] <= mousePos[0] && mousePos[0] <= pos[0] + width) {
+			if (pos[1] <= mousePos[1] && mousePos[1] <= pos[1] + height) {
+				beingClicked = true;
+
+				if (checkMouseButtonDown(EventManager::MB_LEFT, 1000) ||
+					checkMouseButtonDown(EventManager::MB_RIGHT, 1000) ||
+					checkMouseButtonDown(EventManager::MB_CENTER, 1000)) {
+					setFrameColor(getFrameColor().inverse());
+					markDirty();
+				}
+
+				if (onButtonClick) {
+					onButtonClick(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
+				}
+			}
+		}
+	}
+	else if (evt == EventManager::EVT_MOUSEBUTTONUP) {
+		if (beingClicked) {
+			setFrameColor(getFrameColor().inverse());
+			markDirty();
+		}
+
+		beingClicked = false;
+	}
+}
+
+ButtonText::ButtonText(int x, int y, ButtonTextFunc func, string fontName, int size, string text, Color color)
+	: TextSurface(fontName, size, text, color) {
+	pos = { static_cast<float>(x), static_cast<float>(y) };
+	onButtonClick = func;
+
+	setFrameColor(color);
+
+	renderTexture();
+
+	EventManager::getSingleton().unregisterListener(this, EventManager::LISTEN_MOUSE);
+	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_MOUSE, BUTTON_PRIORITY);
+}
+
+ButtonText::ButtonText(VecN<int, 2> position, ButtonTextFunc func, string fontName, int size, string text, Color color)
+	: TextSurface(fontName, size, text, color) {
+	pos = position;
+	onButtonClick = func;
+
+	setFrameColor(color);
+
+	renderTexture();
+
+	EventManager::getSingleton().unregisterListener(this, EventManager::LISTEN_MOUSE);
+	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_MOUSE, BUTTON_PRIORITY);
+}
+
+void ButtonText::setFrameColor(Color color) {
+	GuiBase::setFrameColor(color);
+
+	markDirty();
+}
+
+void ButtonText::setFrameWidth(uint width) {
+	GuiBase::setFrameWidth(width);
+
+	setTextPadding(static_cast<uint>(width * 1.25) + 3);
+
+	markDirty();
+}
+
+//void ButtonText::setShadowText(string str){
+//	shadowText = str;
+//
+//	markDirty();
+//}
+
+void ButtonText::renderTexture() {
+	if (getHidden()) {
+		return;
+	}
+
+	TextSurface::renderTexture();
+
+	Surface::saveRenderTarget();
+
+	setRenderTarget();
+	setDrawColor(getFrameColor());
+
+	for (uint c = 0; c < getFrameWidth(); c++) {
+		drawRect(c, c, width - 2 * c, height - 2 * c, false);
+	}
+
+	Surface::restoreRenderTarget();
+}
+
+void ButtonText::handleEvent(EventManager::EventType evt) {
+	if (getDisabled()) {
+		return;
+	}
+
 	MouseListener::handleEvent(evt);
 
 	if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {
@@ -105,7 +248,7 @@ void Button::handleEvent(EventManager::EventType evt) {
 }
 
 Input::Input(int x, int y, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color)
-	: Button(x, y, NULL, fontName, fontSize, startText, color) {
+	: ButtonText(x, y, NULL, fontName, fontSize, startText, color) {
 	inputWidth = width;
 	inputHeight = height;
 	onInputClick = func;
@@ -114,7 +257,7 @@ Input::Input(int x, int y, int width, int height, InputFunc func, string fontNam
 
 	//renderTexture();
 
-	//unregister the registration from Button constructor
+	//unregister the registration from ButtonText constructor
 	EventManager::getSingleton().unregisterListener(this, EventManager::LISTEN_KEY);
 
 	//register with higher priority
@@ -123,7 +266,7 @@ Input::Input(int x, int y, int width, int height, InputFunc func, string fontNam
 }
 
 Input::Input(VecN<int, 2> position, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color)
-	: Button(position, NULL, fontName, fontSize, startText, color) {
+	: ButtonText(position, NULL, fontName, fontSize, startText, color) {
 	inputWidth = width;
 	inputHeight = height;
 	onInputClick = func;
@@ -132,7 +275,7 @@ Input::Input(VecN<int, 2> position, int width, int height, InputFunc func, strin
 
 	renderTexture();
 
-	//unregister the registration from Button constructor
+	//unregister the registration from ButtonText constructor
 	EventManager::getSingleton().unregisterListener(this, EventManager::LISTEN_KEY);
 
 	//register with higher priority
@@ -180,6 +323,10 @@ void Input::inputMode() {
 }
 
 void Input::renderTexture() {
+	if (getHidden()) {
+		return;
+	}
+
 	TextSurface::renderTexture();
 
 	SDL_Texture* tex = texture;
@@ -218,6 +365,10 @@ void Input::renderTexture() {
 }
 
 void Input::handleEvent(EventManager::EventType evt) {
+	if (getDisabled()) {
+		return;
+	}
+
 	MouseListener::handleEvent(evt);
 	KeyListener::handleEvent(evt);
 
@@ -273,8 +424,116 @@ void Input::handleEvent(EventManager::EventType evt) {
 	}
 }
 
+string Slider<char>::toString(char val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%c", val);
+
+	return result;
+}
+
+string Slider<uchar>::toString(uchar val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%c", val);
+
+	return result;
+}
+
+string Slider<short>::toString(short val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%d", val);
+
+	return result;
+}
+
+string Slider<ushort>::toString(ushort val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%d", val);
+
+	return result;
+}
+
+string Slider<int>::toString(int val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%d", val);
+
+	return result;
+}
+
+string Slider<uint>::toString(uint val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%d", val);
+
+	return result;
+}
+
+string Slider<long>::toString(long val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%d", val);
+
+	return result;
+}
+
+string Slider<ulong>::toString(ulong val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%d", val);
+
+	return result;
+}
+
+string Slider<ullong>::toString(ullong val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%llu", val);
+
+	return result;
+}
+
+string Slider<float>::toString(float val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%f", val);
+
+	return result;
+}
+
+string Slider<double>::toString(double val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%f", val);
+
+	return result;
+}
+
+string Slider<ldouble>::toString(ldouble val) {
+	char result[33];
+	memset(result, 0, sizeof(result));
+
+	sprintf_s(result, "%f", val);
+
+	return result;
+}
+
 DropDown::DropDown(int x, int y, uint w, uint h, vector<string>* values, DropDownFunc func, string fontName, int size, Color color)
-	: Button(x, y, NULL, fontName, size, "", color) {
+	: ButtonText(x, y, NULL, fontName, size, "", color) {
 	if (values && !values->empty()) {
 		options = *values;
 	}
@@ -325,6 +584,10 @@ void DropDown::setSelection(uint index) {
 }
 
 void DropDown::renderTexture() {
+	if (getHidden()) {
+		return;
+	}
+
 	bool optionsEmpty = options.empty();
 	size_t optionsSize = options.size();
 
@@ -402,6 +665,10 @@ void DropDown::renderTexture() {
 }
 
 void DropDown::handleEvent(EventManager::EventType evt) {
+	if (getDisabled()) {
+		return;
+	}
+
 	MouseListener::handleEvent(evt);
 
 	if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {

@@ -42,6 +42,15 @@ Uint32 WindowManager::getPixelFormat() const {
 	return SDL_GetWindowPixelFormat(window);
 }
 
+void WindowManager::toggleFullscreen() {
+	if (fullscreen) {
+		SDL_SetWindowFullscreen(window, 0);
+	}
+	else {
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+	}
+}
+
 void WindowManager::setDrawColor(Color col) {
 	drawColor = col;
 

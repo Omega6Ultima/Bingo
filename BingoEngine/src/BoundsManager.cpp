@@ -4,6 +4,7 @@
 
 #include <math.h>
 
+#include "Mathematics.h"
 #include "WindowManager.h"
 #include "Utils.h"
 
@@ -17,6 +18,7 @@ using Bingo::Collision::BoundsCircle;
 using Bingo::Collision::BoundsLine;
 using Bingo::Colors::Color;
 using Bingo::Direction::CompassDirection;
+using Bingo::Math::DistanceSq;
 using Bingo::Math::VecN;
 using Bingo::Surfaces::WindowManager;
 using Bingo::Time::Timer;
@@ -60,50 +62,52 @@ void BoundsManager::update() {
 		if (bounds[c]->reflectScreenEdge) {
 			//d is an int because we're going to use a theoretical negative index as a key
 			for (int d = 0; d < 4; d++) {
-				if (intersect(bounds[c]->getRoughArea(), screenEdges[d]->getRoughArea())) {
-					VecN<int, 2> point2 = screenEdges[d]->getClosestPoint(bounds[c]->getPos());
-					VecN<int, 2> point1 = bounds[c]->getClosestPoint(point2);
+				//TODO
+				//if (Intersect(bounds[c]->getRoughArea(), screenEdges[d]->getRoughArea())) {
+				//	VecN<int, 2> point2 = screenEdges[d]->getClosestPoint(bounds[c]->getPos());
+				//	VecN<int, 2> point1 = bounds[c]->getClosestPoint(point2);
 
-					if (distanceSq(point1, point2) < 2) {
-						uint curTicks = timer.getTicks();
-						pair<int, int> key(c, -(d + 1));
+				//	if (DistanceSq(point1, point2) < 2.0f) {
+				//		uint curTicks = timer.getTicks();
+				//		pair<int, int> key(c, -(d + 1));
 
-						if (cooldowns.find(key) == cooldowns.end() ||
-							curTicks - cooldowns[key] >= cooldown) {
+				//		if (cooldowns.find(key) == cooldowns.end() ||
+				//			curTicks - cooldowns[key] >= cooldown) {
 
-							CompassDirection direct(bounds[c]->getVel());
+				//			CompassDirection direct(bounds[c]->getVel());
 
-							handleCollision(bounds[c], screenEdges[d]->getNormal(point2, direct));
-							cooldowns[key] = curTicks;
-						}
-					}
-				}
+				//			handleCollision(bounds[c], screenEdges[d]->getNormal(point2, direct));
+				//			cooldowns[key] = curTicks;
+				//		}
+				//	}
+				//}
 			}
 		}
 
 		//check collisions between bounds
 		for (uint d = c + 1; d < bounds.size(); d++) {
-			if (intersect(bounds[c]->getRoughArea(), bounds[d]->getRoughArea())) {
-				VecN<int, 2> point2 = bounds[d]->getClosestPoint(bounds[c]->getPos());
-				VecN<int, 2> point1 = bounds[c]->getClosestPoint(point2);
+			//TODO
+			//if (Intersect(bounds[c]->getRoughArea(), bounds[d]->getRoughArea())) {
+			//	VecN<int, 2> point2 = bounds[d]->getClosestPoint(bounds[c]->getPos());
+			//	VecN<int, 2> point1 = bounds[c]->getClosestPoint(point2);
 
-				if (distanceSq(point1, point2) < 2) {
-					uint curTicks = timer.getTicks();
-					pair<int, int> key(c, d);
+			//	if (DistanceSq(point1, point2) < 2) {
+			//		uint curTicks = timer.getTicks();
+			//		pair<int, int> key(c, d);
 
-					if (cooldowns.find(key) == cooldowns.end() ||
-						curTicks - cooldowns[key] >= cooldown) {
+			//		if (cooldowns.find(key) == cooldowns.end() ||
+			//			curTicks - cooldowns[key] >= cooldown) {
 
-						CompassDirection direct1(bounds[c]->getVel());
-						CompassDirection direct2(bounds[d]->getVel());
+			//			CompassDirection direct1(bounds[c]->getVel());
+			//			CompassDirection direct2(bounds[d]->getVel());
 
-						handleCollision(bounds[c], bounds[d]->getNormal(point2, direct1));
-						handleCollision(bounds[d], bounds[c]->getNormal(point1, direct2));
-						cooldowns[key] = curTicks;
-						cooldowns[pair<int, int>(d, c)] = curTicks;
-					}
-				}
-			}
+			//			handleCollision(bounds[c], bounds[d]->getNormal(point2, direct1));
+			//			handleCollision(bounds[d], bounds[c]->getNormal(point1, direct2));
+			//			cooldowns[key] = curTicks;
+			//			cooldowns[pair<int, int>(d, c)] = curTicks;
+			//		}
+			//	}
+			//}
 		}
 	}
 }
@@ -265,7 +269,7 @@ VecN<int, 2> BoundsLine::getClosestPoint(VecN<int, 2> p) {
 	//	p = b->getCenter();
 	//}
 
-	if (distanceSq(pos, p) < distanceSq(pos2, p)) {
+	if (DistanceSq(pos, p) < DistanceSq(pos2, p)) {
 		closestPos = pos;
 		dirLine = pos2 - pos;
 	}
@@ -281,7 +285,7 @@ VecN<int, 2> BoundsLine::getClosestPoint(VecN<int, 2> p) {
 		result = closestPos;
 	}
 	else {
-		result = closestPos + (VecN<int, 2>)((dirLine).normalizeCopy() * cos(angRad) * distance(closestPos, p));
+		result = closestPos + (VecN<int, 2>)((dirLine).normalizeCopy() * cos(angRad) * Distance(closestPos, p));
 	}
 
 	return result;
@@ -372,10 +376,10 @@ VecN<int, 2> BoundsBox::getClosestPoint(VecN<int, 2> p) {
 	VecN<int, 2> lessCorner;
 	VecN<int, 2> greatCorner;
 
-	lengths[0] = distanceSq(p, corners[0]);
-	lengths[1] = distanceSq(p, corners[1]);
-	lengths[2] = distanceSq(p, corners[2]);
-	lengths[3] = distanceSq(p, corners[3]);
+	lengths[0] = DistanceSq(p, corners[0]);
+	lengths[1] = DistanceSq(p, corners[1]);
+	lengths[2] = DistanceSq(p, corners[2]);
+	lengths[3] = DistanceSq(p, corners[3]);
 
 	for (uint c = 1; c < 4; c++) {
 		if (lengths[c] < lengths[ind]) {

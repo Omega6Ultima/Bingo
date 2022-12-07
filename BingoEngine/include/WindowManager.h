@@ -43,6 +43,9 @@ namespace Bingo {
 			inline int getHeight() const {
 				return height;
 			}
+
+			/*sets the color used for clearing*/
+			void setDrawColor(Color col);
 			/*returns the draw color of the window*/
 			inline const Color& getDrawColor() const {
 				return drawColor;
@@ -56,8 +59,11 @@ namespace Bingo {
 
 			Uint32 getPixelFormat() const;
 
-			/*sets the color used for clearing*/
-			void setDrawColor(Color col);
+			void toggleFullscreen();
+			bool getFullscreen() const {
+				return fullscreen;
+			}
+
 			//void setRenderTarget(Surface* surf);
 
 			/*clears the window with the current draw color*/
@@ -72,6 +78,7 @@ namespace Bingo {
 			Surface* curRenderTarget = NULL;
 			Color drawColor = Colors::WHITE;
 			int width = 1, height = 1;
+			bool fullscreen = false;
 
 			Timer timer;
 			uint culTime = 1;

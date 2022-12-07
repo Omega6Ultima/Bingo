@@ -96,7 +96,7 @@ namespace Bingo {
 
 			inline T getX() const {
 #if _DEBUG
-				if (size < 0) {
+				if (size < 1) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -105,7 +105,7 @@ namespace Bingo {
 
 			inline T& getX() {
 #if _DEBUG
-				if (size < 0) {
+				if (size < 1) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -114,7 +114,7 @@ namespace Bingo {
 
 			inline T getY() const {
 #if _DEBUG
-				if (size < 1) {
+				if (size < 2) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -123,7 +123,7 @@ namespace Bingo {
 
 			inline T& getY() {
 #if _DEBUG
-				if (size < 1) {
+				if (size < 2) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -132,7 +132,7 @@ namespace Bingo {
 
 			inline T getZ() const {
 #if _DEBUG
-				if (size < 2) {
+				if (size < 3) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -141,7 +141,7 @@ namespace Bingo {
 
 			inline T& getZ() {
 #if _DEBUG
-				if (size < 2) {
+				if (size < 3) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -150,7 +150,7 @@ namespace Bingo {
 
 			inline T getW() const {
 #if _DEBUG
-				if (size < 3) {
+				if (size < 4) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -159,7 +159,7 @@ namespace Bingo {
 
 			inline T& getW() {
 #if _DEBUG
-				if (size < 3) {
+				if (size < 4) {
 					throw Exception("VecN has no X value");
 				}
 #endif
@@ -168,6 +168,14 @@ namespace Bingo {
 
 			const T* const data() const {
 				return vals;
+			}
+
+			const T* const begin() const {
+				return vals;
+			}
+
+			const T* const end() const {
+				return vals + size;
 			}
 
 			VecN<T, size> addTo(uint index, const T& val) const {
@@ -631,6 +639,78 @@ namespace Bingo {
 				return vals[index];
 			}
 
+			inline T getX() const {
+#if _DEBUG
+				if (size < 1) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[0];
+			}
+
+			inline T& getX() {
+#if _DEBUG
+				if (size < 1) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[0];
+			}
+
+			inline T getY() const {
+#if _DEBUG
+				if (size < 2) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[1];
+			}
+
+			inline T& getY() {
+#if _DEBUG
+				if (size < 2) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[1];
+			}
+
+			inline T getZ() const {
+#if _DEBUG
+				if (size < 3) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[2];
+			}
+
+			inline T& getZ() {
+#if _DEBUG
+				if (size < 3) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[2];
+			}
+
+			inline T getW() const {
+#if _DEBUG
+				if (size < 4) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[3];
+			}
+
+			inline T& getW() {
+#if _DEBUG
+				if (size < 4) {
+					throw Exception("VecN has no X value");
+				}
+#endif
+				return vals[3];
+			}
+
 			const T* const data() const {
 				return vals;
 			}
@@ -963,18 +1043,6 @@ namespace Bingo {
 
 			friend class DynVecN;
 		};
-
-		//distance squared between 2 points
-		float distanceSq(const VecN<float, 2>& p1, const VecN<float, 2>& p2);
-		float distanceSq(const DynVecN<float>& p1, const DynVecN<float>& p2);
-
-		//distance between 2 points
-		float distance(const VecN<float, 2>& p1, const VecN<float, 2>& p2);
-		float distance(const DynVecN<float>& p1, const DynVecN<float>& p2);
-
-		//assumes rect = {x, y, w, h}
-		bool intersect(const VecN<int, 4>& rect1, const VecN<int, 4>& rect2);
-		bool intersect(const DynVecN<int>& rect1, const DynVecN<int>& rect2);
 
 	}
 

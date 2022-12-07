@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <math.h>
+#include <sstream>
 
 #include "ThreadManager.h"
 
@@ -13,6 +14,7 @@ using std::floor;
 using std::endl;
 using std::pow;
 using std::sqrt;
+using std::stringstream;
 
 using Bingo::ThreadManager;
 using namespace Bingo;
