@@ -144,11 +144,11 @@ void ParticleEngine::setParticleGravity(bool grav) {
 	particleGravity = grav;
 }
 
-void ParticleEngine::addExternalForce(int x, int y, uint radius, int forceAmount) {
+void ParticleEngine::addExternalForce(int x, int y, uint radius, float forceAmount) {
 	addExternalForce({ x, y }, radius, forceAmount);
 }
 
-void ParticleEngine::addExternalForce(VecN<int, 2> pos, uint radius, int forcePercent) {
+void ParticleEngine::addExternalForce(VecN<int, 2> pos, uint radius, float forcePercent) {
 	uint radSq = radius * radius;
 
 	for (Particle* part : parts) {

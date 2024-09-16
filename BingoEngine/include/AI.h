@@ -26,7 +26,6 @@ using std::vector;
 namespace Bingo {
 
 	namespace AI {
-
 		using Math::DynMatrix;
 		using Math::DynVecN;
 
@@ -45,9 +44,23 @@ namespace Bingo {
 			DynVecN<uint> train(DynVecN<uint>& inputs, DynVecN<uint>& expectedOutput);
 			DynVecN<uint> run(DynVecN<uint>& inputs);
 
+			/**
+			 * How quickly the NeuralNetwork will learn during training
+			 */
 			void setLearningRate(double newRate);
 			inline double getLearningRate() const {
 				return learningRate;
+			}
+
+			void resetTrainingCount();
+
+			/* 
+			 * Controls after how many calls to train(...) that the learningRate starts to decrease
+			 * Set to 0 to disable
+			 */
+			void setTrainingThreshold(size_t threshold);
+			inline size_t getTrainingThreshold() const {
+				return trainingThreshold;
 			}
 
 			void setActivationFunction(NeuralNetActivationFunc func);
@@ -72,6 +85,8 @@ namespace Bingo {
 			DynVecN<double> runInput(DynVecN<uint>& inputs, bool training);
 
 		private:
+			size_t trainingCount = 0;
+			size_t trainingThreshold = 100;
 			double learningRate = 0.1;
 			NeuralNetActivationFunc activationFunc = sigmoid;
 			NeuralNetActivationDerivFunc activationDerivFunc = sigmoidDeriv;
@@ -118,44 +133,60 @@ namespace Bingo {
 				return generationSize;
 			}
 
-			inline double getEvolveRatio() const {
-				return evolveRatio;
-			}
-
 			void setEvolveRatio(double ratio) {
 				evolveRatio = ratio;
 			}
 
-			inline double getCrossoverRatio() const {
-				return crossoverRatio;
+			inline double getEvolveRatio() const {
+				return evolveRatio;
 			}
 
 			void setCrossoverRatio(double ratio) {
 				crossoverRatio = ratio;
 			}
 
-			inline double getMutateRatio() const {
-				return mutateRatio;
+			inline double getCrossoverRatio() const {
+				return crossoverRatio;
 			}
 
 			void setMutateRatio(double ratio) {
 				mutateRatio = ratio;
 			}
 
+			inline double getMutateRatio() const {
+				return mutateRatio;
+			}
+
 			void setCreateFunc(CreateFunc func) {
 				createFunc = func;
+			}
+
+			inline CreateFunc getCreateFunc() const {
+				return createFunc;
 			}
 
 			void setCrossoverFunc(CrossoverFunc func) {
 				crossoverFunc = func;
 			}
 
+			inline CrossoverFunc getCrossoverFunc() const {
+				return crossoverFunc;
+			}
+
 			void setMutateFunc(MutateFunc func) {
 				mutateFunc = func;
 			}
 
+			inline MutateFunc getMutateFunc() const {
+				return mutateFunc;
+			}
+
 			void setScoreFunc(ScoreFunc func) {
 				scoreFunc = func;
+			}
+
+			inline ScoreFunc getScoreFunc() const {
+				return scoreFunc;
 			}
 
 			void insertEntity(T entity) {

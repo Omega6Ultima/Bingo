@@ -22,19 +22,15 @@ void AnimSurface::update(uint times) {
 	if (animSpeed > 0) {
 		uint clipIndex = (frameCounter / animSpeed) % numFrames;
 
-		//activeClip = clips[clipIndex];
 		Surface::setClip(clipIndex);
 		frameCounter = (frameCounter + times) % (numFrames * animSpeed);
 	}
 	else {
-		//activeClip = clips[frameCounter];
 		Surface::setClip(frameCounter);
 	}
 }
 
 uint AnimSurface::addClip(uint x, uint y, uint w, uint h) {
-	//clips[numFrames] = new SDL_Rect{ static_cast<int>(x), static_cast<int>(y),
-	//		static_cast<int>(w), static_cast<int>(h) };
 	numFrames++;
 
 	return Surface::addClip(x, y, w, h);

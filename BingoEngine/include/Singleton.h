@@ -13,6 +13,7 @@ a new class a singleton*/
 
 using std::cerr;
 
+#include "Exception.h"
 #include "Utils.h"
 
 namespace Bingo {
@@ -23,8 +24,7 @@ namespace Bingo {
 		Singleton<T>() {
 #if _DEBUG
 			if (mSingleton) {
-				cerr << "Singleton was defined twice!!\n";
-				BAIL(1);
+				throw Exception("Singleton was defined twice!");
 			}
 #endif
 			mSingleton = (T*)this;
@@ -32,7 +32,7 @@ namespace Bingo {
 		~Singleton<T>() {
 #if _DEBUG
 			if (mSingleton == NULL) {
-				cerr << "That't not even... just what happened!?!\n";
+				cerr << "Critical Singleton error. This should not have happened";
 				BAIL(1);
 			}
 #endif

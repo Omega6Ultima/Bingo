@@ -10,6 +10,7 @@
 
 #include <SDL_mixer.h>
 
+#include "Core.h"
 #include "Singleton.h"
 
 using std::map;
@@ -23,7 +24,9 @@ namespace Bingo {
 
 	}
 
-	class SoundManager : public Singleton<SoundManager> {
+	using Core::Manager;
+
+	class SoundManager : public Singleton<SoundManager>, public Manager {
 	public:
 		SoundManager();
 		~SoundManager();

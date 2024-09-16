@@ -13,6 +13,7 @@ run when certain events happen*/
 
 #include <SDL_keycode.h>
 
+#include "Core.h"
 #include "Singleton.h"
 #include "Timer.h"
 #include "VecN.h"
@@ -25,18 +26,19 @@ using std::vector;
 
 namespace Bingo {
 
+	using Core::Manager;
+
 	namespace Events {
-
 		class EventListener;
-
+		class UserEventListener;
 	}
 
-	class EventManager :public Singleton<EventManager> {
+	class EventManager :public Singleton<EventManager>, public Manager {
 	public:
 		enum EventListenType {
 			LISTEN_SYSTEM = 0,
 			LISTEN_KEY,
-			LISTEN_MOUSE
+			LISTEN_MOUSE,
 		};
 		enum EventType {
 			EVT_QUIT = 0,
@@ -213,17 +215,21 @@ namespace Bingo {
 		EventManager();
 		~EventManager();
 
+		void registerUserEvent(string eventName);
+
 		void update();
-		/*add a listener whose handleEvent function
-		will be called when an event of that type happens*/
+		/* Add a listener whose handleEvent function will be called when an event of that type happens */
 		void registerListener(Events::EventListener* listener, EventListenType type, uint priority = 0);
-		/*removes a listener from the category of that type*/
+		void registerListener(Events::UserEventListener* listener, string eventName, uint priority = 0);
+		/* Removes a listener from the category of that type*/
 		void unregisterListener(Events::EventListener* listener, EventListenType type);
 		void cancelEvent();
 	private:
 		map<uint, vector<Events::EventListener*>> keyListeners;
 		map<uint, vector<Events::EventListener*>> mouseListeners;
 		map<uint, vector<Events::EventListener*>> systemListeners;
+		map<uint, map<string, vector<Events::UserEventListener*>>> userListeners;
+		map<uint32_t, string> userEventIds;
 		bool processEvent = true;
 	};
 
@@ -249,6 +255,21 @@ namespace Bingo {
 				};
 				int mouseDelta[2];
 				int mouseButton;
+			} eventData;
+		private:
+			friend class EventManager;
+		};
+
+		class UserEventListener {
+		public:
+			UserEventListener();
+			~UserEventListener();
+		protected:
+			virtual void handleEvent(string eventName) = 0;
+			struct EventData {
+				int32_t code;
+				void* data1;
+				void* data2;
 			} eventData;
 		private:
 			friend class EventManager;

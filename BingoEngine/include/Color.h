@@ -8,6 +8,7 @@ components used in colors*/
 
 #include <ostream>
 
+#include "RandomManager.h"
 #include "Utils.h"
 
 using std::ostream;
@@ -52,6 +53,13 @@ namespace Bingo {
 
 			Color inverse() const;
 			Color inverseHue() const;
+
+			static Color random() {
+				return Color(RandomManager::randInt(0, 255), RandomManager::randInt(0, 255), RandomManager::randInt(0, 255));
+			}
+
+			bool operator==(const Color& other) const;
+			bool operator!=(const Color& other) const;
 
 			friend ostream& operator<<(ostream& os, const Color& color);
 		private:

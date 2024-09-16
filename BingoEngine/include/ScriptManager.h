@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "Core.h"
 #include "Singleton.h"
 
 #if S_LANG_LUA
@@ -38,7 +39,9 @@ namespace Bingo {
 
 	namespace Script {
 
-		class ScriptManager {
+		using Core::Manager;
+
+		class ScriptManager : public Manager {
 		public:
 			ScriptManager(string scriptDirectory)
 				:scriptDir(scriptDirectory) {

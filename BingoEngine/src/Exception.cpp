@@ -8,6 +8,10 @@ Exception::Exception(string desc) {
 	this->desc = desc;
 }
 
+Exception::Exception(const std::stringstream& stream) {
+	this->desc = stream.str();
+}
+
 Exception::~Exception() throw() {
 	//
 }

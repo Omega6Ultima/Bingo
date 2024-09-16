@@ -5,24 +5,24 @@
 #define _MESH_MANAGER_H
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "Color.h"
+#include "Core.h"
 #include "Matrix.h"
+#include "Model.h"
 #include "Positional.h"
 #include "Singleton.h"
 #include "Surface.h"
 #include "Utils.h"
 #include "VecN.h"
 
-using std::map;
-using std::pair;
-
 namespace Bingo {
+
 	Math::Matrix<double, 4, 4> buildTranslationMatrix(double x, double y, double z);
 
 	Math::Matrix<double, 4, 4> buildScaleMatrix(double x, double y, double z);
-	//TODO double check this actually works with different xyz factors
 	Math::Matrix<double, 4, 4> buildScaleMatrix(Math::VecN<double, 3>& axis, double x, double y, double z);
 
 	inline Math::Matrix<double, 4, 4> buildScaleMatrix(double s) {
@@ -42,9 +42,13 @@ namespace Bingo {
 	Math::Matrix<double, 4, 4> buildShearMatrixXZ(double x, double z);
 	Math::Matrix<double, 4, 4> buildShearMatrixXY(double x, double y);
 
+	Math::Matrix<double, 4, 4> buildProjectionMatrixXY();
+	Math::Matrix<double, 4, 4> buildProjectionMatrixXZ();
+	Math::Matrix<double, 4, 4> buildProjectionMatrixYZ();
+
 	class Camera3D :public Math::Positional3D {
 	public:
-		Camera3D();
+		//Camera3D();
 		Camera3D(Math::VecN<double, 3> pos, Math::VecN<double, 3> upDir, Math::VecN<double, 3> centerOfInterest, double fieldOfView, double farDistance, double nearDistance);
 
 		inline double getFov() const {
@@ -81,83 +85,31 @@ namespace Bingo {
 		double far;
 		double near;
 	};
-
-	struct OBJ_Material {
-		string name;
-		Colors::Color ambientColor = Colors::Color(0, 0, 0);
-		Colors::Color diffuseColor = Colors::Color(0, 0, 0);
-		Colors::Color specularColor = Colors::Color(0, 0, 0);
-		double specularFocus;
-		double opticalDensity;
-		double dissolveFactor;
-
-		enum class IlluminationModel : uchar {
-			CONSTANT = 0,
-			DIFFUSE = 1,
-			DIFFUSE_SPECULAR = 2,
-		} illumination;
-
-		string diffuseFile;
-	};
-
-	class OBJ_Mesh {
+	
+	class MeshManager : public Singleton<MeshManager>, public Core::Manager {
 	public:
-		~OBJ_Mesh();
 
-		void setTranslation(Math::VecN<double, 3> val);
-		inline Math::VecN<double, 3> getTranslation() const {
-			return translation;
-		}
-
-		void setRotation(int degrees);
-		inline double getRotation() const {
-			return rotation;
-		}
-
-		void setScale(double val);
-		inline double getScale() const {
-			return scale;
-		}
-
-	private:
-		struct OBJ_Object {
-			vector<Math::VecN<double, 4>> vertices;
-			vector<Math::VecN<double, 3>> textureVertices;
-			vector<Math::VecN<double, 3>> normals;
-			map<OBJ_Material*, vector<Math::VecN<Math::VecN<uint, 3>, 4>>*> faces;
-		};
-
-	private:
-		void computeMatrices();
-
-	private:
-		map<string, OBJ_Object*> objects;
-		Math::Matrix<double, 4, 4> transformMatrix = Math::Matrix<double, 4, 4>::identity();
-
-		Math::VecN<double, 3> translation = { 0, 0, 0 };
-		int rotation = 0;
-		double scale = 1.0;
-		bool dirty = false;
-
-		friend class MeshManager;
-	};
-
-	class MeshManager : public Bingo::Singleton<MeshManager> {
 	public:
-		MeshManager(string path);
+		MeshManager(std::string path);
 		~MeshManager();
 
-		OBJ_Mesh* loadOBJ_Model(string filename);
+		std::shared_ptr<Models::Model> loadModel(std::string filename);
 
-		void draw(Bingo::Surfaces::Surface& screen, OBJ_Mesh* mesh);
-
-	private:
-		void loadOBJ_Material(string filename);
+		void draw(Surfaces::Surface& screen, std::shared_ptr<Models::Model> model, Camera3D& cam);
 
 	private:
-		string modelPath;
-		map<string, OBJ_Mesh*> loadedObjModels;
-		map<string, map<string, OBJ_Material*>> loadedObjMaterials;
+		void loadModel_OBJ(std::string filename);
+		void loadMaterial_OBJ(std::string filename);
+
+	private:
+		typedef Bingo::Math::VecN<double, 2> Point2D;
+		typedef Bingo::Math::VecN<double, 3> Point3D;
+
+		std::string modelPath;
+		// Map filename to object pointers and material pointers into loadedObjects/loadedMaterials
+		std::map<string, std::pair<std::map<std::string, std::shared_ptr<Models::Object>>, std::map<std::string, std::shared_ptr<Models::Material>>>> loadedModels;
+		std::map<string, std::map<string, std::shared_ptr<Models::Object>>> loadedObjects;
+		std::map<string, std::map<string, std::shared_ptr<Models::Material>>> loadedMaterials;
 	};
 
 }

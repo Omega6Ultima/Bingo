@@ -3,57 +3,10 @@
 #include <iomanip>
 #include <iostream>
 
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
-
 #include "_DefaultDefines.h"
 #include "Utils.h"
 
-#ifndef MIXER_AUDIO_FREQ
-#define MIXER_AUDIO_FREQ 44100
-#endif
-
-#ifndef MIXER_AUDIO_CHANNELS
-#define MIXER_AUDIO_CHANNELS 2
-#endif
-
 using std::cerr;
-
-void initSDLModules() {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-		cerr << "SDL could not be loaded\n";
-		cerr << SDL_GetError();
-		BAIL(1);
-	}
-
-	uint SDL_IMG_Flags = IMG_INIT_PNG | IMG_INIT_JPG;
-	if (!(IMG_Init(SDL_IMG_Flags) & SDL_IMG_Flags)) {
-		cerr << "SDL_image could not be loaded\n";
-		cerr << IMG_GetError();
-		BAIL(1);
-	}
-
-	if (TTF_Init() == -1) {
-		cerr << "SDL_TTF could not be loaded\n";
-		cerr << TTF_GetError();
-		BAIL(1);
-	}
-
-	if (Mix_OpenAudio(MIXER_AUDIO_FREQ, MIX_DEFAULT_FORMAT, MIXER_AUDIO_CHANNELS, 2048) < 0) {
-		cerr << "SDL_mixer could not be loaded\n";
-		cerr << Mix_GetError();
-		BAIL(1);
-	}
-}
-
-void quitSDLModules() {
-	Mix_Quit();
-	TTF_Quit();
-	IMG_Quit();
-	SDL_Quit();
-}
 
 #include "AI.h"
 #include "AnimSurface.h"
@@ -94,7 +47,7 @@ using std::to_string;
 using namespace Bingo;
 
 //catch fatal exceptions
-#define MAIN_TRY 1
+#define MAIN_TRY 0
 
 //Testing blocks
 #define TEST_SURF_GEOM 0
@@ -107,7 +60,7 @@ using namespace Bingo;
 #define TEST_FILE 0
 #define TEST_FILE_DIAG 0
 #define TEST_NBT 0
-#define TEST_PART 1
+#define TEST_PART 0
 #define TEST_THREADS 0
 //***come back to testing meshes
 #define TEST_MESH 0
@@ -117,7 +70,7 @@ using namespace Bingo;
 #define TEST_QUAT 0
 #define TEST_SORT 0
 //***come back to NeuralNetworks
-#define TEST_AI 1
+#define TEST_AI 0
 //sub-tests
 #define TEST_AI_IMAGER 0
 #define TEST_AI_NN 0
@@ -125,7 +78,7 @@ using namespace Bingo;
 //***come back to testing A*
 #define TEST_AI_AS 0
 //***TextSurfaces within Slider not working
-#define TEST_GUI 1
+#define TEST_GUI 0
 #define TEST_TIME 0
 #define TEST_TILE 0
 #define TEST_MINHEAP 0
@@ -345,7 +298,11 @@ TODO EntityManager
 
 TODO add a 3d camera and view
 TODO add a way to have tiled backgrounds that scroll
-TODO Perlin noise
+TODO create different effect like noise(Perlin noise)
+
+TODO revamp Surface clips, use names instead of indexes?
+
+TODO revamp GUI elements using text editing events
 
 TODO add more capability to the WindowManager for different events, more windows, and multiple displays
 
@@ -366,6 +323,8 @@ TODO add max/min bounds to PhysicalObject/Positional
 TODO come back to MeshManager/AI-A*
 
 TODO surface color key removes other surfaces
+
+TODO reorganize managers into own namespace
 */
 
 //page 239, 345
@@ -374,8 +333,6 @@ int main(int argc, char* argv[]) {
 #if MAIN_TRY
 	try {
 #endif
-		initSDLModules();
-
 		Surfaces::WindowManager myWindow("Testing", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);
 		EventManager eventManager;
 		Events::KeyListener keyListener;
@@ -1351,7 +1308,7 @@ int main(int argc, char* argv[]) {
 			myWindow.draw(screen, 0, 0);
 
 			myWindow.update();
-		}
+			}
 
 #if TEST_THREADS
 		delete nbt1;
@@ -1374,10 +1331,8 @@ int main(int argc, char* argv[]) {
 #endif
 #endif
 
-		quitSDLModules();
-
 #if MAIN_TRY
-	}
+		}
 	catch (const Exception& e) {
 		cerr << e.what() << endl;
 		BAIL(1);

@@ -1,6 +1,7 @@
 //Dustin Gehm
 
 #include "EventManager.h"
+#include "Exception.h"
 
 #include <SDL_events.h>
 
@@ -9,6 +10,7 @@ using Bingo::Events::EventListener;
 using Bingo::Events::KeyListener;
 using Bingo::Events::MouseListener;
 using Bingo::Events::QuitListener;
+using Bingo::Events::UserEventListener;
 using Bingo::Math::VecN;
 using Bingo::Time::Timer;
 using Bingo::Utils::Error;
@@ -19,6 +21,16 @@ EventManager::EventManager() {
 
 EventManager::~EventManager() {
 	//
+}
+
+void EventManager::registerUserEvent(string eventName) {
+	uint32_t eventId = SDL_RegisterEvents(1);
+
+	if (eventId == (uint32_t)-1) {
+		throw Exception("No user event IDs left");
+	}
+
+	userEventIds[eventId] = eventName;
 }
 
 void EventManager::update() {
@@ -187,6 +199,32 @@ void EventManager::update() {
 			}
 
 			break;
+		default:
+			for (auto riter = userListeners.rbegin(); riter != userListeners.rend(); riter++) {
+				if (riter->second.size() == 0) {
+					continue;
+				}
+
+				if (userEventIds.count(event.type) == 1) {
+					auto listeners = riter->second[userEventIds[event.type]];
+
+					for (auto iter = listeners.begin(); iter != listeners.end(); iter++) {
+						memset(&(*iter)->eventData, 0, sizeof(EventListener::EventData));
+						(*iter)->eventData.code = event.user.code;
+						(*iter)->eventData.data1 = event.user.data1;
+						(*iter)->eventData.data2 = event.user.data2;
+						(*iter)->handleEvent(userEventIds[event.type]);
+
+						if (!processEvent) {
+							break;
+						}
+					}
+				}
+
+				if (!processEvent) {
+					break;
+				}
+			}
 		}
 	}
 }
@@ -205,6 +243,10 @@ void EventManager::registerListener(EventListener* listener, EventListenType typ
 	default:
 		Error("Invalid EventListenType: " + type);
 	}
+}
+
+void EventManager::registerListener(UserEventListener* listener, string eventName, uint priority) {
+	userListeners[priority][eventName].push_back(listener);
 }
 
 void EventManager::unregisterListener(EventListener* listener, EventListenType type) {
@@ -286,6 +328,14 @@ EventListener::EventListener() {
 }
 
 EventListener::~EventListener() {
+	//
+}
+
+UserEventListener::UserEventListener() {
+	memset(&eventData, 0, sizeof(UserEventListener::EventData));
+}
+
+UserEventListener::~UserEventListener() {
 	//
 }
 

@@ -58,7 +58,7 @@ namespace Bingo {
 			}
 
 			void setGravityEffects(bool grav);
-			inline bool getGravtyEffects() const {
+			inline bool getGravityEffects() const {
 				return gravityEffects;
 			}
 
@@ -67,6 +67,7 @@ namespace Bingo {
 				return gravityStr;
 			}
 
+			// TODO set the format to the same as Particles
 			//bounds is in the format (xmin, ymin, xmax, ymax)
 			void setScreenBounding(bool bound, int rad, VecN<int, 4> bounds);
 			inline bool getScreenBounding() const {
@@ -77,9 +78,9 @@ namespace Bingo {
 				return radius;
 			}
 
-			//inline VecN<int, 4> getScreenBounds() const{
-			//	return screenBounds;
-			//}
+			inline VecN<int, 4> getScreenBounds() const {
+				return screenBounds;
+			}
 
 			void update(float dtime);
 
@@ -91,7 +92,7 @@ namespace Bingo {
 			float gravityStr = .98f;
 			bool screenBounding = false;
 			int radius = 0;
-			//VecN<int, 4> screenBounds = VecN<int, 4>({ -1, -1, -1, -1 });
+			VecN<int, 4> screenBounds = VecN<int, 4>({ -1, -1, -1, -1 });
 			VecN<int, 4> objectBounds = VecN<int, 4>({ -1, -1, -1, -1 });
 		};
 

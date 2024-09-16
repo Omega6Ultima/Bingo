@@ -8,6 +8,7 @@
 
 #include <SDL_thread.h>
 
+#include "Core.h"
 #include "NBT.h"
 #include "Singleton.h"
 
@@ -21,11 +22,12 @@ namespace Bingo {
 
 	}
 
+	using Core::Manager;
 	using Utils::AtomicLock;
 
 	typedef void(*ThreadFunc)(NBT_Compound*);
 
-	class ThreadManager : public Singleton<ThreadManager> {
+	class ThreadManager : public Singleton<ThreadManager>, public Manager {
 	private:
 		struct Thread {
 			Thread() {

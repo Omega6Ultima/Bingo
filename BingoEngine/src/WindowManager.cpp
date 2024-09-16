@@ -49,12 +49,54 @@ void WindowManager::toggleFullscreen() {
 	else {
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
+
+	fullscreen = !fullscreen;
 }
 
 void WindowManager::setDrawColor(Color col) {
 	drawColor = col;
 
 	SDL_SetRenderDrawColor(renderer, drawColor.getRed(), drawColor.getGreen(), drawColor.getBlue(), drawColor.getAlpha());
+}
+
+void WindowManager::addAutoDraw(shared_ptr<Surface> surf) {
+	surf->autoDraw = true;
+
+	autoDraws.push_back(surf);
+}
+
+void WindowManager::addAutoDraw(shared_ptr<AnimSurface> surf) {
+	surf->autoDraw = true;
+
+	autoDraws_anim.push_back(surf);
+}
+
+void WindowManager::removeAutoDraw(shared_ptr<Surface> surf) {
+	for (auto iter = autoDraws.begin(); iter != autoDraws.end(); iter++) {
+		if ((*iter) == surf) {
+			surf->autoDraw = false;
+
+			iter = autoDraws.erase(iter);
+
+			if (iter == autoDraws.end()) {
+				break;
+			}
+		}
+	}
+}
+
+void WindowManager::removeAutoDraw(shared_ptr<AnimSurface> surf) {
+	for (auto iter = autoDraws_anim.begin(); iter != autoDraws_anim.end(); iter++) {
+		if ((*iter) == surf) {
+			surf->autoDraw = false;
+
+			iter = autoDraws_anim.erase(iter);
+
+			if (iter == autoDraws_anim.end()) {
+				break;
+			}
+		}
+	}
 }
 
 void WindowManager::clear() {
@@ -77,6 +119,20 @@ void WindowManager::draw(Surface& surf, int x, int y) {
 }
 
 void WindowManager::update() {
+	for (auto surf : autoDraws) {
+		if (surf->autoDraw) {
+			draw(*surf);
+		}
+	}
+
+	for (auto surf : autoDraws_anim) {
+		if (surf->autoDraw) {
+			surf->update();
+
+			draw(*surf);
+		}
+	}
+
 	timer.end();
 	timer.start();
 

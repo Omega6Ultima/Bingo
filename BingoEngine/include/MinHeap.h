@@ -20,6 +20,10 @@ namespace Bingo {
 		//a function that compares val1 and val2, return -1 for less than, 0 for equal, and 1 for greater than
 		typedef int (*ComparatorFunc)(T val1, T val2);
 
+		MinHeap() {
+			values.push_back(T(INT64_MIN));
+		}
+
 		MinHeap(T dummyValue) {
 			values.push_back(T(dummyValue));
 		}
@@ -45,8 +49,12 @@ namespace Bingo {
 					done = true;
 				}
 				else {
-					if ((compFunc && (compFunc(values[index], values[parentIndex]) < 0)) ||
-						(values[index] < values[parentIndex])) {
+					if (compFunc) {
+						if (compFunc(values[index], values[parentIndex]) < 0) {
+							iter_swap(values.begin() + index, values.begin() + parentIndex);
+						}
+					}
+					else if (values[index] < values[parentIndex]) {
 						iter_swap(values.begin() + index, values.begin() + parentIndex);
 					}
 				}
@@ -75,24 +83,48 @@ namespace Bingo {
 				uint leftIndex = getLeftChild(index);
 				uint rightIndex = getRightChild(index);
 
-				if (leftIndex < values.size() &&
-					((compFunc && (compFunc(values[index], values[leftIndex]) >= 0)) || (values[index] >= values[leftIndex]))) {
-					leftChild = &values[leftIndex];
+				if (leftIndex < values.size()) {
+					if (compFunc) {
+						if (compFunc(values[index], values[leftIndex]) >= 0) {
+							leftChild = &values[leftIndex];
+						}
+					}
+					else if (values[index] >= values[leftIndex]) {
+						leftChild = &values[leftIndex];
+					}
 				}
 
-				if (rightIndex < values.size() &&
-					((compFunc && (compFunc(values[index], values[rightIndex]) >= 0)) || (values[index] >= values[rightIndex]))) {
-					rightChild = &values[rightIndex];
+				if (rightIndex < values.size()) {
+					if (compFunc) {
+						if (compFunc(values[index], values[rightIndex]) >= 0) {
+							rightChild = &values[rightIndex];
+						}
+					}
+					else if (values[index] >= values[rightIndex]) {
+						rightChild = &values[rightIndex];
+					}
 				}
 
 				if (leftChild && rightChild) {
-					if (*leftChild < *rightChild) {
-						iter_swap(values.begin() + index, values.begin() + leftIndex);
-						index = leftIndex;
+					if (compFunc) {
+						if (compFunc(*leftChild, *rightChild) < 0) {
+							iter_swap(values.begin() + index, values.begin() + leftIndex);
+							index = leftIndex;
+						}
+						else {
+							iter_swap(values.begin() + index, values.begin() + rightIndex);
+							index = rightIndex;
+						}
 					}
 					else {
-						iter_swap(values.begin() + index, values.begin() + rightIndex);
-						index = rightIndex;
+						if (*leftChild < *rightChild) {
+							iter_swap(values.begin() + index, values.begin() + leftIndex);
+							index = leftIndex;
+						}
+						else {
+							iter_swap(values.begin() + index, values.begin() + rightIndex);
+							index = rightIndex;
+						}
 					}
 				}
 				else if (leftChild && !rightChild) {

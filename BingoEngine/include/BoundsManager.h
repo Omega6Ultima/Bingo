@@ -10,6 +10,7 @@
 #include <SDL_rect.h>
 
 #include "Color.h"
+#include "Core.h"
 #include "CompassDirection.h"
 #include "PhysicalObject.h"
 #include "Singleton.h"
@@ -26,6 +27,8 @@ using std::vector;
 
 namespace Bingo {
 
+	using Core::Manager;
+
 	namespace Collision {
 
 		class BoundsBase;
@@ -33,7 +36,7 @@ namespace Bingo {
 
 	}
 
-	class BoundsManager : public Singleton<BoundsManager> {
+	class BoundsManager : public Singleton<BoundsManager>, public Manager {
 	public:
 		enum BoundsType {
 			CIRCLE = 0,

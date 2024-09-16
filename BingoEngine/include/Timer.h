@@ -1,5 +1,4 @@
 //Dustin Gehm
-/*a class used to measure the amount of time that has passed*/
 
 #pragma once
 #ifndef _TIMER_H
@@ -17,6 +16,7 @@ namespace Bingo {
 
 	namespace Time {
 
+		/*a class used to measure the amount of time that has passed*/
 		class Timer {
 		public:
 			Timer() = default;
@@ -41,12 +41,12 @@ namespace Bingo {
 			}
 
 		private:
-			enum TimerState { INIT, IDLE, RUN };
+			enum class TimerState { INIT, IDLE, RUN };
 
 			uint startTicks = 0;
 			uint endTicks = 0;
 			uint lastDiff = 0;
-			TimerState state = INIT;
+			TimerState state = TimerState::INIT;
 			uint timeAccumulator = 0;
 		};
 
@@ -56,13 +56,14 @@ namespace Bingo {
 			CountDownTimer(const tm& target);
 			~CountDownTimer() = default;
 
-			bool isTimeUp();
 			void setTime(const struct tm& timeStruct);
+			bool isTimeUp();
 
 			static bool isTimeStr(const string& str, const string& format);
 			static tm makeTime(const string& str, const string& format);
 		private:
 			tm targetTime;
+			time_t targetTimeStamp = 0;
 			bool set = false;
 			bool timeUp = false;
 		};
@@ -129,8 +130,8 @@ namespace Bingo {
 			return min / 60.0f;
 		}
 
-		inline uint hour_to_min(float min) {
-			return static_cast<uint>(min * 60.0f);
+		inline uint hour_to_min(float hour) {
+			return static_cast<uint>(hour * 60.0f);
 		}
 	}
 

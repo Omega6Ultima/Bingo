@@ -82,7 +82,8 @@ void PhysicalObject::setGravityStr(float grav) {
 void PhysicalObject::setScreenBounding(bool bound, int rad, VecN<int, 4> bounds) {
 	screenBounding = bound;
 	radius = rad;
-	objectBounds = VecN<int, 4>({ bounds[0], bounds[1], bounds[2] - 2 * radius, bounds[3] - 2 * radius });
+	screenBounds = bounds;
+	objectBounds = VecN<int, 4>({ bounds[0] + radius, bounds[1] + radius, bounds[2] - radius, bounds[3] - radius });
 }
 
 void PhysicalObject::update(float dtime) {

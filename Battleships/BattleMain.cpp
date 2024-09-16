@@ -3,11 +3,6 @@
 #include <iostream>
 #include <vector>
 
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
-
 #include "Color.h"
 #include "EventManager.h"
 #include "FontManager.h"
@@ -30,52 +25,9 @@ using Bingo::Math::Matrix;
 using Bingo::Surfaces::Surface;
 using Bingo::Surfaces::WindowManager;
 
-#ifndef MIXER_AUDIO_FREQ
-#define MIXER_AUDIO_FREQ 44100
-#endif
-
-#ifndef MIXER_AUDIO_CHANNELS
-#define MIXER_AUDIO_CHANNELS 2
-#endif
-
 #define PROJ_NAME "BS"
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-#define MAX_TIMERS 18
-
-void initSDLModules() {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-		cerr << "SDL could not be loaded\n";
-		cerr << SDL_GetError();
-		BAIL(1);
-	}
-
-	uint SDL_IMG_Flags = IMG_INIT_PNG | IMG_INIT_JPG;
-	if (!(IMG_Init(SDL_IMG_Flags) & SDL_IMG_Flags)) {
-		cerr << "SDL_image could not be loaded\n";
-		cerr << IMG_GetError();
-		BAIL(1);
-	}
-
-	if (TTF_Init() == -1) {
-		cerr << "SDL_TTF could not be loaded\n";
-		cerr << TTF_GetError();
-		BAIL(1);
-	}
-
-	if (Mix_OpenAudio(MIXER_AUDIO_FREQ, MIX_DEFAULT_FORMAT, MIXER_AUDIO_CHANNELS, 2048) < 0) {
-		cerr << "SDL_mixer could not be loaded\n";
-		cerr << Mix_GetError();
-		BAIL(1);
-	}
-}
-
-void quitSDLModules() {
-	Mix_Quit();
-	TTF_Quit();
-	IMG_Quit();
-	SDL_Quit();
-}
 
 void M_BoardButtonClicked(Button& button, EventManager::MouseButton mouseButton) {
 	Surface::saveRenderTarget();
@@ -111,14 +63,10 @@ void DragShip(Button& button, EventManager::MouseButton mouseButton) {
 	}
 	else if (mouseButton == EventManager::MouseButton::MB_RIGHT) {
 		button.setRotation(button.getRotation() + 90);
-
-		//TODO rotating buttons doesnt rotate the hitzone
 	}
 }
 
 int main(int argc, char* argv[]) {
-	initSDLModules();
-
 	WindowManager windowManager(PROJ_NAME, 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);
 	EventManager eventManager;
 	QuitListener quitListener;
@@ -206,27 +154,6 @@ int main(int argc, char* argv[]) {
 			if (draggingShip && !mouseListener.checkMouseButtonDown(EventManager::MouseButton::MB_LEFT, 0)) {
 				draggingShip = NULL;
 			}
-
-			if (keyListener.checkKeyDown(EventManager::KeyCode::K_UP)) {
-				cout << carrierSurf.getScaleX() + .05f << endl;
-
-				carrierSurf.setScale(carrierSurf.getScaleX() + .05f);
-				battleshipSurf.setScale(battleshipSurf.getScaleX() + .05f);
-				cruiserSurf.setScale(cruiserSurf.getScaleX() + .05f);
-				submarineSurf.setScale(submarineSurf.getScaleX() + .05f);
-				patrolSurf.setScale(patrolSurf.getScaleX() + .05f);
-			}
-			else if (keyListener.checkKeyDown(EventManager::KeyCode::K_DOWN)) {
-				cout << carrierSurf.getScaleX() - .05f << endl;
-
-				carrierSurf.setScale(carrierSurf.getScaleX() - .05f);
-				battleshipSurf.setScale(battleshipSurf.getScaleX() - .05f);
-				cruiserSurf.setScale(cruiserSurf.getScaleX() - .05f);
-				submarineSurf.setScale(submarineSurf.getScaleX() - .05f);
-				patrolSurf.setScale(patrolSurf.getScaleX() - .05f);
-			}
-
-			//rotate ship on right click
 		}
 		else if (gamePhase == PLAY) {
 			//
@@ -263,8 +190,6 @@ int main(int argc, char* argv[]) {
 	for (auto& button : eBoardButtons) {
 		delete button;
 	}
-
-	quitSDLModules();
 
 	return 0;
 }

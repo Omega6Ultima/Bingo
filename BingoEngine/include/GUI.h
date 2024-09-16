@@ -53,7 +53,7 @@ namespace Bingo {
 
 		typedef void(*DropDownFunc)(DropDown& dropDown);
 
-		class GuiBase /*: public MouseListener*/ {
+		class GuiBase : public MouseListener {
 		public:
 			virtual void setFrameColor(Color color);
 			inline Color getFrameColor() const {
@@ -84,7 +84,7 @@ namespace Bingo {
 			}
 
 		private:
-			//virtual void handleEvent(EventManager::EventType evt) = 0;
+			virtual void handleEvent(EventManager::EventType evt) = 0;
 
 		private:
 			Color frameColor = BLACK;
@@ -93,7 +93,7 @@ namespace Bingo {
 			bool hidden = false;
 		};
 
-		class Button : public GuiBase, public Surface, public MouseListener {
+		class Button : public GuiBase, public Surface {
 		public:
 			Button(int x, int y, ButtonFunc func, uint width, uint height, Color color = BLACK);
 			Button(int x, int y, ButtonFunc func, string imgFile, Color color = BLACK);
@@ -110,21 +110,24 @@ namespace Bingo {
 
 		private:
 			virtual void handleEvent(EventManager::EventType evt) override;
+			bool checkPointWithin(VecN<int, 2> point);
 
 		private:
 			bool beingClicked = false;
 			ButtonFunc onButtonClick;
 		};
 
-		class ButtonText : public GuiBase, public TextSurface, public MouseListener {
+		class ButtonText : public GuiBase, public TextSurface {
 		public:
 			ButtonText(int x, int y, ButtonTextFunc func, string fontName, int size, string text, Color color = BLACK);
 			ButtonText(VecN<int, 2> position, ButtonTextFunc func, string fontName, int size, string text, Color color = BLACK);
 			~ButtonText() = default;
 
 			void setFrameColor(Color color);
-
 			void setFrameWidth(uint width);
+
+			virtual void hide();
+			virtual void show();
 
 		protected:
 			virtual void renderTexture() override;

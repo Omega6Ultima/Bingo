@@ -8,6 +8,7 @@ when the engine occurs a fatal runtime error*/
 
 #include <exception>
 #include <string>
+#include <sstream>
 
 using std::exception;
 using std::string;
@@ -16,13 +17,14 @@ namespace Bingo {
 
 	class Exception : public exception {
 	public:
-		Exception(string desc);
+		Exception(std::string desc);
+		Exception(const std::stringstream& stream);
 		~Exception() throw();
 
 		/*returns a c-string of the supplied description of the error*/
 		virtual const char* what() const override;
 	private:
-		string desc;
+		std::string desc;
 	};
 
 }

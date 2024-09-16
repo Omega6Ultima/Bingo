@@ -14,7 +14,9 @@ namespace Bingo {
 			Quaternion(double w, double x, double y, double z);
 			Quaternion(VecN<double, 3> point);
 			//creates a quaternion representing a rotation of angle around axis
-			Quaternion(VecN<double, 3> axis, double angle);
+			Quaternion(VecN<double, 3> axis, double degrees);
+
+			static Quaternion identity();
 
 			void setW(double w);
 			inline double getW() const {
@@ -36,12 +38,12 @@ namespace Bingo {
 				return values[3];
 			}
 
-			static Quaternion identity();
-
 			double magnitude() const;
+			double magnitudeSq() const;
 			//returns a quaternion representing that opposite angular rotation
 			Quaternion conjugate() const;
 			Quaternion inverse() const;
+			double dot(const Quaternion& other) const;
 			Quaternion operator-() const;
 			Quaternion operator-(const Quaternion& other) const;
 			//This operator uses the alternative multiplication
@@ -49,17 +51,20 @@ namespace Bingo {
 			Quaternion operator*(const Quaternion& other) const;
 			Quaternion operator*(double other) const;
 			Quaternion operator/(double other) const;
-			double dot(const Quaternion& other) const;
+
+			inline Quaternion operator/(const Quaternion& other) const {
+				return operator*(other.inverse());
+			}
+
+			bool operator==(const Quaternion& other) const;
 
 		private:
 			VecN<double, 4> values;
 		};
 
-		typedef Quaternion Quat;
-
-		Quaternion pow(const Quaternion& q, double p);
-		Quaternion slerp(const Quat& start, const Quat& end, double lerp);
-		Quaternion squad(const Quat& q0, const Quat& q1, const Quat& q2, const Quat& q3, double lerp);
+		Quaternion pow(const Quaternion& q, uint p);
+		Quaternion slerp(const Quaternion& start, const Quaternion& end, double lerp);
+		Quaternion squad(const Quaternion& q0, const Quaternion& q1, const Quaternion& q2, const Quaternion& q3, double lerp);
 
 		ostream& operator<<(ostream& os, const Quaternion& q);
 	}

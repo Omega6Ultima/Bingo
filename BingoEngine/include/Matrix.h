@@ -57,9 +57,9 @@ namespace Bingo {
 				}
 			}
 
-			Matrix(VecN<T, h* w>& vec) {
+			Matrix(VecN<T, h * w>& vec) {
 				for (uint c = 0; c < h * w; c++) {
-					vals[c] = vec.vals[c];
+					vals[c] = vec.get(c);
 				}
 			}
 
@@ -69,8 +69,10 @@ namespace Bingo {
 					throw Exception("Matrix dimensions and DynMatrix dimensions are not the same.");
 				}
 #endif
-				for (uint c = 0; c < h * w; c++) {
-					vals[c] = mat.vals[c];
+				for (uint r = 0; r < h; r++) {
+					for (uint c = 0; c < w; c++) {
+						get(r, c) = mat.get(r, c);
+					}
 				}
 			}
 
@@ -132,7 +134,7 @@ namespace Bingo {
 				}
 			}
 
-			void setCol(uint colInd, const vector<T>& vec) {
+			void setCol(uint colInd, const std::vector<T>& vec) {
 #if _DEBUG
 				if (vec.size() != h) {
 					Warn("Setting a matrix col with a vector of a different size\n");
@@ -146,7 +148,7 @@ namespace Bingo {
 			}
 
 			VecN<T, w> getRow(uint rowInd) {
-				VecN<T, w> result(0);
+				VecN<T, w> result;
 
 				for (uint c = 0; c < w; c++) {
 					result[c] = get(rowInd, c);
@@ -161,7 +163,7 @@ namespace Bingo {
 				}
 			}
 
-			void setRow(uint rowInd, const vector<T>& vec) {
+			void setRow(uint rowInd, const std::vector<T>& vec) {
 #if _DEBUG
 				if (vec.size() != w) {
 					Warn("Setting a matrix col with a vector of a different size\n");
@@ -211,8 +213,45 @@ namespace Bingo {
 					throw Exception("Invalid call to determinant, not a square matrix");
 				}
 #endif
+				// Special case: If dimensions are 1x1, return the single value
+				if (w == 1 && h == 1) {
+					return get(0, 0);
+				}
 
-				return determinant(0);
+				T det = 0;
+				// If matrix is a 2x2, do not calculate other diagonals/antidiagonals
+				int hMod = (h == 2) ? 1 : 0;
+
+				// Multiply the numbers along the diagonals
+				for (int c = 0; c < static_cast<int>(h) - hMod; c++) {
+					T subDet = 1;
+
+					for (int d = 0; d < w; d++) {
+						subDet *= get(d, (d + c) % w);
+					}
+
+					det += subDet;
+				}
+
+				// Multiply the numbers along the antidiagonals
+				for (int c = 0; c < static_cast<int>(h) - hMod; c++) {
+					T subDet = 1;
+
+					for (int d = 0; d < w; d++) {
+						// Cast width as signed int to stop modulo from 'promoting' left-hand operand to unsigned int
+						int col = (static_cast<int>(w) - 1 - d - c) % static_cast<int>(w);
+
+						if (col < 0) {
+							col += w;
+						}
+
+						subDet *= get(d, col);
+					}
+
+					det -= subDet;
+				}
+
+				return det;
 			}
 
 			Matrix<T, h, w> inverse() const {
@@ -320,7 +359,7 @@ namespace Bingo {
 			}
 
 			VecN<T, h> operator *(const VecN < T, w>& other) {
-				VecN<T, h> result(0);
+				VecN<T, h> result;
 
 				for (uint c = 0; c < h; c++) {
 					T prod = 0;
@@ -405,18 +444,20 @@ namespace Bingo {
 			}
 
 			bool operator !=(const Matrix<T, h, w>& other) const {
-				bool result = true;
+				bool result = false;
 
 				for (uint c = 0; c < h * w; c++) {
-					if (vals[c] == other.vals[c]) {
-						result = false;
+					if (vals[c] != other.vals[c]) {
+						result = true;
 						break;
 					}
 				}
+
+				return result;
 			}
 
 			friend ostream& operator <<(ostream& os, const Matrix<T, h, w>& mat) {
-				os << "M{";
+				os << "M{\n  ";
 
 				for (uint c = 0; c < h; c++) {
 					for (uint d = 0; d < w; d++) {
@@ -432,19 +473,7 @@ namespace Bingo {
 			}
 
 		private:
-			T determinant(uint start) const {
-				if ((w - start) == 2) {
-					return (get(start, start) * get(w - 1, w - 1)) - (get(start, w - 1) * get(w - 1, start));
-				}
-				else {
-					return static_cast<T>(pow(-1, start)) * get(start, start) * determinant(start + 1);
-				}
-			}
-
-		private:
 			T vals[w * h];
-
-			friend class Matrix;
 		};
 
 		template<class T>
@@ -653,7 +682,7 @@ namespace Bingo {
 				}
 			}
 
-			void setCol(uint colInd, const vector<T>& vec) {
+			void setCol(uint colInd, const std::vector<T>& vec) {
 #if _DEBUG
 				if (vec.size() != h) {
 					Warn("Setting a matrix col with a vector of a different size\n");
@@ -690,7 +719,7 @@ namespace Bingo {
 				}
 			}
 
-			void setRow(uint rowInd, const vector<T>& vec) {
+			void setRow(uint rowInd, const std::vector<T>& vec) {
 #if _DEBUG
 				if (vec.size() != w) {
 					Warn("Setting a matrix row with a vector of a different size\n");
@@ -742,7 +771,45 @@ namespace Bingo {
 					throw Exception("Invalid call to determinant, not a square matrix");
 				}
 
-				return determinant(0);
+				// Special case: If dimensions are 1x1, return the single value
+				if (w == 1 && h == 1) {
+					return get(0, 0);
+				}
+
+				T det = 0;
+				// If matrix is a 2x2, do not calculate other diagonals/antidiagonals
+				int hMod = (h == 2) ? 1 : 0;
+
+				// Multiply the numbers along the diagonals
+				for (int c = 0; c < static_cast<int>(h) - hMod; c++) {
+					T subDet = 1;
+
+					for (int d = 0; d < static_cast<int>(w); d++) {
+						subDet *= get(d, (d + c) % w);
+					}
+
+					det += subDet;
+				}
+
+				// Multiply the numbers along the antidiagonals
+				for (int c = 0; c < static_cast<int>(h) - hMod; c++) {
+					T subDet = 1;
+
+					for (int d = 0; d < static_cast<int>(w); d++) {
+						// Cast width as signed int to stop modulo from 'promoting' left-hand operand to unsigned int
+						int col = (static_cast<int>(w) - 1 - d - c) % static_cast<int>(w);
+
+						if (col < 0) {
+							col += w;
+						}
+
+						subDet *= get(d, col);
+					}
+
+					det -= subDet;
+				}
+
+				return det;
 			}
 
 			DynMatrix<T> inverse() const {
@@ -810,7 +877,7 @@ namespace Bingo {
 			}
 
 			DynMatrix<T> operator +(const DynMatrix<T>& other) const {
-				Matrix<T, h, w> result(*this);
+				DynMatrix<T> result(*this);
 #if _DEBUG
 				if (h != other.h || w != other.w) {
 					throw Exception("Incompatible DynMatrices dimensions for addition.");
@@ -824,7 +891,7 @@ namespace Bingo {
 			}
 
 			DynMatrix<T> operator -(const DynMatrix<T>& other) const {
-				Matrix<T, h, w> result(*this);
+				DynMatrix<T> result(*this);
 #if _DEBUG
 				if (h != other.h || w != other.w) {
 					throw Exception("Incompatible DynMatrices dimensions for subtraction.");
@@ -838,7 +905,7 @@ namespace Bingo {
 			}
 
 			DynMatrix<T> operator *(const T& other) const {
-				Matrix<T, h, w> result(*this);
+				DynMatrix<T> result(*this);
 
 				for (uint c = 0; c < h * w; c++) {
 					result.vals[c] *= other;
@@ -862,7 +929,7 @@ namespace Bingo {
 			}
 
 			DynMatrix<T> operator /(const T& other) const {
-				Matrix<T, h, w> result(*this);
+				DynMatrix<T> result(*this);
 
 				for (uint c = 0; c < h * w; c++) {
 					result.vals[c] /= other;
@@ -872,7 +939,7 @@ namespace Bingo {
 			}
 
 			DynMatrix<T> operator /(const DynMatrix<T>& other) const {
-				Matrix<T, h, w> result(*this);
+				DynMatrix<T> result(*this);
 #if _DEBUG
 				if (h != other.h || w != other.w) {
 					throw Exception("Incompatible DynMatrices dimensions for division.");
@@ -959,18 +1026,20 @@ namespace Bingo {
 			}
 
 			bool operator !=(const DynMatrix<T>& other) const {
-				bool result = true;
+				bool result = false;
 #if _DEBUG
 				if (h != other.h || w != other.w) {
 					throw Exception("Incompatible DynMatrices dimensions for comparision.");
 				}
 #endif
 				for (uint c = 0; c < h * w; c++) {
-					if (vals[c] == other.vals[c]) {
-						result = false;
+					if (vals[c] != other.vals[c]) {
+						result = true;
 						break;
 					}
 				}
+
+				return result;
 			}
 
 			friend ostream& operator <<(ostream& os, const DynMatrix<T>& mat) {
@@ -990,21 +1059,9 @@ namespace Bingo {
 			}
 
 		private:
-			T determinant(uint start) const {
-				if ((w - start) == 2) {
-					return (get(start, start) * get(w - 1, w - 1)) - (get(start, w - 1) * get(w - 1, start));
-				}
-				else {
-					return static_cast<T>(pow(-1, start)) * get(start, start) * determinant(start + 1);
-				}
-			}
-
-		private:
 			uint h;
 			uint w;
 			T* vals;
-
-			friend class DynMatrix;
 		};
 
 	}

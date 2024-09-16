@@ -7,17 +7,12 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <SDL_atomic.h>
 #include <SDL_rect.h>
-
-using std::cin;
-using std::iter_swap;
-using std::ostream;
-using std::string;
-using std::vector;
 
 //less typing
 typedef unsigned char uchar;
@@ -52,7 +47,7 @@ typedef long double ldouble;
 #define EULER 2.7182818284590452353602875
 
 //simply pause and quit
-#define BAIL(c) cin.get(); exit(c);
+#define BAIL(c) std::cin.get(); exit(c);
 
 //returns whichever is greater, a or b
 #define MAX(a, b) (a > b ? a : b)
@@ -70,6 +65,48 @@ namespace Bingo {
 
 	namespace Utils {
 
+		template<class T>
+		std::string _GetTypeName() {
+			auto name = typeid(T()).name();
+#if defined(__GNUC__) || defined(__GNUG__)
+			// TODO test this
+			int status = 0;
+
+			std::unique_ptr<char, void(*)(void*)> unmangle{
+				abi::cxa_demangle(name, NULL, NULL, &status), std::free
+			};
+
+			std::string result((status == 0) ? unmangle.get() : name);
+
+			if (result.substr(result.size() - 3) == " ()") {
+				result.resize(result.size() - 3);
+			}
+#elif defined(_MSC_VER)
+			std::string result(name);
+			std::string prefix = "class ";
+			std::string suffix = " __cdecl(void)";
+
+			if (result.find(prefix) != std::string::npos) {
+				result = result.substr(result.find(prefix) + prefix.size(), result.size() - prefix.size());
+			}
+
+			if (result.rfind(suffix) != std::string::npos) {
+				result = result.substr(0, result.size() - suffix.size());
+			}
+
+			if (result.find("<") != std::string::npos) {
+				result = result.substr(0, result.find("<"));
+			}
+#else
+			InvalidType "Unsupported compiler detected"();
+#endif
+
+			return result;
+		}
+
+#define GetTypeName(type) _GetTypeName<type>()
+#define GetTypeNameFromVar(type) _GetTypeName<decltype(type)>()
+
 		//atomic-type lock
 		typedef SDL_SpinLock AtomicLock;
 
@@ -81,49 +118,57 @@ namespace Bingo {
 			return (deg / 180.0) * PI;
 		}
 
-		//conver radians to degrees
+		//convert radians to degrees
 		inline double radToDegrees(double rad) {
-			return (rad * PI) / 180.0;
+			return (rad / PI) * 180.0;
 		}
 
 		//returns a certain number (num) of tab characters
-		string tabs(uint num);
+		std::string tabs(uint num);
 
 		enum class TokenizeType {
 			RetVec,
 		};
 
 		//insert separator character between different token types
-		void tokenize(string& str, char separator = ' ');
+		void tokenize(std::string& str, char separator = ' ');
 		//return a vector of indices where different token types begin
-		vector<uint> tokenize(const string& str, const TokenizeType dummy);
+		std::vector<uint> tokenize(const std::string& str, const TokenizeType dummy);
 		//remove whitespace from left side of the string
-		string lstrip(const string& s);
+		std::string lstrip(const std::string& s);
 		//remove whitespace from right side of the string
-		string rstrip(const string& s);
+		std::string rstrip(const std::string& s);
 		//remove whitespace from both sides of the string
-		string strip(const string& s);
+		std::string strip(const std::string& s);
 		//separate the string into strings wherever separator occurs
-		vector<string> split(const string& s, string separator = " ");
+		std::vector<std::string> split(const std::string& s, std::string separator = " ");
 
-		inline string getLineAfter(const string& line, const string val) {
+		inline std::string getLineAfter(const std::string& line, const std::string val) {
 			return line.substr(line.find(val) + val.size());
 		}
 
-		void Error(string msg);
-		void Error(string msg, string error);
+		void Error(std::string msg);
+		void Error(std::string msg, std::string error);
 
-		void Warn(string msg);
-		void Warn(string msg, string errror);
+		void Warn(std::string msg);
+		void Warn(std::string msg, std::string errror);
 
 		bool operator==(SDL_Point& p1, SDL_Point& p2);
 
-		string operator+(const string& str, int num);
-		string operator+(const string& str, uint num);
+		std::string operator+(const std::string& str, int num);
+		std::string operator+(const std::string& str, uint num);
+
+		bool isSpace(const std::string& str);
+		bool isAlpha(const std::string& str);
+		bool isDigit(const std::string& str);
+		bool isAlphaNum(const std::string& str);
+
+		std::string toLower(const std::string& str);
+		std::string toUpper(const std::string& str);
 
 		//TODO consider putting these operators into their own namespaces to label them
 		template<class T>
-		ostream& operator<<(ostream& os, vector<T>& vec) {
+		std::ostream& operator<<(std::ostream& os, std::vector<T>& vec) {
 			os << "v{";
 
 			if (vec.size() > 0) {
@@ -140,12 +185,11 @@ namespace Bingo {
 
 			return os;
 		}
-
 	}
 
 	namespace Sort {
 		template<class T>
-		void selectionSort(vector<T>& vec) {
+		void selectionSort(std::vector<T>& vec) {
 			uint sortedPos = 0;
 			//vector<T>::iterator minIter;
 			auto minIter = vec.begin();
@@ -169,7 +213,7 @@ namespace Bingo {
 		}
 
 		template<class T>
-		void insertionSort(vector<T>& vec) {
+		void insertionSort(std::vector<T>& vec) {
 			for (uint c = 1; c < vec.size(); c++) {
 				if (vec[c] < vec[c - 1]) {
 					uint index = c - 1;
@@ -185,13 +229,13 @@ namespace Bingo {
 		}
 
 		template<class T>
-		void mergeSort(vector<T>& vec) {
+		void mergeSort(std::vector<T>& vec) {
 			//TODO implement this
 		}
 
 		namespace InternalUse {
 			template<class T>
-			int qs_partition(vector<T>& vec, int low, int high) {
+			int qs_partition(std::vector<T>& vec, int low, int high) {
 				T pivot = vec[high];
 				int minIndex = low - 1;
 
@@ -210,7 +254,7 @@ namespace Bingo {
 		}
 
 		template<class T>
-		void quickSort(vector<T>& vec, int low, int high) {
+		void quickSort(std::vector<T>& vec, int low, int high) {
 			if (low < high) {
 				int pivotIndex = InternalUse::qs_partition(vec, low, high);
 
@@ -220,7 +264,7 @@ namespace Bingo {
 		}
 
 		template<class T>
-		void quickSort(vector<T>& vec) {
+		void quickSort(std::vector<T>& vec) {
 			quickSort(vec, 0, vec.size() - 1);
 		}
 

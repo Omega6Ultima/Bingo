@@ -10,6 +10,7 @@
 
 #include <SDL_ttf.h>
 
+#include "Core.h"
 #include "Singleton.h"
 
 using std::map;
@@ -18,7 +19,9 @@ using std::string;
 
 namespace Bingo {
 
-	class FontManager : public Singleton<FontManager> {
+	using Core::Manager;
+
+	class FontManager : public Singleton<FontManager>, public Manager {
 	public:
 		FontManager(string path);
 		~FontManager();

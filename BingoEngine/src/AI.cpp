@@ -50,9 +50,15 @@ NeuralNetwork::NeuralNetwork(uint numInputs, uint numOutputs)
 
 	layerSizes[0] = numInputs + 1;
 
+	//std::cout << "Creating NN with layers(";
+
 	for (uint c = 1; c < numLayers + 1; c++) {
 		layerSizes[c] = numInputs - (c - 1) + 1;
+
+		//std::cout << layerSizes[c] << ", ";
 	}
+
+	//std::cout << "\b\b)" << std::endl;
 
 	layerWeights.resize(numLayers);
 	layerLastInputs.resize(numLayers);
@@ -68,6 +74,12 @@ NeuralNetwork::NeuralNetwork(uint numInputs, uint numOutputs)
 		}
 	}
 
+	//std::cout << "weights:\n";
+
+	//for (auto lw : layerWeights) {
+	//	std::cout << lw << std::endl;
+	//}
+
 	layerWeights[numLayers - 1] = DynMatrix<double>(layerSizes[numLayers], layerSizes[numLayers - 1]);
 
 	for (uint d = 0; d < layerWeights[numLayers - 1].getH(); d++) {
@@ -79,14 +91,21 @@ NeuralNetwork::NeuralNetwork(uint numInputs, uint numOutputs)
 
 DynVecN<uint> NeuralNetwork::train(DynVecN<uint>& inputs, DynVecN<uint>& expectedOutput) {
 	DynVecN<double> output = runInput(inputs, true);
-
 	DynVecN<double> error = static_cast<DynVecN<double>>(expectedOutput) - output;
+
+	double adjustedLearningRate = learningRate;
+	
+	if (trainingThreshold > 0) {
+		adjustedLearningRate *= (1.0 - (trainingCount / static_cast<double>(trainingThreshold)));
+	}
+
+	trainingCount += 1;
 
 	for (int c = numLayers - 1; c >= 0; c--) {
 		DynVecN<double> rowAdj(1);
 
 		for (uint d = 0; d < error.getSize(); d++) {
-			rowAdj = layerLastInputs[c].getRow(d) * (learningRate * error[d] * activationDerivFunc(layerLastOutputs[c].get(d, 0)));
+			rowAdj = layerLastInputs[c].getRow(d) * (adjustedLearningRate * error[d] * activationDerivFunc(layerLastOutputs[c].get(d, 0)));
 
 			for (uint e = 0; e < rowAdj.getSize(); e++) {
 				layerWeights[c].get(e, d) += rowAdj[e];
@@ -122,6 +141,14 @@ void NeuralNetwork::setLearningRate(double newRate) {
 	}
 
 	learningRate = newRate;
+}
+
+void NeuralNetwork::resetTrainingCount() {
+	trainingCount = 0;
+}
+
+void NeuralNetwork::setTrainingThreshold(size_t threshold) {
+	trainingThreshold = threshold;
 }
 
 void NeuralNetwork::setActivationFunction(NeuralNetActivationFunc func) {
@@ -223,7 +250,7 @@ DynVecN<double> NeuralNetwork::runInput(DynVecN<uint>& inputs, bool training) {
 			layerLastInputs[c] = inputMatrix;
 		}
 
-		//run the values through this layer of 'perceptrons'
+		//run the values through this layer of perceptrons
 		inputMatrix = layerWeights[c].matrixMultiply(inputMatrix);
 
 		if (training) {

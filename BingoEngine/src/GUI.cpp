@@ -1,6 +1,7 @@
 //Dustin Gehm
 
 #include "GUI.h"
+#include "Mathematics.h"
 #include "WindowManager.h"
 
 #include <SDL_events.h>
@@ -11,6 +12,8 @@ using Bingo::Guis::ButtonText;
 using Bingo::Guis::DropDown;
 using Bingo::Guis::Input;
 using Bingo::Guis::Slider;
+using Bingo::Math::DistanceSq;
+using Bingo::Math::RotatePoint;
 using Bingo::Surfaces::WindowManager;
 
 void GuiBase::setFrameColor(Color color) {
@@ -103,6 +106,23 @@ void Button::renderTexture() {
 		drawRect(c, c, width - 2 * c, height - 2 * c, false);
 	}
 
+	{
+		VecN<int, 2> minPos = getPos();
+		VecN<int, 2> rotPoint = getCenter() + minPos;
+		uint degrees = getRotation();
+		VecN<VecN<int, 2>, 4> points;
+
+		points[0] = RotatePoint(minPos, rotPoint, degrees);
+		points[1] = RotatePoint({ minPos[0] + getWidth(), minPos[1] }, rotPoint, degrees);
+		points[2] = RotatePoint({ minPos[0], minPos[1] + getHeight() }, rotPoint, degrees);
+		points[3] = RotatePoint({ minPos[0] + getWidth(), minPos[1] + getHeight() }, rotPoint, degrees);
+
+		drawCircle(points[0], 5, false);
+		drawCircle(points[1], 5, false);
+		drawCircle(points[2], 5, false);
+		drawCircle(points[3], 5, false);
+	}
+
 	Surface::restoreRenderTarget();
 }
 
@@ -116,20 +136,19 @@ void Button::handleEvent(EventManager::EventType evt) {
 	if (evt == EventManager::EVT_MOUSEBUTTONDOWN) {
 		VecN<int, 2> mousePos = getMousePos();
 
-		if (pos[0] <= mousePos[0] && mousePos[0] <= pos[0] + width) {
-			if (pos[1] <= mousePos[1] && mousePos[1] <= pos[1] + height) {
-				beingClicked = true;
+		if (checkPointWithin(mousePos)) {
+			beingClicked = true;
+			markDirty();
 
-				if (checkMouseButtonDown(EventManager::MB_LEFT, 1000) ||
-					checkMouseButtonDown(EventManager::MB_RIGHT, 1000) ||
-					checkMouseButtonDown(EventManager::MB_CENTER, 1000)) {
-					setFrameColor(getFrameColor().inverse());
-					markDirty();
-				}
+			if (checkMouseButtonDown(EventManager::MB_LEFT, 1000) ||
+				checkMouseButtonDown(EventManager::MB_RIGHT, 1000) ||
+				checkMouseButtonDown(EventManager::MB_CENTER, 1000)) {
+				setFrameColor(getFrameColor().inverse());
+				markDirty();
+			}
 
-				if (onButtonClick) {
-					onButtonClick(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
-				}
+			if (onButtonClick) {
+				onButtonClick(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
 			}
 		}
 	}
@@ -141,6 +160,29 @@ void Button::handleEvent(EventManager::EventType evt) {
 
 		beingClicked = false;
 	}
+}
+
+bool Button::checkPointWithin(VecN<int, 2> point) {
+	if (getRotation() == 0) {
+		VecN<int, 2> minPos = getPos();
+
+		return (minPos[0] <= point[0] && point[0] <= minPos[0] + getWidth()) && (minPos[1] <= point[1] && point[1] <= minPos[1] + getHeight());
+	}
+	else {
+		VecN<int, 2> minPos = getPos();
+		VecN<int, 2> rotPoint = getCenter() + minPos;
+		uint degrees = getRotation();
+		VecN<VecN<int, 2>, 4> points;
+
+		points[0] = RotatePoint(minPos, rotPoint, degrees);
+		points[1] = RotatePoint({ minPos[0] + getWidth(), minPos[1] }, rotPoint, degrees);
+		points[2] = RotatePoint({ minPos[0], minPos[1] + getHeight() }, rotPoint, degrees);
+		points[3] = RotatePoint({ minPos[0] + getWidth(), minPos[1] + getHeight() }, rotPoint, degrees);
+
+		return Math::PointRectIntersect(point, points[0], points[1], points[2], points[3]);
+	}
+
+	return false;
 }
 
 ButtonText::ButtonText(int x, int y, ButtonTextFunc func, string fontName, int size, string text, Color color)
@@ -179,6 +221,18 @@ void ButtonText::setFrameWidth(uint width) {
 	GuiBase::setFrameWidth(width);
 
 	setTextPadding(static_cast<uint>(width * 1.25) + 3);
+
+	markDirty();
+}
+
+void ButtonText::hide() {
+	GuiBase::hide();
+
+	markDirty();
+}
+
+void ButtonText::show() {
+	GuiBase::show();
 
 	markDirty();
 }
@@ -289,10 +343,7 @@ void Input::inputMode() {
 	bool drawingCursor = false;
 
 	//TODO
-	//create surface from background of renderer
-	//SDL_RenderReadPixels
-	//SDL_LockTexture
-	//SDL_TEXTUREACCESSSTREAMING
+	// use new events SDL_TEXT_INPUT
 
 	while (input) {
 		cursorTime += timer.end();

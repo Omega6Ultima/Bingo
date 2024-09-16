@@ -6,31 +6,19 @@
 #include "FileManager.h"
 
 #include <filesystem>
+#include <sstream>
+
+#include <SDL_timer.h>
+#include <tinyfiledialogs.h>
 
 #include "Exception.h"
 #include "ThreadManager.h"
-
-#include <tinyfiledialogs.h>
-
-using std::filesystem::absolute;
-using std::filesystem::create_directories;
-using std::filesystem::directory_iterator;
-using std::filesystem::is_directory;
-using std::filesystem::is_regular_file;
-using std::filesystem::path;
-using std::filesystem::remove_all;
-
-using Bingo::FileManager;
-using Bingo::Math::DynVecN;
-using Bingo::NBT_Compound;
-using Bingo::Utils::Error;
-using Bingo::Utils::Warn;
 
 //TODO add error handling (Error/Warn)
 //TODO consider using ifstream/ofstream instead of SDL_RWops
 //consider keeping track of created NBT when reading file and deleting them in destructor/flushCache func
 
-FileManager::FileManager(string configPath) {
+Bingo::FileManager::FileManager(std::string configPath) {
 	configFile = configPath + "/FileMan.config";
 
 	if (!checkFile(configFile)) {
@@ -48,15 +36,15 @@ FileManager::FileManager(string configPath) {
 
 		NBT_Compound* dirs = static_cast<NBT_Compound*>(nbt->getTag("CreatedDirs"));
 
-		for (uint c = 0; c < dirs->getTagCount(); ++c) {
-			directories[static_cast<NBT_Tag<string>*>(dirs->getTag(c))->getData()] = false;
+		for (uint c = 0; c < dirs->getTagCount(); c++) {
+			directories[static_cast<NBT_Tag<std::string>*>(dirs->getTag(c))->getData()] = false;
 		}
 
 		delete nbt;
 	}
 }
 
-FileManager::~FileManager() {
+Bingo::FileManager::~FileManager() {
 	ATOMIC_LOCK(ThreadManager::fileLock);
 
 	for (auto iter = files.begin(); iter != files.end(); iter++) {
@@ -72,8 +60,8 @@ FileManager::~FileManager() {
 
 	uint dirCount = 0;
 
-	for (pair<string, bool> keyValue : directories) {
-		dirs->setTag(new NBT_Tag<string>("directory" + dirCount, keyValue.first));
+	for (std::pair<std::string, bool> keyValue : directories) {
+		dirs->setTag(new NBT_Tag<std::string>("directory" + dirCount, keyValue.first));
 	}
 
 	openFile(configFile, WRITE);
@@ -85,13 +73,13 @@ FileManager::~FileManager() {
 	delete nbt;
 }
 
-void FileManager::createFile(string fileName) {
+void Bingo::FileManager::createFile(std::string fileName) {
 	ATOMIC_LOCK(ThreadManager::fileLock);
 
 	SDL_RWops* file = SDL_RWFromFile(fileName.c_str(), "w");
 
 	if (file == NULL) {
-		Error("Could not create file: ", fileName);
+		Bingo::Utils::Error("Could not create file: " + fileName, SDL_GetError());
 
 		return;
 	}
@@ -101,7 +89,7 @@ void FileManager::createFile(string fileName) {
 	ATOMIC_UNLOCK(ThreadManager::fileLock);
 }
 
-bool FileManager::checkFile(string fileName) {
+bool Bingo::FileManager::checkFile(std::string fileName) {
 	bool success = false;
 
 	ATOMIC_LOCK(ThreadManager::fileLock);
@@ -118,7 +106,7 @@ bool FileManager::checkFile(string fileName) {
 	return success;
 }
 
-llong FileManager::getFileSize(string fileName) {
+llong Bingo::FileManager::getFileSize(std::string fileName) {
 	llong result = -1;
 
 	if (checkFile(fileName)) {
@@ -137,8 +125,8 @@ llong FileManager::getFileSize(string fileName) {
 	return result;
 }
 
-void FileManager::openFile(string fileName, FileMode mode) {
-	string openMode;
+void Bingo::FileManager::openFile(std::string fileName, FileMode mode) {
+	std::string openMode;
 
 	switch (mode) {
 	case READ:
@@ -157,7 +145,7 @@ void FileManager::openFile(string fileName, FileMode mode) {
 		openMode = "a+b";
 		break;
 	default:
-		Error("Invalid FileMode for opening file: " + mode, fileName);
+		Bingo::Utils::Error("Invalid FileMode for opening file: " + mode, fileName);
 	}
 
 	ATOMIC_LOCK(ThreadManager::fileLock);
@@ -167,13 +155,62 @@ void FileManager::openFile(string fileName, FileMode mode) {
 	ATOMIC_UNLOCK(ThreadManager::fileLock);
 
 	if (file == NULL) {
-		Error("File could not be opened: " + fileName);
+		throw Exception("File could not be opened: " + fileName + "\n" + SDL_GetError());
 	}
 
-	files[fileName] = pair<FileMode, SDL_RWops*>(mode, file);
+	files[fileName] = std::pair<FileMode, SDL_RWops*>(mode, file);
 }
 
-void FileManager::writeNBT(string fileName, NBT_Compound* nbt) {
+void Bingo::FileManager::seekFile(std::string fileName, int offset) {
+	if (files.find(fileName) != files.end()) {
+		llong result = 0;
+
+		result = SDL_RWseek(files[fileName].second, offset, RW_SEEK_SET);
+
+		if (result == -1) {
+			std::stringstream message;
+			message << "Invalid offset(" << offset << ") used in seeking";
+			throw Exception(message);
+		}
+	}
+}
+
+void Bingo::FileManager::writeString(std::string fileName, std::string content) {
+	if (files.find(fileName) != files.end()) {
+		ATOMIC_LOCK(ThreadManager::fileLock);
+
+		SDL_RWwrite(files[fileName].second, content.data(), SZ_CHAR, content.size());
+
+		ATOMIC_UNLOCK(ThreadManager::fileLock);
+	}
+}
+
+std::string Bingo::FileManager::readString(std::string fileName) {
+	std::string result = "";
+
+	if (files.find(fileName) != files.end()) {
+		ATOMIC_LOCK(ThreadManager::fileLock);
+
+		llong fileSize = SDL_RWsize(files[fileName].second);
+
+		if (fileSize > 0) {
+			char* stringData = new char[static_cast<uint>(fileSize + 1)];
+			memset(stringData, 0, static_cast<uint>(fileSize + 1));
+
+			SDL_RWread(files[fileName].second, stringData, SZ_CHAR, static_cast<size_t>(fileSize));
+
+			result = stringData;
+
+			delete[] stringData;
+		}
+
+		ATOMIC_UNLOCK(ThreadManager::fileLock);
+	}
+
+	return result;
+}
+
+void Bingo::FileManager::writeNBT(std::string fileName, NBT_Compound* nbt) {
 	if (files.find(fileName) != files.end()) {
 		ATOMIC_LOCK(ThreadManager::fileLock);
 
@@ -183,7 +220,7 @@ void FileManager::writeNBT(string fileName, NBT_Compound* nbt) {
 	}
 }
 
-NBT_Compound* FileManager::readNBT(string fileName) {
+Bingo::NBT_Compound* Bingo::FileManager::readNBT(std::string fileName) {
 	NBT_Compound* nbt = NULL;
 
 	if (files.find(fileName) != files.end()) {
@@ -200,7 +237,7 @@ NBT_Compound* FileManager::readNBT(string fileName) {
 		}
 
 		if (type != NBT_Base::NBT_COMPOUND) {
-			Error("NBT file is not in the correct format. Maybe its corrupted?", fileName);
+			Bingo::Utils::Error("NBT file is not in the correct format. Maybe its corrupted?", fileName);
 		}
 		else {
 			int cmpdNameSize = 0;
@@ -224,7 +261,7 @@ NBT_Compound* FileManager::readNBT(string fileName) {
 	return nbt;
 }
 
-void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
+void Bingo::FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 	NBT_Base::NBT_Type type;
 	int nameSize = 0;
 	char nameArr[NBT_MAX_NAME];
@@ -372,7 +409,7 @@ void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 				SDL_RWread(file, &data.stringSize, SZ_INT, 1);
 				SDL_RWread(file, data.stringData, SZ_CHAR, data.stringSize);
 
-				nbt->setTag(new NBT_Tag<string>(nameArr, data.stringData));
+				nbt->setTag(new NBT_Tag<std::string>(nameArr, data.stringData));
 
 				break;
 			case NBT_Base::NBT_POINTER:
@@ -390,11 +427,10 @@ void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 
 				SDL_RWread(file, dataArray, SZ_INT, arraySize);
 
-				NBT_Tag<vector<int>>* readTag = new NBT_Tag<vector<int>>(nameArr, vector<int>(arraySize));
+				NBT_Tag<std::vector<int>>* readTag = new NBT_Tag<std::vector<int>>(nameArr, std::vector<int>(arraySize));
 
 				for (int c = 0; c < arraySize; c++) {
-					//readTag->getData()[c] = dataArray[c];
-					readTag->getData().at(c) = dataArray[c];
+					readTag->getData()[c] = dataArray[c];
 				}
 
 				nbt->setTag(readTag);
@@ -412,7 +448,7 @@ void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 
 				SDL_RWread(file, dataArray, SZ_DOUBLE, arraySize);
 
-				NBT_Tag<vector<double>>* readTag = new NBT_Tag<vector<double>>(nameArr, vector<double>(arraySize));
+				NBT_Tag<std::vector<double>>* readTag = new NBT_Tag<std::vector<double>>(nameArr, std::vector<double>(arraySize));
 
 				for (int c = 0; c < arraySize; c++) {
 					readTag->getData()[c] = dataArray[c];
@@ -425,7 +461,7 @@ void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 				break;
 			}
 			default:
-				Warn("Found Invalid NBT_Type: " + NBT_Base::NBT_TypeStr[type] + '\n');
+				Bingo::Utils::Warn("Found Invalid NBT_Type: " + NBT_Base::NBT_TypeStr[type] + '\n');
 				return;
 				break;
 			}
@@ -435,19 +471,19 @@ void FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 	} while (true);
 }
 
-void FileManager::flushFile(string fileName) {
+void Bingo::FileManager::flushFile(std::string fileName) {
 	if (files.find(fileName) != files.end()) {
-		//FileMode mode = files[fileName].first;
+		FileMode mode = files[fileName].first;
 
-		//closeFile(fileName);
+		closeFile(fileName);
 		//SDL_Delay(500);
 		//openFile(fileName, READ);
 		//closeFile(fileName);
-		//openFile(fileName, mode);
+		openFile(fileName, mode);
 	}
 }
 
-void FileManager::closeFile(string fileName) {
+void Bingo::FileManager::closeFile(std::string fileName) {
 	if (files.find(fileName) != files.end()) {
 		ATOMIC_LOCK(ThreadManager::fileLock);
 
@@ -459,10 +495,10 @@ void FileManager::closeFile(string fileName) {
 	}
 }
 
-void FileManager::createDirectory(string pathStr) {
+void Bingo::FileManager::createDirectory(std::string pathStr) {
 	if (!isDir(pathStr)) {
 		directories[pathStr] = false;
-		create_directories(path(pathStr));
+		std::filesystem::create_directories(std::filesystem::path(pathStr));
 
 		NBT_Compound* nbt;
 
@@ -472,7 +508,14 @@ void FileManager::createDirectory(string pathStr) {
 
 		closeFile(configFile);
 
-		NBT_Tag<string>* tag = new NBT_Tag<string>("directory" + nbt->getTagCount(), pathStr);
+		if (nbt == NULL) {
+			nbt = new NBT_Compound("FileMan.config");
+			NBT_Compound* dirs = new NBT_Compound("CreatedDirs");
+
+			nbt->setTag(dirs);
+		}
+
+		NBT_Tag<string>* tag = new NBT_Tag<std::string>("directory" + nbt->getTagCount(), pathStr);
 
 		static_cast<NBT_Compound*>(nbt->getTag("CreatedDirs"))->setTag(tag);
 
@@ -485,51 +528,61 @@ void FileManager::createDirectory(string pathStr) {
 		delete nbt;
 	}
 	else {
-		Warn("Attempting to create a directory that already exists: " + pathStr + '\n');
+		Bingo::Utils::Warn("Attempting to create a directory that already exists: " + pathStr + '\n');
 	}
 }
 
-void FileManager::removeDirectoy(string pathStr) {
+void Bingo::FileManager::removeDirectory(std::string pathStr) {
 	if (directories.find(pathStr) != directories.end()) {
 		directories.erase(pathStr);
-		remove_all(path(pathStr));
+		std::filesystem::remove_all(std::filesystem::path(pathStr));
 	}
 	else {
-		Warn("Attempting to delete a directory that was not created by FileManager: " + pathStr + '\n');
+		Bingo::Utils::Warn("Attempting to delete a directory that was not created by FileManager: " + pathStr + '\n');
 	}
 }
 
-vector<string> FileManager::listDirectory(string pathStr) {
-	vector<string> result;
-	directory_iterator end;
+std::vector<std::string> Bingo::FileManager::listDirectory(std::string pathStr) {
+	std::vector<std::string> result;
+	std::filesystem::directory_iterator end;
 
-	for (auto iter = directory_iterator(path(pathStr)); iter != end; iter++) {
-		result.push_back(iter->path().string());
+	for (auto iter = std::filesystem::directory_iterator(std::filesystem::path(pathStr)); iter != end; iter++) {
+		std::string pathStr = iter->path().string();
+
+		if (pathStr.find("\\") != std::string::npos) {
+			pathStr.replace(pathStr.find("\\"), 1, "/");
+		}
+
+		result.push_back(pathStr);
 	}
 
 	return result;
 }
 
-bool FileManager::isFile(string pathStr) {
-	return is_regular_file(path(pathStr));
+bool Bingo::FileManager::isFile(std::string pathStr) {
+	return std::filesystem::is_regular_file(std::filesystem::path(pathStr));
 }
 
-bool FileManager::isDir(string pathStr) {
-	return is_directory(path(pathStr));
+bool Bingo::FileManager::isDir(std::string pathStr) {
+	return std::filesystem::is_directory(std::filesystem::path(pathStr));
 }
 
-string FileManager::saveFileDialog(string pathStr, vector<string>* filterList, string title) {
+std::string Bingo::FileManager::saveFileDialog(std::string pathStr, std::vector<std::string>* filterList, std::string title) {
 	char* result;
 	const char* filters[10];
 	memset(filters, 0, sizeof(filters));
 
-	path filePath = pathStr;
+	std::filesystem::path filePath = pathStr;
 
 	if (!filePath.is_absolute()) {
-		filePath = absolute(filePath);
+		filePath = std::filesystem::absolute(filePath);
 	}
 
 	pathStr = filePath.string();
+
+	if (!pathStr.ends_with('/')) {
+		pathStr += "/";
+	}
 
 	if (filterList) {
 		for (uint c = 0; c < filterList->size() && c < 10; c++) {
@@ -555,18 +608,22 @@ string FileManager::saveFileDialog(string pathStr, vector<string>* filterList, s
 	return "";
 }
 
-string FileManager::openFileDialog(string pathStr, vector<string>* filterList, string title) {
+std::string Bingo::FileManager::openFileDialog(std::string pathStr, std::vector<std::string>* filterList, std::string title) {
 	char* result;
 	const char* filters[10];
 	memset(filters, 0, sizeof(filters));
 
-	path filePath = pathStr;
+	std::filesystem::path filePath = pathStr;
 
 	if (!filePath.is_absolute()) {
-		filePath = absolute(filePath);
+		filePath = std::filesystem::absolute(filePath);
 	}
 
 	pathStr = filePath.string();
+
+	if (!pathStr.ends_with('/')) {
+		pathStr += "/";
+	}
 
 	if (filterList) {
 		for (uint c = 0; c < filterList->size() && c < 10; c++) {
@@ -593,19 +650,23 @@ string FileManager::openFileDialog(string pathStr, vector<string>* filterList, s
 	return "";
 }
 
-vector<string> FileManager::openFileDialogMultiple(string pathStr, vector<string>* filterList, string title) {
+std::vector<std::string> Bingo::FileManager::openFileDialogMultiple(std::string pathStr, std::vector<std::string>* filterList, std::string title) {
 	char* result;
-	vector<string> fileResult;
+	std::vector<std::string> fileResult;
 	const char* filters[10];
 	memset(filters, 0, sizeof(filters));
 
-	path filePath = pathStr;
+	std::filesystem::path filePath = pathStr;
 
 	if (!filePath.is_absolute()) {
-		filePath = absolute(filePath);
+		filePath = std::filesystem::absolute(filePath);
 	}
 
 	pathStr = filePath.string();
+
+	if (!pathStr.ends_with('/')) {
+		pathStr += "/";
+	}
 
 	if (filterList) {
 		for (uint c = 0; c < filterList->size() && c < 10; c++) {
@@ -626,18 +687,7 @@ vector<string> FileManager::openFileDialogMultiple(string pathStr, vector<string
 		1);
 
 	if (result) {
-		string resultStr(result);
-		uint offset = 0;
-		uint index = resultStr.find('|', offset);
-
-		while (index != string::npos) {
-			fileResult.push_back(resultStr.substr(offset, index - offset));
-
-			offset = index;
-			index = resultStr.find('|', offset + 1);
-		}
-
-		fileResult.push_back(resultStr.substr(offset));
+		fileResult = Bingo::Utils::split(std::string(result), "|");
 	}
 
 	return fileResult;

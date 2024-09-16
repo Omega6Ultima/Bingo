@@ -2,6 +2,8 @@
 
 #include "Utils.h"
 
+#include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <math.h>
 #include <sstream>
@@ -80,12 +82,12 @@ void Bingo::Utils::tokenize(string& str, char separator) {
 	}
 }
 
-vector<uint> Bingo::Utils::tokenize(const string& str, const TokenizeType) {
-	vector<uint> result;
+std::vector<uint> Bingo::Utils::tokenize(const string& str, const TokenizeType) {
+	std::vector<uint> result;
 	enum TokenType { NONE, ALPHA, NUM, OTHER } curToken = NONE;
 	TokenType nextToken = NONE;
 
-	result.push_back(0);
+	//result.push_back(0);
 
 	if (isalpha(str[0])) {
 		curToken = ALPHA;
@@ -109,6 +111,8 @@ vector<uint> Bingo::Utils::tokenize(const string& str, const TokenizeType) {
 		}
 
 		if (curToken != nextToken) {
+			curToken = nextToken;
+
 			result.push_back(distance(str.begin(), iter));
 		}
 	}
@@ -148,15 +152,15 @@ string Bingo::Utils::strip(const string& s) {
 	return str;
 }
 
-vector<string> Bingo::Utils::split(const string& s, string separator) {
-	vector<string> result;
-	vector<uint> foundIndices;
-	uint found = s.find(separator.c_str());
+std::vector<string> Bingo::Utils::split(const string& s, string separator) {
+	std::vector<string> result;
+	std::vector<uint> foundIndices;
+	uint found = s.find(separator);
 
 	while (found != string::npos) {
 		foundIndices.push_back(found);
 
-		found = s.find(separator.c_str(), found + 1);
+		found = s.find(separator, found + separator.size());
 	}
 
 	foundIndices.push_back(string::npos);
@@ -166,7 +170,7 @@ vector<string> Bingo::Utils::split(const string& s, string separator) {
 	for (uint c = 0; c < foundIndices.size(); c++) {
 		result.push_back(s.substr(offset, foundIndices[c] - offset));
 
-		offset = foundIndices[c] + 1;
+		offset = foundIndices[c] + separator.size();
 	}
 
 	return result;
@@ -232,4 +236,88 @@ string Bingo::Utils::operator+(const string& str, uint num) {
 	ss << num;
 
 	return ss.str();
+}
+
+bool Bingo::Utils::isSpace(const string& str) {
+	bool result = true;
+
+	if (str.empty()) {
+		result = false;
+	}
+
+	for (auto c : str) {
+		if (isspace(c) == 0) {
+			result = false;
+			break;
+		}
+	}
+
+	return result;
+}
+
+bool Bingo::Utils::isAlpha(const string& str) {
+	bool result = true;
+
+	if (str.empty()) {
+		result = false;
+	}
+
+	for (auto c : str) {
+		if (isalpha(c) == 0) {
+			result = false;
+			break;
+		}
+	}
+
+	return result;
+}
+
+bool Bingo::Utils::isDigit(const string& str) {
+	bool result = true;
+
+	if (str.empty()) {
+		result = false;
+	}
+
+	for (auto c : str) {
+		if (isdigit(c) == 0) {
+			result = false;
+			break;
+		}
+	}
+
+	return result;
+}
+
+bool Bingo::Utils::isAlphaNum(const string& str) {
+	bool result = true;
+
+	if (str.empty()) {
+		result = false;
+	}
+
+	for (auto c : str) {
+		if (isalnum(c) == 0) {
+			result = false;
+			break;
+		}
+	}
+
+	return result;
+}
+
+string Bingo::Utils::toLower(const string& str) {
+	string result(str);
+
+	std::transform(result.begin(), result.end(), result.begin(), std::tolower);
+
+	return result;
+}
+
+string Bingo::Utils::toUpper(const string& str) {
+	string result(str);
+
+	std::transform(result.begin(), result.end(), result.begin(), std::toupper);
+
+	return result;
 }

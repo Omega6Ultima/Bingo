@@ -1,11 +1,6 @@
 #include <iomanip>
 #include <iostream>
 
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <SDL_mixer.h>
-
 #include "AI.h"
 #include "EventManager.h"
 #include "FileManager.h"
@@ -58,10 +53,10 @@ struct Schedule_2021 {
 	Matrix<ClassType, NUM_BLOCKS, NUM_ROOMS> data;
 };
 
-template<>
-Bingo::NBT_Base::NBT_Type NBT_Tag<VecN<ClassType, NUM_BLOCKS>>::getType() {
-	return NBT_INT_ARRAY;
-}
+//template<>
+//Bingo::NBT_Base::NBT_Type NBT_Tag<VecN<ClassType, NUM_BLOCKS>>::getType() {
+//	return NBT_INT_ARRAY;
+//}
 
 template<>
 void NBT_Tag<VecN<ClassType, NUM_BLOCKS>>::writeData(SDL_RWops* file) {

@@ -2,7 +2,6 @@
 
 #include <math.h>
 
-using Bingo::Math::Quat;
 using Bingo::Math::Quaternion;
 
 #define ONE_THRESHOLD .999999
@@ -22,11 +21,16 @@ Quaternion::Quaternion(VecN<double, 3> point)
 	//
 }
 
-Quaternion::Quaternion(VecN<double, 3> axis, double angle) {
+Quaternion::Quaternion(VecN<double, 3> axis, double degrees) {
 	VecN<double, 3> normAxis = axis.normalizeCopy();
+	double angle = Utils::degToRadians(degrees);
 	double i = sin(angle / 2);
 
 	values = { cos(angle / 2), i * normAxis[0], i * normAxis[1], i * normAxis[2] };
+}
+
+Quaternion Quaternion::identity() {
+	return Quaternion(1, 0, 0, 0);
 }
 
 void Quaternion::setW(double w) {
@@ -45,10 +49,6 @@ void Quaternion::setZ(double z) {
 	values[3] = z;
 }
 
-Quaternion Quaternion::identity() {
-	return Quaternion(1, 0, 0, 0);
-}
-
 double Quaternion::magnitude() const {
 	double total = 0;
 
@@ -57,6 +57,16 @@ double Quaternion::magnitude() const {
 	}
 
 	return sqrt(total);
+}
+
+double Quaternion::magnitudeSq() const {
+	double total = 0;
+
+	for (uint c = 0; c < 4; c++) {
+		total += values[c] * values[c];
+	}
+
+	return total;
 }
 
 Quaternion Quaternion::conjugate() const {
@@ -70,7 +80,15 @@ Quaternion Quaternion::conjugate() const {
 }
 
 Quaternion Quaternion::inverse() const {
-	return  conjugate() / magnitude();
+	double mag = magnitude();
+	return  conjugate() / (mag * mag);
+}
+
+double Quaternion::dot(const Quaternion& other) const {
+	return getW() * other.getW() +
+		getX() * other.getX() +
+		getY() * other.getY() +
+		getZ() * other.getZ();
 }
 
 Quaternion Quaternion::operator-() const {
@@ -78,16 +96,42 @@ Quaternion Quaternion::operator-() const {
 }
 
 Quaternion Quaternion::operator-(const Quaternion& other) const {
-	return inverse() * other;
+	return Quaternion(
+		getW() - other.getW(),
+		getX() - other.getX(),
+		getY() - other.getY(),
+		getZ() - other.getZ()
+	);
 }
 
 Quaternion Quaternion::operator*(const Quaternion& other) const {
 	Quaternion result;
 
-	result.setW(getW() * other.getW() - getX() * other.getX() - getY() * other.getY() - getZ() * other.getZ());
-	result.setX(getW() * other.getX() + getX() * other.getW() + getY() * other.getZ() - getZ() * other.getY());
-	result.setY(getW() * other.getY() + getY() * other.getW() + getZ() * other.getX() - getX() * other.getZ());
-	result.setZ(getW() * other.getZ() + getZ() * other.getW() + getX() * other.getY() - getY() * other.getX());
+	result.setW(
+		getW() * other.getW() -
+		getX() * other.getX() -
+		getY() * other.getY() -
+		getZ() * other.getZ()
+	);
+	result.setX(
+		getW() * other.getX() +
+		getX() * other.getW() +
+		getY() * other.getZ() -
+		getZ() * other.getY()
+	);
+
+	result.setY(
+		getW() * other.getY() -
+		getX() * other.getZ() +
+		getY() * other.getW() +
+		getZ() * other.getX()
+	);
+	result.setZ(
+		getW() * other.getZ() +
+		getX() * other.getY() -
+		getY() * other.getX() +
+		getZ() * other.getW()
+	);
 
 	return result;
 }
@@ -112,34 +156,24 @@ Quaternion Quaternion::operator/(double other) const {
 	return result;
 }
 
-double Quaternion::dot(const Quaternion& other) const {
-	return getW() * other.getW() +
-		getX() * other.getX() +
-		getY() * other.getY() +
-		getZ() * other.getZ();
+bool Quaternion::operator==(const Quaternion& other) const {
+	return (getW() == other.getW()) &&
+		(getX() == other.getX()) &&
+		(getY() == other.getY()) &&
+		(getZ() == other.getZ());
 }
 
-Quaternion Bingo::Math::pow(const Quaternion& q, double p) {
+Quaternion Bingo::Math::pow(const Quaternion& q, uint p) {
 	Quaternion result(q);
 
-	//check for identity quaternion
-	if (abs(q.getW()) < ONE_THRESHOLD) {
-		double alpha = acos(q.getW());
-		double nAlpha = alpha * p;
-
-		result.setW(cos(nAlpha));
-
-		double mult = sin(nAlpha) / sin(alpha);
-
-		result.setX(result.getX() * mult);
-		result.setY(result.getY() * mult);
-		result.setZ(result.getZ() * mult);
+	for (uint c = 1; c < p; c++) {
+		result = result * q;
 	}
 
 	return result;
 }
 
-Quaternion Bingo::Math::slerp(const Quat& start, const Quat& end, double lerp) {
+Quaternion Bingo::Math::slerp(const Quaternion& start, const Quaternion& end, double lerp) {
 	Quaternion result;
 	double cosAng = start.dot(end);
 
@@ -172,7 +206,7 @@ Quaternion Bingo::Math::slerp(const Quat& start, const Quat& end, double lerp) {
 	return result;
 }
 
-Quaternion Bingo::Math::squad(const Quat& q0, const Quat& q1, const Quat& q2, const Quat& q3, double lerp) {
+Quaternion Bingo::Math::squad(const Quaternion& q0, const Quaternion& q1, const Quaternion& q2, const Quaternion& q3, double lerp) {
 	return slerp(slerp(q0, q1, lerp), slerp(q2, q3, lerp), 2 * lerp * (1 - lerp));
 }
 

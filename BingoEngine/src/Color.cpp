@@ -50,12 +50,26 @@ Color Color::inverseHue() const {
 	return result;
 }
 
+bool Bingo::Colors::Color::operator==(const Color& other) const {
+	return getRed() == other.getRed() &&
+		getGreen() == other.getGreen() &&
+		getBlue() == other.getBlue() &&
+		getAlpha() == other.getAlpha();
+}
+
+bool Bingo::Colors::Color::operator!=(const Color& other) const {
+	return getRed() != other.getRed() ||
+		getGreen() != other.getGreen() ||
+		getBlue() != other.getBlue() ||
+		getAlpha() != other.getAlpha();
+}
+
 ostream& Bingo::Colors::operator<<(ostream& os, const Color& color) {
 	os << "Color{r" << +color.values[0]
 		<< ", g" << +color.values[1]
 		<< ", b" << +color.values[2]
 		<< ", a" << +color.values[3]
-		<< '\n';
+		<< "}";
 
 	return os;
 }

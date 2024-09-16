@@ -78,8 +78,8 @@ namespace Bingo {
 				return partSurf;
 			}
 
-			void addExternalForce(int x, int y, uint radius, int forceAmount);
-			void addExternalForce(VecN<int, 2> pos, uint radius, int forcePercent);
+			void addExternalForce(int x, int y, uint radius, float forceAmount);
+			void addExternalForce(VecN<int, 2> pos, uint radius, float forcePercent);
 
 			virtual void update();
 			virtual void update(float dtime_sec);

@@ -6,6 +6,7 @@
 #ifndef _SURFACE_H
 #define _SURFACE_H
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,13 +26,12 @@ namespace Bingo {
 
 	namespace Surfaces {
 
-		//using Surfaces::WindowManager;
-
 		using Colors::Color;
+		using Colors::WHITE;
 		using Math::Positional;
 		using Math::VecN;
 
-		class AnimSurface;
+		// TODO reorganize this file, group funcs together
 
 		class Surface : virtual public Positional {
 		public:
@@ -44,10 +44,6 @@ namespace Bingo {
 			Surface(const Surface& surf);
 			Surface& operator =(const Surface& surf);
 			~Surface();
-
-			//private:
-			//	/*contains code to be called by all constructors*/
-			//	void initializerHelper();
 
 		protected:
 			SDL_Surface* createSurface(string path);
@@ -80,10 +76,6 @@ namespace Bingo {
 			/*returns the height of the surface*/
 			inline int getHeight() const {
 				return static_cast<int>(height * scaleFactor[1]);
-			}
-			/*returns the draw color of the surface*/
-			inline const Color& getDrawColor() const {
-				return drawColor;
 			}
 
 			/*Sets the rotation angle for the surface*/
@@ -120,6 +112,10 @@ namespace Bingo {
 
 			/*sets the color used for basic geometry*/
 			void setDrawColor(Color color);
+			/*returns the draw color of the surface*/
+			inline const Color& getDrawColor() const {
+				return drawColor;
+			}
 
 			/*sets this surface as the render target for all draws*/
 			void setRenderTarget();
@@ -145,18 +141,6 @@ namespace Bingo {
 			inline void draw(Surface& surf, VecN<int, 2> pos) {
 				draw(surf, pos[0], pos[1]);
 			}
-
-			///*draw a scaled copy of surf onto the current render target at is own position
-			//scale is measured between 0 and 1*/
-			//void drawScaled(Surface& surf, float xscale, float yscale);
-			///*draw a scaled copy of surf onto the current render target at (x, y)
-			//scale is measured between 0 and 1*/
-			//void drawScaled(Surface& surf, int x, int y, float xscale, float yscale);
-			///*draw a scaled copy of surf onto the current render target at (x, y)
-			//scale is measured between 0 and 1*/
-			//inline void drawScaled(Surface& surf, VecN<int, 2> pos, float xscale, float yscale) {
-			//	drawScaled(surf, pos[0], pos[1], xscale, yscale);
-			//}
 
 			/*draw the clip of surf onto the current render target at its own position*/
 			void drawClip(Surface& surf, uint clip);
@@ -219,7 +203,7 @@ namespace Bingo {
 			/*modulates the surface colors with the given color*/
 			void setColorMod(Color color);
 			/*returns the color the surface has been modulated with*/
-			inline const Color getColorMod();
+			const Color getColorMod();
 			/*modulates the surface colors witht the given alpha*/
 			void setAlphaMod(uchar alpha);
 			/*returns the alpha the surface has been modulated with*/
@@ -257,6 +241,7 @@ namespace Bingo {
 		protected:
 			SDL_Texture* texture = NULL;
 			bool dirty = true;
+			bool autoDraw = false;
 			bool hasPos = false;
 			void* pixels = NULL;
 			int width = 1, height = 1;
@@ -268,7 +253,7 @@ namespace Bingo {
 			VecN<float, 2> center;
 			SDL_Point sdl_center;
 			SDL_RendererFlip flipState = SDL_FLIP_NONE;
-			Color drawColor = Color(255, 255, 255);
+			Color drawColor = WHITE;
 
 			static uchar nextRenderTarget;
 			static Surface* oldRenderTargets[];

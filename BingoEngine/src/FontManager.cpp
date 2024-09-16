@@ -11,6 +11,10 @@ using Bingo::Utils::Error;
 
 FontManager::FontManager(string path) {
 	fontPath = path;
+
+	if (!fontPath.ends_with("/")) {
+		fontPath += "/";
+	}
 }
 
 FontManager::~FontManager() {

@@ -45,21 +45,21 @@ namespace Bingo {
 				return -1;
 			}
 
-			inline int getTextWidth() const {
-				int width;
-
-				if (TTF_SizeText(FontManager::getSingleton().getFont(font, fontSize), text.c_str(), &width, NULL) == 0) {
-					return width;
-				}
-
-				return -1;
-			}
-
 			inline int getTextHeight() const {
 				int height;
 
 				if (TTF_SizeText(FontManager::getSingleton().getFont(font, fontSize), text.c_str(), NULL, &height) == 0) {
 					return height;
+				}
+
+				return -1;
+			}
+
+			inline int getTextWidth() const {
+				int width;
+
+				if (TTF_SizeText(FontManager::getSingleton().getFont(font, fontSize), text.c_str(), &width, NULL) == 0) {
+					return width;
 				}
 
 				return -1;

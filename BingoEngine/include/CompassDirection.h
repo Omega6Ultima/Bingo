@@ -27,10 +27,11 @@ namespace Bingo {
 
 			void operator +=(const CompassDirection& cd);
 			void operator -=(const CompassDirection& cd);
+			bool operator ==(const CompassDirection& cd) const;
 
 		private:
-			char vertical;
-			char horizontal;
+			float vertical = 0.0f;
+			float horizontal = 0.0f;
 		};
 
 		const CompassDirection NORTH('N');

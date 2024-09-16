@@ -13,13 +13,13 @@ using Bingo::Time::CountDownTimer;
 using Bingo::Time::Timer;
 
 void Timer::start() {
-	state = RUN;
+	state = TimerState::RUN;
 	startTicks = SDL_GetTicks();
 }
 
 uint Timer::end() {
-	if (state == RUN) {
-		state = IDLE;
+	if (state == TimerState::RUN) {
+		state = TimerState::IDLE;
 		endTicks = SDL_GetTicks();
 		lastDiff = endTicks - startTicks;
 	}
@@ -57,12 +57,20 @@ CountDownTimer::CountDownTimer() {
 
 CountDownTimer::CountDownTimer(const tm& timeStruct) {
 	targetTime = timeStruct;
+	targetTimeStamp = TimeConvert::struct2Stamp(targetTime);
 	set = true;
+}
+
+void CountDownTimer::setTime(const struct tm& timeStruct) {
+	targetTime = timeStruct;
+	targetTimeStamp = TimeConvert::struct2Stamp(targetTime);
+	set = true;
+	timeUp = false;
 }
 
 bool CountDownTimer::isTimeUp() {
 	if (!timeUp && set) {
-		time_t targetTimeStamp = TimeConvert::struct2Stamp(targetTime);
+		//time_t targetTimeStamp = TimeConvert::struct2Stamp(targetTime);
 		time_t curTimeStamp = time(NULL);
 
 		double diff = difftime(targetTimeStamp, curTimeStamp);
@@ -74,12 +82,6 @@ bool CountDownTimer::isTimeUp() {
 	}
 
 	return false;
-}
-
-void CountDownTimer::setTime(const struct tm& timeStruct) {
-	targetTime = timeStruct;
-	set = true;
-	timeUp = false;
 }
 
 bool CountDownTimer::isTimeStr(const string& str, const string& format) {
@@ -110,6 +112,7 @@ tm CountDownTimer::makeTime(const string& str, const string& format) {
 
 	while (!fss.eof()) {
 		char nextCh = fss.get();
+		string tempString = "";
 
 		if (nextCh == '%') {
 			nextCh = fss.get();
@@ -141,13 +144,88 @@ tm CountDownTimer::makeTime(const string& str, const string& format) {
 				tss >> readTime.tm_mday;
 				break;
 			case 'M':
-				tss >> readTime.tm_mon;
+				tss >> tempString;
+
+				if (Bingo::Utils::isAlpha(tempString)) {
+					tempString = Bingo::Utils::toLower(tempString);
+
+					if (tempString.find("jan") != string::npos) {
+						readTime.tm_mon = 0;
+					}
+					else if (tempString.find("feb") != string::npos) {
+						readTime.tm_mon = 1;
+					}
+					else if (tempString.find("mar") != string::npos) {
+						readTime.tm_mon = 2;
+					}
+					else if (tempString.find("apr") != string::npos) {
+						readTime.tm_mon = 3;
+					}
+					else if (tempString.find("may") != string::npos) {
+						readTime.tm_mon = 4;
+					}
+					else if (tempString.find("jun") != string::npos) {
+						readTime.tm_mon = 5;
+					}
+					else if (tempString.find("jul") != string::npos) {
+						readTime.tm_mon = 6;
+					}
+					else if (tempString.find("aug") != string::npos) {
+						readTime.tm_mon = 7;
+					}
+					else if (tempString.find("sep") != string::npos) {
+						readTime.tm_mon = 8;
+					}
+					else if (tempString.find("oct") != string::npos) {
+						readTime.tm_mon = 9;
+					}
+					else if (tempString.find("nov") != string::npos) {
+						readTime.tm_mon = 10;
+					}
+					else if (tempString.find("dec") != string::npos) {
+						readTime.tm_mon = 11;
+					}
+				}
+				else if (Bingo::Utils::isDigit(tempString)) {
+					readTime.tm_mon = stoi(tempString);
+				}
+
 				break;
 			case 'y':
 				tss >> readTime.tm_year;
 				break;
 			case 'w':
-				tss >> readTime.tm_wday;
+				tss >> tempString;
+
+				if (Bingo::Utils::isAlpha(tempString)) {
+					tempString = Bingo::Utils::toLower(tempString);
+
+					if (tempString.find("sun") != string::npos) {
+						readTime.tm_wday = 0;
+					}
+					else if (tempString.find("mon") != string::npos) {
+						readTime.tm_wday = 1;
+					}
+					else if (tempString.find("tue") != string::npos) {
+						readTime.tm_wday = 2;
+					}
+					else if (tempString.find("wed") != string::npos) {
+						readTime.tm_wday = 3;
+					}
+					else if (tempString.find("thu") != string::npos) {
+						readTime.tm_wday = 4;
+					}
+					else if (tempString.find("fri") != string::npos) {
+						readTime.tm_wday = 5;
+					}
+					else if (tempString.find("sat") != string::npos) {
+						readTime.tm_wday = 6;
+					}
+				}
+				else if (Bingo::Utils::isDigit(tempString)) {
+					readTime.tm_wday = stoi(tempString);
+				}
+
 				break;
 			case 'D':
 				tss >> readTime.tm_yday;

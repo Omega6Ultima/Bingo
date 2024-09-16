@@ -10,6 +10,7 @@
 #include <random>
 #endif
 
+#include "Core.h"
 #include "Singleton.h"
 
 #if !USE_PSEUDO
@@ -18,7 +19,9 @@ using std::random_device;
 
 namespace Bingo {
 
-	class RandomManager : public Singleton<RandomManager> {
+	using Core::Manager;
+
+	class RandomManager : public Singleton<RandomManager>, public Manager {
 	public:
 		RandomManager();
 		~RandomManager();
