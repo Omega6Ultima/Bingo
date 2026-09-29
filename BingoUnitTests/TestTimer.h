@@ -65,6 +65,33 @@ TEST(TestCounter, TestSetTime) {
 	EXPECT_NO_THROW(t.setTime(Bingo::TimeConvert::stamp2Struct(time(NULL))));
 }
 
+TEST(TestCounter, TestReset) {
+	auto t = Bingo::Time::Counter();
+	t.setTime(Bingo::TimeConvert::stamp2Struct(time(NULL) + 1));
+
+	Bingo::Time::Timer::DelayMS(1000);
+
+	EXPECT_EQ(t.isTimeUp(), true);
+	EXPECT_GE(t.getPercent(), 99.0);
+
+	EXPECT_NO_THROW(t.reset());
+
+	EXPECT_EQ(t.isTimeUp(), false);
+	EXPECT_EQ(t.getPercent(), 0.0);
+}
+
+TEST(TestCounter, TestGetPercent) {
+	auto t = Bingo::Time::Counter();
+
+	t.setTime(Bingo::TimeConvert::stamp2Struct(time(NULL) + 10));
+
+	EXPECT_NEAR(t.getPercent(), 0.0, 1.0);
+
+	Bingo::Time::Timer::DelayMS(5000);
+
+	EXPECT_NEAR(t.getPercent(), 50.0, 1.0);
+}
+
 TEST(TestCounter, TestIsTimeUp) {
 	auto t = Bingo::Time::Counter();
 

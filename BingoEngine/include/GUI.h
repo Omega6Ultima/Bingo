@@ -11,10 +11,9 @@
 #include "TextSurface.h"
 #include "Timer.h"
 
-#define BUTTON_PRIORITY 10
-#define INPUT_PRIORITY 10
-#define INPUT_CURSOR_ACTIVE_TIME 500
-#define INPUT_CURSOR_MAX_TIME 1000
+constexpr auto BUTTON_PRIORITY = 10;
+constexpr auto INPUT_PRIORITY = 10;
+constexpr auto INPUT_CURSOR_BLINK_HZ = 2.0;
 
 using std::distance;
 using std::find;
@@ -142,11 +141,9 @@ namespace Bingo {
 
 		class Input : public ButtonText, public KeyListener {
 		public:
-			Input(int x, int y, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color = BLACK);
-			Input(VecN<int, 2> position, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color = BLACK);
+			Input(int x, int y, int width, int height, InputFunc postInputFunc, string fontName, int fontSize, string startText, Color color = BLACK);
+			Input(VecN<int, 2> position, int width, int height, InputFunc postInputFunc, string fontName, int fontSize, string startText, Color color = BLACK);
 			~Input() = default;
-
-			void inputMode();
 
 		protected:
 			virtual void renderTexture() override;
@@ -155,12 +152,12 @@ namespace Bingo {
 			virtual void handleEvent(EventManager::EventType evt) override;
 
 		private:
-			bool input = false;
+			bool capturingInput = false;
 			string shadowText;
 			int inputWidth, inputHeight;
-			InputFunc onInputClick;
+			InputFunc postInput;
 			Timer timer;
-			uint cursorTime = 0;
+			bool drawCursor = false;
 			uint cursorWidth;
 		};
 

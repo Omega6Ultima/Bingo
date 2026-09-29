@@ -301,12 +301,11 @@ void ButtonText::handleEvent(EventManager::EventType evt) {
 	}
 }
 
-Input::Input(int x, int y, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color)
+Input::Input(int x, int y, int width, int height, InputFunc postInputFunc, string fontName, int fontSize, string startText, Color color)
 	: ButtonText(x, y, NULL, fontName, fontSize, startText, color) {
 	inputWidth = width;
 	inputHeight = height;
-	onInputClick = func;
-	cursorTime = 0;
+	postInput = postInputFunc;
 	cursorWidth = getLetterWidth('I');
 
 	//renderTexture();
@@ -319,12 +318,11 @@ Input::Input(int x, int y, int width, int height, InputFunc func, string fontNam
 	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_SYSTEM, INPUT_PRIORITY);
 }
 
-Input::Input(VecN<int, 2> position, int width, int height, InputFunc func, string fontName, int fontSize, string startText, Color color)
+Input::Input(VecN<int, 2> position, int width, int height, InputFunc postInputFunc, string fontName, int fontSize, string startText, Color color)
 	: ButtonText(position, NULL, fontName, fontSize, startText, color) {
 	inputWidth = width;
 	inputHeight = height;
-	onInputClick = func;
-	cursorTime = 0;
+	postInput = postInputFunc;
 	cursorWidth = getLetterWidth('I');
 
 	renderTexture();
@@ -335,42 +333,6 @@ Input::Input(VecN<int, 2> position, int width, int height, InputFunc func, strin
 	//register with higher priority
 	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_KEY, INPUT_PRIORITY);
 	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_SYSTEM, INPUT_PRIORITY);
-}
-
-void Input::inputMode() {
-	input = true;
-	cursorTime = 0;
-	bool drawingCursor = false;
-
-	//TODO
-	// use new events SDL_TEXT_INPUT
-
-	while (input) {
-		cursorTime += timer.end();
-		timer.start();
-
-		EventManager::getSingleton().update();
-
-		if (cursorTime > INPUT_CURSOR_ACTIVE_TIME && !drawingCursor) {
-			drawingCursor = true;
-			markDirty();
-		}
-
-		if (cursorTime > INPUT_CURSOR_MAX_TIME) {
-			drawingCursor = false;
-			cursorTime = 0;
-			markDirty();
-		}
-
-		clearRenderTarget();
-
-		WindowManager::getSingleton().clear();
-		WindowManager::getSingleton().draw(*this, getPosX(), getPosY());
-		WindowManager::getSingleton().update();
-	}
-
-	cursorTime = 0;
-	markDirty();
 }
 
 void Input::renderTexture() {
@@ -403,11 +365,17 @@ void Input::renderTexture() {
 		drawRect(c, c, width - 2 * c, height - 2 * c, false);
 	}
 
-	if (cursorTime > INPUT_CURSOR_ACTIVE_TIME) {
-		setDrawColor(getColor());
+	if (HasTypingFocus()) {
+		if (timer.everyXMillis(static_cast<int>(1.0 / INPUT_CURSOR_BLINK_HZ * 1000.0))) {
+			drawCursor = !drawCursor;
+		}
 
-		uint textPad = static_cast<uint>(getFrameWidth() * 1.25) + 3;
-		drawRect(textPad + getTextWidth(), textPad, cursorWidth, height - 2 * textPad, true);
+		if (drawCursor) {
+			setDrawColor(getColor());
+
+			uint textPad = static_cast<uint>(getFrameWidth() * 1.25) + 3;
+			drawRect(textPad + getTextWidth(), textPad, cursorWidth, height - 2 * textPad, true);
+		}
 	}
 
 	Surface::restoreRenderTarget();
@@ -427,51 +395,46 @@ void Input::handleEvent(EventManager::EventType evt) {
 		VecN<int, 2> mousePos = getMousePos();
 
 		if (pos[0] < mousePos[0] && mousePos[0] < pos[0] + width &&
-			pos[1] < mousePos[1] && mousePos[1] < pos[1] + height) {
-			if (onInputClick) {
-				onInputClick(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
-			}
-			else {
-				inputMode();
-			}
+				pos[1] < mousePos[1] && mousePos[1] < pos[1] + height) {
+			capturingInput = true;
+			drawCursor = true;
+			GetTypingFocus();
 		}
 		else {
-			if (input) {
-				input = false;
+			if (capturingInput) {
+				capturingInput = false;
+				ReleaseTypingFocus();
 				EventManager::getSingleton().cancelEvent();
+
+				if (postInput) {
+					postInput(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
+				}
 			}
 		}
 	}
-	//else if (evt == EventManager::EVT_QUIT){
-	//	if (input){
-	//		input = false;
-	//		EventManager::getSingleton().cancelEvent();
-	//	}
-	//}
 	else if (evt == EventManager::EVT_KEYDOWN) {
-		if (eventData.keyCode == EventManager::K_ESCAPE ||
-			eventData.keyCode == EventManager::K_RETURN) {
-			if (input) {
-				input = false;
+		if (capturingInput) {
+			if (eventData.keyCode == EventManager::K_ESCAPE ||
+					eventData.keyCode == EventManager::K_RETURN) {
+				capturingInput = false;
+				ReleaseTypingFocus();
 				EventManager::getSingleton().cancelEvent();
+
+				if (postInput) {
+					postInput(*this, static_cast<EventManager::MouseButton>(eventData.mouseButton));
+				}
 			}
-		}
-		else if (input) {
-			if (eventData.keyCode == EventManager::K_BACKSPACE) {
+			else if (eventData.keyCode == EventManager::K_BACKSPACE) {
 				string text = getText();
 
 				if (text.length() > 0) {
 					setText(string(text.begin(), text.end() - 1));
 				}
 			}
-			else {
-				char ch = getKeySymbol(static_cast<EventManager::KeyCode>(eventData.keyCode), static_cast<EventManager::KeyMod>(eventData.mods));
-
-				if (ch != 0) {
-					setText(getText() + ch);
-				}
-			}
 		}
+	}
+	else if (evt == EventManager::EVT_TEXTINPUT) {
+		setText(getText() + eventData.text);
 	}
 }
 

@@ -118,6 +118,7 @@
     <ClInclude Include="include\Positional.h" />
     <ClInclude Include="include\Quaternion.h" />
     <ClInclude Include="include\RandomManager.h" />
+    <ClInclude Include="include\Rect.h" />
     <ClInclude Include="include\ScriptManager.h" />
     <ClInclude Include="include\Singleton.h" />
     <ClInclude Include="include\SoundManager.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="src\Positional.cpp" />
     <ClCompile Include="src\Quaternion.cpp" />
     <ClCompile Include="src\RandomManager.cpp" />
+    <ClCompile Include="src\Rect.cpp" />
     <ClCompile Include="src\SoundManager.cpp" />
     <ClCompile Include="src\Surface.cpp" />
     <ClCompile Include="src\TextSurface.cpp" />

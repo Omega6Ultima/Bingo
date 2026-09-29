@@ -111,12 +111,7 @@ Surface::Surface(const Surface& surf) {
 	width = surf.width;
 	height = surf.height;
 
-	for (auto iter = surf.newViewports.begin(); iter != surf.newViewports.end(); iter++) {
-		newViewports.push_back(new SDL_Rect{ (*iter)->x,
-											(*iter)->y,
-											(*iter)->w,
-											(*iter)->h });
-	}
+	viewport = surf.viewport;
 
 	for (auto iter = surf.newClips.begin(); iter != surf.newClips.end(); iter++) {
 		newClips.push_back(new SDL_Rect{ (*iter)->x,
@@ -151,20 +146,7 @@ Surface& Surface::operator =(const Surface& surf) {
 
 	//initializerHelper();
 
-	for (auto iter = newViewports.begin(); iter != newViewports.end(); iter++) {
-		if (*iter) {
-			delete* iter;
-		}
-	}
-
-	newViewports.resize(0);
-
-	for (auto iter = surf.newViewports.begin(); iter != surf.newViewports.end(); iter++) {
-		newViewports.push_back(new SDL_Rect{ (*iter)->x,
-											(*iter)->y,
-											(*iter)->w,
-											(*iter)->h });
-	}
+	viewport = surf.viewport;
 
 	activeClip = NULL;
 
@@ -208,12 +190,6 @@ Surface& Surface::operator =(const Surface& surf) {
 }
 
 Surface::~Surface() {
-	for (auto iter = newViewports.begin(); iter != newViewports.end(); iter++) {
-		if (*iter) {
-			delete* iter;
-		}
-	}
-
 	for (auto iter = newClips.begin(); iter != newClips.end(); iter++) {
 		if (*iter) {
 			delete* iter;
@@ -270,7 +246,7 @@ void Surface::markDirty() {
 }
 
 void Surface::fetchPixels() {
-	if (isDirty()) { // !pixels || 
+	if (isDirty() || !pixels) {
 		releasePixels();
 
 		pixels = new char[getWidth() * getHeight() * 5];
@@ -967,40 +943,25 @@ void Surface::setBlendMode(BlendMode blend) {
 	markDirty();
 }
 
-uint Surface::addViewport(int x, int y, int w, int h) {
-	newViewports.push_back(new SDL_Rect{ x, y, w, h });
+void Surface::setViewport(int x, int y, int w, int h) {
+	viewport = { x, y, w, h };
 
-	return newViewports.size() - 1;
-}
-
-void Surface::delViewport(uint index) {
-	if (index > newViewports.size() || newViewports[index] == NULL) {
-		throw Exception("Deleting an invalid viewport index\n");
-	}
-
-	delete newViewports[index];
-
-	newViewports[index] = NULL;
-}
-
-void Surface::setViewport(uint index) {
-	if (WindowManager::getSingleton().curRenderTarget != this) {
-		Warn("Setting a viewport while this surface isnt the render target\n");
-	}
-
-	if (index >= newViewports.size() || newViewports[index] == NULL) {
-		throw Exception("Setting an invalid viewport index\n");
-	}
-
-	if (SDL_RenderSetViewport(WindowManager::getSingleton().getRenderer(), newViewports[index])) {
+	if (SDL_RenderSetViewport(WindowManager::getSingleton().getRenderer(), &viewport)) {
 		throw Exception("RenderSetViewport failed");
 	}
+}
 
+void Surface::setViewport(Rect rect) {
+	viewport = { rect.getX(), rect.getY(), rect.getW(), rect.getH() };
+
+	if (SDL_RenderSetViewport(WindowManager::getSingleton().getRenderer(), &viewport)) {
+		throw Exception("RenderSetViewport failed");
+	}
 }
 
 void Surface::clearViewport() {
 	if (SDL_RenderSetViewport(WindowManager::getSingleton().getRenderer(), NULL)) {
-		throw Exception("RenderSetViewport failed");
+		throw Exception("Surface clearViewport failed");
 	}
 }
 

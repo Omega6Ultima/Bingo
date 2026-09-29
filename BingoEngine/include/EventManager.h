@@ -11,6 +11,7 @@ run when certain events happen*/
 #include <set>
 #include <vector>
 
+#include <SDL_events.h>
 #include <SDL_keycode.h>
 
 #include "Core.h"
@@ -41,10 +42,11 @@ namespace Bingo {
 			LISTEN_MOUSE,
 		};
 		enum EventType {
-			EVT_QUIT = 0,
+			EVT_QUIT,
 			EVT_WINDOWEVENT,
 			EVT_KEYUP,
 			EVT_KEYDOWN,
+			EVT_TEXTINPUT,
 			EVT_MOUSEMOVE,
 			EVT_MOUSEBUTTONDOWN,
 			EVT_MOUSEBUTTONUP
@@ -253,6 +255,11 @@ namespace Bingo {
 					uchar keyRepeat;
 					ushort mods;
 				};
+				struct {
+					uint timestamp;
+					uint windowId;
+					char text[32];
+				};
 				int mouseDelta[2];
 				int mouseButton;
 			} eventData;
@@ -298,14 +305,21 @@ namespace Bingo {
 
 			bool checkKeyDown(EventManager::KeyCode key, uint cooldown = KEY_COOLDOWN);
 			static char getKeySymbol(EventManager::KeyCode key, EventManager::KeyMod mod);
+			bool HasTypingFocus() const;
 
 		protected:
 			virtual void handleEvent(EventManager::EventType e) override;
+			void GetTypingFocus();
+			void ReleaseTypingFocus();
+
 
 		private:
+			static KeyListener* focusedTyper;
 			set<int> codes;
 			map<int, uint> codeTimes;
 			Timer timer;
+
+			friend class EventManager;
 		};
 
 		class MouseListener : virtual public EventListener {

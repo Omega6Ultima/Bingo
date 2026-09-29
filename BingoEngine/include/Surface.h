@@ -16,6 +16,7 @@
 #include "Color.h"
 #include "Exception.h"
 #include "Positional.h"
+#include "Rect.h"
 #include "VecN.h"
 
 #define MAX_SAVED_TARGETS 20
@@ -192,6 +193,10 @@ namespace Bingo {
 			inline void drawRect(VecN<int, 2> pos, int w, int h, bool filled = false) {
 				drawRect(pos[0], pos[1], w, h, filled);
 			}
+			/*draw a rectangle with the coordinates from rect*/
+			inline void drawRect(Rect rect, bool filled = false) {
+				drawRect(rect.getX(), rect.getY(), rect.getW(), rect.getH(), filled);
+			}
 
 			/*draw a diamond with a center at (x, y) and diameters specified*/
 			void drawDiamond(int x, int y, uint horiz, uint vert, bool filled = false);
@@ -211,15 +216,10 @@ namespace Bingo {
 			/*sets the blending mode for this surface*/
 			void setBlendMode(BlendMode blend);
 
-			/*add a viewport to this surface described by a rectangle
-			of w width and h height at (x, y)
-			returns the index used to access the viewport later*/
-			uint addViewport(int x, int y, int w, int h);
-			/*deletes the viewport at the specified index*/
-			void delViewport(uint index);
-			/*sets the viewport at the specified index as the active viewport
-			all draws will only happen within the bounds of the viewport*/
-			void setViewport(uint index);
+			/*sets the viewport at the specified coordinates
+			all draw* functions will only happen within the bounds of the viewport*/
+			void setViewport(int x, int y, int w, int h);
+			void setViewport(Rect rect);
 			/*clears the active viewport so that all draws will
 			happen to the entire surface*/
 			void clearViewport();
@@ -245,7 +245,7 @@ namespace Bingo {
 			bool hasPos = false;
 			void* pixels = NULL;
 			int width = 1, height = 1;
-			vector<SDL_Rect*> newViewports;
+			SDL_Rect viewport;
 			vector<SDL_Rect*> newClips;
 			SDL_Rect* activeClip = NULL;
 			uint rotation = 0;

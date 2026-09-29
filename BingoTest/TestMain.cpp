@@ -93,13 +93,8 @@ using namespace Bingo;
 #define MSH_PATH "resources/models/"
 #define SCRIPT_PATH "resources/scripts/"
 
-#ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 640
-#endif
-
-#ifndef SCREEN_HEIGHT
 #define SCREEN_HEIGHT 480
-#endif
 
 #define HALF_SCREEN_WIDTH SCREEN_WIDTH / 2
 #define HALF_SCREEN_HEIGHT SCREEN_HEIGHT / 2

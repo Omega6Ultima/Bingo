@@ -1,26 +1,26 @@
 //Dustin Gehm
 
 #include "pch.h"
-//#include "TestAi.h" // TODO make AStar tests
-//#include "TestAnimSurface.h"
-//#include "TestColor.h"
-//#include "TestCompassDirection.h"
-//#include "TestFileManager.h"
-//#include "TestMaths.h"
-//#include "TestMatrix.h"
-#include "TestMeshManager.h" // TODO
-//#include "TestMinHeap.h"
-//#include "TestNBT.h" // TODO 1 test fails
-//#include "TestPhysicalObject.h"
-//#include "TestPositional.h"
-//#include "TestQuaternion.h"
-//#include "TestSingleton.h"
-//#include "TestSurface.h" // TODO 1 test fails, more tests to write
-//#include "TestTextSurface.h"
-//#include "TestTimer.h"
-//#include "TestUtils.h"
-//#include "TestVecN.h"
-//#include "TestWindowManager.h" // TODO more tests to write
+#include "TestAi.h" // TODO make AStar tests
+#include "TestAnimSurface.h"
+#include "TestColor.h"
+#include "TestCompassDirection.h"
+//#include "TestFileManager.h" // interactive
+#include "TestMaths.h"
+#include "TestMatrix.h"
+#include "TestMeshManager.h" // TODO working on this
+#include "TestMinHeap.h"
+#include "TestNBT.h" // TODO 1 test fails
+#include "TestPhysicalObject.h"
+#include "TestPositional.h"
+#include "TestQuaternion.h"
+#include "TestSingleton.h"
+#include "TestSurface.h" // TODO 1 test fails, more tests to write
+#include "TestTextSurface.h"
+#include "TestTimer.h"
+#include "TestUtils.h"
+#include "TestVecN.h"
+#include "TestWindowManager.h" // TODO more tests to write
 
 #include <iostream>
 
@@ -37,9 +37,9 @@
 
 using namespace std;
 
-#define PROJ_NAME "Unit Tests"
-#define SCREEN_WIDTH 600
-#define SCREEN_HEIGHT 400
+constexpr auto PROJ_NAME = "Unit Tests";
+constexpr auto SCREEN_WIDTH = 600;
+constexpr auto SCREEN_HEIGHT = 400;
 
 int main(int argc, char* argv[]) {
 	int result = 0;
@@ -76,7 +76,6 @@ int main(int argc, char* argv[]) {
 	//screen.drawCircle(100, 100, 25, true);
 	//screen.drawDiamond(100, 150, 50, 25, false);
 	//screen.drawTriangle(100, 200, 75, 25, 90, false);
-
 	screen.draw(testMessage,
 		(SCREEN_WIDTH / 2) - (testMessage.getWidth() / 2),
 		SCREEN_HEIGHT - (int)(testMessage.getHeight() * 1.5f));

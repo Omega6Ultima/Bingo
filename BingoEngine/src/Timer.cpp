@@ -52,30 +52,44 @@ bool Timer::everyXMillis(uint ms) {
 }
 
 CountDownTimer::CountDownTimer() {
-	memset(&targetTime, 0, sizeof(targetTime));
+	//
 }
 
 CountDownTimer::CountDownTimer(const tm& timeStruct) {
-	targetTime = timeStruct;
-	targetTimeStamp = TimeConvert::struct2Stamp(targetTime);
+	targetTimeStamp = TimeConvert::struct2Stamp(timeStruct);
+	maxDiff = difftime(targetTimeStamp, time(NULL));
 	set = true;
 }
 
 void CountDownTimer::setTime(const struct tm& timeStruct) {
-	targetTime = timeStruct;
-	targetTimeStamp = TimeConvert::struct2Stamp(targetTime);
+	targetTimeStamp = TimeConvert::struct2Stamp(timeStruct);
+	maxDiff = difftime(targetTimeStamp, time(NULL));
 	set = true;
 	timeUp = false;
 }
 
+void CountDownTimer::reset() {
+	targetTimeStamp = static_cast<time_t>(-1);
+	maxDiff = -1.0;
+	set = false;
+	timeUp = false;
+}
+
+double CountDownTimer::getPercent() const {
+	if (set) {
+		double diff = maxDiff - difftime(targetTimeStamp, time(NULL));
+
+		return (diff / maxDiff) * 100.0;
+	}
+
+	return 0.0;
+}
+
 bool CountDownTimer::isTimeUp() {
 	if (!timeUp && set) {
-		//time_t targetTimeStamp = TimeConvert::struct2Stamp(targetTime);
-		time_t curTimeStamp = time(NULL);
+		double diff = difftime(targetTimeStamp, time(NULL));
 
-		double diff = difftime(targetTimeStamp, curTimeStamp);
-
-		if (-1 < diff && diff < 1) {
+		if (diff <= 0) {
 			timeUp = true;
 			return true;
 		}

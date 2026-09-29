@@ -5,12 +5,15 @@
 #define _TIMER_H
 
 #include <ctime>
+#include <string>
 
 #include <SDL_timer.h>
 
 #include "Utils.h"
 
-#define TIME_CONVERT_MAX_STR 80
+constexpr auto TIME_CONVERT_MAX_STR = 80;
+
+using std::string;
 
 namespace Bingo {
 
@@ -57,13 +60,15 @@ namespace Bingo {
 			~CountDownTimer() = default;
 
 			void setTime(const struct tm& timeStruct);
+			void reset();
+			double getPercent() const;
 			bool isTimeUp();
 
 			static bool isTimeStr(const string& str, const string& format);
 			static tm makeTime(const string& str, const string& format);
 		private:
-			tm targetTime;
 			time_t targetTimeStamp = 0;
+			double maxDiff = -1.0;
 			bool set = false;
 			bool timeUp = false;
 		};

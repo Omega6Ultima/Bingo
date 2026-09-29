@@ -25,9 +25,9 @@ using Bingo::Math::Matrix;
 using Bingo::Surfaces::Surface;
 using Bingo::Surfaces::WindowManager;
 
-#define PROJ_NAME "BS"
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+constexpr auto PROJ_NAME = "BS";
+constexpr auto SCREEN_WIDTH = 800;
+constexpr auto SCREEN_HEIGHT = 600;
 
 void M_BoardButtonClicked(Button& button, EventManager::MouseButton mouseButton) {
 	Surface::saveRenderTarget();

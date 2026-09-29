@@ -9,6 +9,7 @@
 #include "FileManager.h"
 #include "FontManager.h"
 #include "GUI.h"
+#include "Rect.h"
 #include "SoundManager.h"
 #include "Surface.h"
 #include "TextSurface.h"
@@ -22,6 +23,7 @@ using Bingo::Colors::BLUE;
 using Bingo::Colors::LIGHTGRAY;
 using Bingo::Colors::RED;
 using Bingo::Colors::WHITE;
+using Bingo::Colors::YELLOW;
 using Bingo::EventManager;
 using Bingo::FileManager;
 using Bingo::Events::QuitListener;
@@ -32,6 +34,7 @@ using Bingo::Guis::Input;
 using Bingo::Guis::Slider;
 using Bingo::NBT_Compound;
 using Bingo::NBT_Tag;
+using Bingo::Rect;
 using Bingo::SoundManager;
 using Bingo::Surfaces::AnimSurface;
 using Bingo::Surfaces::Surface;
@@ -40,24 +43,28 @@ using Bingo::Surfaces::WindowManager;
 using Bingo::Time::Counter;
 using Bingo::Time::Timer;
 
-#define PROJ_NAME "DanceTime"
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
-#define MAX_TIMERS 18
+constexpr auto PROJ_NAME = "DanceTime";
+constexpr auto SCREEN_WIDTH = 800;
+constexpr auto SCREEN_HEIGHT = 600;
+constexpr auto MAX_TIMERS = 16;
 
 vector<ButtonText*> testSoundButtons;
 vector<DropDown*> soundDropDowns;
 vector<Input*> timeInputs;
+vector<Surface*> percentBars;
 vector<Input*> durationInputs;
 vector<bool> alarmsValid;
 vector<AnimSurface*> statuses;
-vector<Counter*> tempTimers;
+vector<Counter*> timers;
 vector<string> activeSounds;
 
 void CheckInputs() {
-	for (auto iter = soundDropDowns.begin(); iter != soundDropDowns.end(); iter++) {
-		uint index = distance(soundDropDowns.begin(), iter);
-		string filename = (*iter)->getText();
+	for (int index = 0; index < MAX_TIMERS; index++) {
+		if (timeInputs[index]->HasTypingFocus()) {
+			continue;
+		}
+
+		string filename = soundDropDowns[index]->getText();
 
 		if (FileManager::getSingleton().checkFile(filename)) {
 			if (!alarmsValid[index]) {
@@ -67,7 +74,7 @@ void CheckInputs() {
 				SoundManager::getSingleton().addSound(soundName, filename);
 
 				if (Counter::isTimeStr(timeInputs[index]->getText(), "%h:%m%p")) {
-					tempTimers[index]->setTime(Counter::makeTime(timeInputs[index]->getText(), "%h:%m%p"));
+					timers[index]->setTime(Counter::makeTime(timeInputs[index]->getText(), "%h:%m%p"));
 
 					statuses[index]->setClip(0);
 					alarmsValid[index] = true;
@@ -108,8 +115,6 @@ void InvalidateSound0(DropDown& dropDown) {
 }
 
 void InvalidateSound1(Input& input, EventManager::MouseButton mouseButton) {
-	input.inputMode();
-
 	for (auto iter = timeInputs.begin(); iter != timeInputs.end(); iter++) {
 		if (*iter == &input) {
 			auto index = distance(timeInputs.begin(), iter);
@@ -120,8 +125,6 @@ void InvalidateSound1(Input& input, EventManager::MouseButton mouseButton) {
 }
 
 void InvalidateSound2(Input& input, EventManager::MouseButton mouseButton) {
-	input.inputMode();
-
 	for (auto iter = durationInputs.begin(); iter != durationInputs.end(); iter++) {
 		if (*iter == &input) {
 			auto index = distance(durationInputs.begin(), iter);
@@ -230,6 +233,7 @@ int main(int argc, char* argv[]) {
 	FileManager fileManager("resources/Nbt/");
 	FontManager fontManager("resources/Font/");
 	SoundManager soundManager;
+	Timer checkInputs;
 
 	fontManager.nickname("expressway rg.ttf", "main");
 
@@ -241,7 +245,7 @@ int main(int argc, char* argv[]) {
 	soundLabel.setPos({ 40, 10 });
 	TextSurface timeLabel("main", 20, "Times", BLACK);
 	timeLabel.setPos({ 400, 10 });
-	TextSurface durationLabel("main", 20, "Duration", BLACK);
+	TextSurface durationLabel("main", 20, "Duration (mm:ss)", BLACK);
 	durationLabel.setPos({ 525, 10 });
 
 	ButtonText stopButton(SCREEN_WIDTH - 80, 20, StopSounds, "main", 20, "Stop");
@@ -269,7 +273,7 @@ int main(int argc, char* argv[]) {
 	cout << "Thank you BenSound" << endl;
 
 	for (uint c = 0; c < MAX_TIMERS; c++) {
-		int yPos = 40 + 30 * c;
+		int yPos = 40 + 35 * c;
 
 		testSoundButtons.push_back(new ButtonText(10, yPos, TestSound, "main", 13, "T"));
 		testSoundButtons.back()->setTextPadding(5);
@@ -282,6 +286,13 @@ int main(int argc, char* argv[]) {
 		timeInputs.push_back(new Input(425, yPos, 100, 25, InvalidateSound1, "main", 13, ""));
 		timeInputs.back()->setTextPadding(5);
 		timeInputs.back()->setBackgroundColor(WHITE);
+
+		percentBars.push_back(new Surface(100, 5));
+		percentBars.back()->setPosX(425);
+		percentBars.back()->setPosY(yPos + 25);
+		percentBars.back()->setRenderTarget();
+		percentBars.back()->fill(BLACK);
+		percentBars.back()->setDrawColor(YELLOW);
 
 		durationInputs.push_back(new Input(550, yPos, 100, 25, InvalidateSound2, "main", 13, ""));
 		durationInputs.back()->setTextPadding(5);
@@ -297,20 +308,20 @@ int main(int argc, char* argv[]) {
 
 		alarmsValid.push_back(false);
 
-		tempTimers.push_back(new Counter());
+		timers.push_back(new Counter());
 	}
 
 	while (!quitListener.getDone()) {
 		eventManager.update();
 
 		//check inputs and times
-		if (Timer::getTicks() % 1000) {
+		if (checkInputs.everyXSeconds(1)) {
 			CheckInputs();
 		}
 
 		//check timers, play sound if timer is up
-		for (uint c = 0; c < tempTimers.size(); c++) {
-			if (tempTimers[c]->isTimeUp()) {
+		for (uint c = 0; c < timers.size(); c++) {
+			if (timers[c]->isTimeUp()) {
 				string soundName = "sound" + to_string(c);
 
 				if (Counter::isTimeStr(durationInputs[c]->getText(), "%m%s")) {
@@ -323,6 +334,24 @@ int main(int argc, char* argv[]) {
 				}
 
 				activeSounds.push_back(soundName);
+				timers[c]->reset();
+			}
+			else {
+				double per = timers[c]->getPercent() / 100.0;
+
+				if (per > 0) {
+					int width = percentBars[c]->getWidth();
+					int fillWidth = static_cast<int>(per * width);
+
+					Rect fillRect(0, 0, fillWidth, percentBars[c]->getHeight());
+
+					percentBars[c]->setRenderTarget();
+					percentBars[c]->drawRect(fillRect, true);
+				}
+				else {
+					percentBars[c]->setRenderTarget();
+					percentBars[c]->fill(BLACK);
+				}
 			}
 		}
 
@@ -354,8 +383,8 @@ int main(int argc, char* argv[]) {
 				screen.draw(*testSoundButtons[c]);
 				screen.draw(*soundDropDowns[c]);
 				screen.draw(*timeInputs[c]);
+				screen.draw(*percentBars[c]);
 				screen.draw(*durationInputs[c]);
-				//screen.drawScaled(*statuses[c], .15f, .15f);
 				screen.draw(*statuses[c]);
 			}
 		}
@@ -365,12 +394,13 @@ int main(int argc, char* argv[]) {
 		myWindow.update();
 	}
 
-	for (uint c = 0; c < soundDropDowns.size(); c++) {
+	for (uint c = 0; c < MAX_TIMERS; c++) {
 		delete soundDropDowns[c];
 		delete timeInputs[c];
+		delete percentBars[c];
 		delete durationInputs[c];
 		delete statuses[c];
-		delete tempTimers[c];
+		delete timers[c];
 	}
 
 	return 0;

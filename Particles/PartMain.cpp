@@ -33,9 +33,9 @@ using Bingo::Surfaces::TextSurface;
 using Bingo::Surfaces::WindowManager;
 using Bingo::Time::Timer;
 
-#define PROJ_NAME "PARTICLES!"
-#define SCREEN_WIDTH 1440
-#define SCREEN_HEIGHT 900
+constexpr auto PROJ_NAME = "PARTICLES!";
+constexpr auto SCREEN_WIDTH = 1440;
+constexpr auto SCREEN_HEIGHT = 900;
 
 void PartCallback(Bingo::Particles::Particle& part) {
 	//part.markDead();

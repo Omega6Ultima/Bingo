@@ -44,9 +44,9 @@ void Bingo::Models::Model::commitTransforms() {
 	if (dirty) {
 		transformMatrix = buildTranslationMatrix(translation[0], translation[1], translation[2]).matrixMultiply(
 			buildRotationMatrixX(rotation[0])).matrixMultiply(
-				buildRotationMatrixY(rotation[1])).matrixMultiply(
-					buildRotationMatrixZ(rotation[2])).matrixMultiply(
-						buildScaleMatrix(scale, scale, scale));
+			buildRotationMatrixY(rotation[1])).matrixMultiply(
+			buildRotationMatrixZ(rotation[2])).matrixMultiply(
+			buildScaleMatrix(scale, scale, scale));
 
 		dirty = false;
 	}

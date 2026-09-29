@@ -132,6 +132,15 @@ void EventManager::update() {
 			}
 
 			break;
+		case SDL_TEXTINPUT:
+			if (KeyListener::focusedTyper) {
+				KeyListener::focusedTyper->eventData.timestamp = event.text.timestamp;
+				KeyListener::focusedTyper->eventData.windowId = event.text.windowID;
+				memcpy(KeyListener::focusedTyper->eventData.text, event.text.text, sizeof(KeyListener::focusedTyper->eventData.text));
+				KeyListener::focusedTyper->handleEvent(EVT_TEXTINPUT);
+			}
+
+			break;
 		case SDL_MOUSEMOTION:
 			for (auto riter = mouseListeners.rbegin(); riter != mouseListeners.rend(); riter++) {
 				if (riter->second.size() == 0) {
@@ -522,6 +531,10 @@ char KeyListener::getKeySymbol(EventManager::KeyCode key, EventManager::KeyMod m
 	return 0;
 }
 
+bool KeyListener::HasTypingFocus() const {
+	return focusedTyper == this;
+}
+
 void KeyListener::handleEvent(EventManager::EventType e) {
 	if (e == EventManager::EVT_KEYDOWN) {
 		if (codes.find(eventData.keyCode) == codes.end()) {
@@ -533,6 +546,16 @@ void KeyListener::handleEvent(EventManager::EventType e) {
 		codeTimes.erase(eventData.keyCode);
 	}
 }
+
+void KeyListener::GetTypingFocus() {
+	focusedTyper = this;
+}
+
+void KeyListener::ReleaseTypingFocus() {
+	focusedTyper = NULL;
+}
+
+KeyListener* KeyListener::focusedTyper = NULL;
 
 MouseListener::MouseListener() {
 	EventManager::getSingleton().registerListener(this, EventManager::LISTEN_MOUSE);

@@ -16,9 +16,9 @@ using Bingo::Events::QuitListener;
 using Bingo::Surfaces::Surface;
 using Bingo::Surfaces::WindowManager;
 
-#define PROJ_NAME "Blank"
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+constexpr auto PROJ_NAME = "Blank";
+constexpr auto SCREEN_WIDTH = 800;
+constexpr auto SCREEN_HEIGHT = 600;
 
 int main(int argc, char* argv[]) {
 	WindowManager windowManager(PROJ_NAME, 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);

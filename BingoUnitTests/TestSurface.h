@@ -308,15 +308,25 @@ TEST(TestSurface, TestSetGetAlphaMod) {
 
 TEST(TestSurface, TestViewports) {
 	auto s = Bingo::Surfaces::Surface("images/CyanSquare.png");
-	uint v;
+	auto baseColor = Bingo::Colors::CYAN;
+	auto vpFillColor = Bingo::Colors::PURPLE;
 
-	EXPECT_NO_THROW(v = s.addViewport(5, 5, 10, 10));
+	s.saveRenderTarget();
+	s.setRenderTarget();
 
-	EXPECT_NO_THROW(s.setViewport(v));
+	EXPECT_NO_THROW(s.setViewport(10, 10, 20, 20));
+
+	s.setDrawColor(vpFillColor);
+	s.drawRect(0, 0, 40, 40, true);
 
 	EXPECT_NO_THROW(s.clearViewport());
 
-	EXPECT_NO_THROW(s.delViewport(v));
+	s.restoreRenderTarget();
+
+	EXPECT_EQ(s.getPixelAt(1, 1), baseColor);
+	EXPECT_EQ(s.getPixelAt(20, 20), vpFillColor);
+
+	EXPECT_NO_THROW(Bingo::Surfaces::WindowManager::getSingleton().draw(s, 0, 250));
 }
 
 TEST(TestSurface, TestClips) {
