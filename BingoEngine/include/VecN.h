@@ -4,9 +4,7 @@
 #ifndef _VECN_H
 #define _VECN_H
 
-#if _DEBUG
 #include <array>
-#endif
 #include <initializer_list>
 #include <math.h>
 #include <ostream>

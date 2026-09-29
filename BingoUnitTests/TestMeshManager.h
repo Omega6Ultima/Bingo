@@ -63,8 +63,9 @@ TEST(TestTransformMatrices, TestBuildScaleMatrix3) {
 		(sY - 1) * aX * aY,			1 + (sY - 1) * aY * aY,		(sY - 1) * aZ * aY,		0,
 		(sZ - 1) * aX * aZ,			(sZ -1) * aY * aZ,			1 + (sZ -1) * aZ * aZ,	0,
 		0,							0,							0,						1 });
+	auto axis = Bingo::Math::VecN<double, 3>({ aX, aY, aZ });
 
-	EXPECT_EQ(Bingo::buildScaleMatrix(Bingo::Math::VecN<double, 3>({aX, aY, aZ}), sX, sY, sZ), mat);
+	EXPECT_EQ(Bingo::buildScaleMatrix(axis, sX, sY, sZ), mat);
 }
 
 TEST(TestTransformMatrices, TestBuildScaleMatrix4) {
@@ -79,8 +80,9 @@ TEST(TestTransformMatrices, TestBuildScaleMatrix4) {
 		(sY - 1) * aX * aY,			1 + (sY - 1) * aY * aY,		(sY - 1) * aZ * aY,		0,
 		(sZ - 1) * aX * aZ,			(sZ -1) * aY * aZ,			1 + (sZ -1) * aZ * aZ,	0,
 		0,							0,							0,						1 });
+	auto axis = Bingo::Math::VecN<double, 3>({ aX, aY, aZ });
 
-	EXPECT_EQ(Bingo::buildScaleMatrix(Bingo::Math::VecN<double, 3>({aX, aY, aZ}), sX, sY, sZ), mat);
+	EXPECT_EQ(Bingo::buildScaleMatrix(axis, sX, sY, sZ), mat);
 }
 
 TEST(TestTransformMatrices, TestBuildRotationMatrixX) {

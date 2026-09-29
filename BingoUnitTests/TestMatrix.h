@@ -59,6 +59,7 @@ TEST(TestMatrix, TestConstruct3) {
 	delete mat2;
 }
 
+#if __cplusplus > 201703L
 TEST(TestMatrix, TestConstruct4) {
 	// Note for developer, C++20 cannot find the constructors used here
 	auto mat = Bingo::Math::Matrix<int, 2, 2>(Bingo::Math::VecN<int, 4>({ 1, 2, 4, 8 }));
@@ -76,6 +77,7 @@ TEST(TestMatrix, TestConstruct4) {
 
 	delete mat2;
 }
+#endif
 
 TEST(TestMatrix, TestConstruct5) {
 	auto dMat = Bingo::Math::DynMatrix<int>(2, 2, { 1, 2, 4, 8 });
