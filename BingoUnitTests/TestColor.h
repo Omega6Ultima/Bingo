@@ -73,7 +73,7 @@ TEST(TestColor, TestInverse2) {
 }
 
 TEST(TestColor, TestInverseHue) {
-	EXPECT_EQ(Bingo::Colors::ORANGE.inverseHue(), Bingo::Colors::Color(255, 90, 0, 255));
+	EXPECT_EQ(Bingo::Colors::ORANGE.inverseHue(), Bingo::Colors::Color(255, 90, 0));
 }
 
 TEST(TestColor, TestInverseHue2) {
@@ -83,5 +83,5 @@ TEST(TestColor, TestInverseHue2) {
 TEST(TestColor, TestRandom) {
 	EXPECT_NO_THROW(Bingo::Colors::Color::random());
 
-	EXPECT_TRUE(Bingo::Colors::Color::random() != Bingo::Colors::Color::random());
+	EXPECT_FALSE(Bingo::Colors::Color::random().exactMatch(Bingo::Colors::Color::random()));
 }

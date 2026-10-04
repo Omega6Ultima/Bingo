@@ -58,8 +58,16 @@ namespace Bingo {
 				return Color(RandomManager::randInt(0, 255), RandomManager::randInt(0, 255), RandomManager::randInt(0, 255));
 			}
 
+			/* Test whether the RGB values of this color matches another*/
+			bool match(const Color& other) const;
+			/* Test whether the RGB and A values of this color matches another*/
+			bool exactMatch(const Color& other) const;
+
 			bool operator==(const Color& other) const;
 			bool operator!=(const Color& other) const;
+
+			Color operator*(const uchar other) const;
+			Color operator*(const double other) const;
 
 			friend ostream& operator<<(ostream& os, const Color& color);
 		private:

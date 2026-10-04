@@ -62,6 +62,7 @@
     <ClInclude Include="TestPhysicalObject.h" />
     <ClInclude Include="TestPositional.h" />
     <ClInclude Include="TestQuaternion.h" />
+    <ClInclude Include="TestRandomManager.h" />
     <ClInclude Include="TestSingleton.h" />
     <ClInclude Include="TestSurface.h" />
     <ClInclude Include="TestTextSurface.h" />

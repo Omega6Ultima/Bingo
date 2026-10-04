@@ -265,33 +265,9 @@ void Bingo::FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 	NBT_Base::NBT_Type type;
 	int nameSize = 0;
 	char nameArr[NBT_MAX_NAME];
-	union NBT_Data {
-		bool boolData;
-		char charData;
-		uchar ucharData;
-		short shortData;
-		ushort ushortData;
-		int intData;
-		uint uintData;
-		long longData;
-		ulong ulongData;
-		llong llongData;
-		ullong ullongData;
-		float floatData;
-		double doubleData;
-		ldouble ldoubleData;
-
-		struct {
-			int stringSize;
-			char stringData[NBT_MAX_NAME];
-		};
-
-		void* pointerData;
-	} data;
 
 	do {
 		memset(nameArr, 0, NBT_MAX_NAME);
-		memset(&data, 0, sizeof(NBT_Data));
 
 		ATOMIC_LOCK(ThreadManager::fileLock);
 
@@ -327,97 +303,143 @@ void Bingo::FileManager::readNBT_Tag(SDL_RWops* file, NBT_Compound* nbt) {
 			SDL_RWread(file, nameArr, SZ_CHAR, nameSize);
 
 			switch (type) {
-			case NBT_Base::NBT_BOOL:
-				SDL_RWread(file, &data.boolData, SZ_BOOL, 1);
+			case NBT_Base::NBT_BOOL: {
+				bool data;
 
-				nbt->setTag(new NBT_Tag<bool>(nameArr, data.boolData));
+				SDL_RWread(file, &data, SZ_BOOL, 1);
 
-				break;
-			case NBT_Base::NBT_CHAR:
-				SDL_RWread(file, &data.charData, SZ_CHAR, 1);
-
-				nbt->setTag(new NBT_Tag<char>(nameArr, data.charData));
+				nbt->setTag(new NBT_Tag<bool>(nameArr, data));
 
 				break;
-			case NBT_Base::NBT_UCHAR:
-				SDL_RWread(file, &data.ucharData, SZ_UCHAR, 1);
+			}
+			case NBT_Base::NBT_CHAR: {
+				char data;
 
-				nbt->setTag(new NBT_Tag<uchar>(nameArr, data.ucharData));
+				SDL_RWread(file, &data, SZ_CHAR, 1);
 
-				break;
-			case NBT_Base::NBT_SHORT:
-				SDL_RWread(file, &data.shortData, SZ_SHORT, 1);
-
-				nbt->setTag(new NBT_Tag<short>(nameArr, data.shortData));
+				nbt->setTag(new NBT_Tag<char>(nameArr, data));
 
 				break;
-			case NBT_Base::NBT_USHORT:
-				SDL_RWread(file, &data.ushortData, SZ_USHORT, 1);
+			}
+			case NBT_Base::NBT_UCHAR: {
+				uchar data;
 
-				nbt->setTag(new NBT_Tag<ushort>(nameArr, data.ushortData));
+				SDL_RWread(file, &data, SZ_UCHAR, 1);
 
-				break;
-			case NBT_Base::NBT_INT:
-				SDL_RWread(file, &data.intData, SZ_INT, 1);
-
-				nbt->setTag(new NBT_Tag<int>(nameArr, data.intData));
+				nbt->setTag(new NBT_Tag<uchar>(nameArr, data));
 
 				break;
-			case NBT_Base::NBT_UINT:
-				SDL_RWread(file, &data.uintData, SZ_UINT, 1);
+			}
+			case NBT_Base::NBT_SHORT: {
+				short data;
 
-				nbt->setTag(new NBT_Tag<uint>(nameArr, data.uintData));
+				SDL_RWread(file, &data, SZ_SHORT, 1);
 
-				break;
-			case NBT_Base::NBT_LONG:
-				SDL_RWread(file, &data.longData, SZ_LONG, 1);
-
-				nbt->setTag(new NBT_Tag<long>(nameArr, data.longData));
+				nbt->setTag(new NBT_Tag<short>(nameArr, data));
 
 				break;
-			case NBT_Base::NBT_ULONG:
-				SDL_RWread(file, &data.ulongData, SZ_ULONG, 1);
+			}
+			case NBT_Base::NBT_USHORT: {
+				ushort data;
 
-				nbt->setTag(new NBT_Tag<ulong>(nameArr, data.ulongData));
+				SDL_RWread(file, &data, SZ_USHORT, 1);
 
-				break;
-			case NBT_Base::NBT_LLONG:
-				SDL_RWread(file, &data.llongData, SZ_LLONG, 1);
-
-				nbt->setTag(new NBT_Tag<llong>(nameArr, data.llongData));
+				nbt->setTag(new NBT_Tag<ushort>(nameArr, data));
 
 				break;
-			case NBT_Base::NBT_ULLONG:
-				SDL_RWread(file, &data.ullongData, SZ_ULLONG, 1);
+			}
+			case NBT_Base::NBT_INT: {
+				int data;
 
-				nbt->setTag(new NBT_Tag<ullong>(nameArr, data.ullongData));
+				SDL_RWread(file, &data, SZ_INT, 1);
 
-				break;
-			case NBT_Base::NBT_FLOAT:
-				SDL_RWread(file, &data.floatData, SZ_FLOAT, 1);
-
-				nbt->setTag(new NBT_Tag<float>(nameArr, data.floatData));
+				nbt->setTag(new NBT_Tag<int>(nameArr, data));
 
 				break;
-			case NBT_Base::NBT_DOUBLE:
-				SDL_RWread(file, &data.doubleData, SZ_DOUBLE, 1);
+			}
+			case NBT_Base::NBT_UINT: {
+				uint data;
 
-				nbt->setTag(new NBT_Tag<double>(nameArr, data.doubleData));
+				SDL_RWread(file, &data, SZ_UINT, 1);
 
-				break;
-			case NBT_Base::NBT_STRING:
-				SDL_RWread(file, &data.stringSize, SZ_INT, 1);
-				SDL_RWread(file, data.stringData, SZ_CHAR, data.stringSize);
-
-				nbt->setTag(new NBT_Tag<std::string>(nameArr, data.stringData));
+				nbt->setTag(new NBT_Tag<uint>(nameArr, data));
 
 				break;
-			case NBT_Base::NBT_POINTER:
-				SDL_RWread(file, &data.pointerData, SZ_POINTER, 1);
+			}
+			case NBT_Base::NBT_LONG: {
+				long data;
 
-				nbt->setTag(new NBT_Tag<void*>(nameArr, data.pointerData));
+				SDL_RWread(file, &data, SZ_LONG, 1);
+
+				nbt->setTag(new NBT_Tag<long>(nameArr, data));
 
 				break;
+			}
+			case NBT_Base::NBT_ULONG: {
+				ulong data;
+
+				SDL_RWread(file, &data, SZ_ULONG, 1);
+
+				nbt->setTag(new NBT_Tag<ulong>(nameArr, data));
+
+				break;
+			}
+			case NBT_Base::NBT_LLONG: {
+				llong data;
+
+				SDL_RWread(file, &data, SZ_LLONG, 1);
+
+				nbt->setTag(new NBT_Tag<llong>(nameArr, data));
+
+				break;
+			}
+			case NBT_Base::NBT_ULLONG: {
+				ullong data;
+
+				SDL_RWread(file, &data, SZ_ULLONG, 1);
+
+				nbt->setTag(new NBT_Tag<ullong>(nameArr, data));
+
+				break;
+			}
+			case NBT_Base::NBT_FLOAT: {
+				float data;
+
+				SDL_RWread(file, &data, SZ_FLOAT, 1);
+
+				nbt->setTag(new NBT_Tag<float>(nameArr, data));
+
+				break;
+			}
+			case NBT_Base::NBT_DOUBLE: {
+				double data;
+
+				SDL_RWread(file, &data, SZ_DOUBLE, 1);
+
+				nbt->setTag(new NBT_Tag<double>(nameArr, data));
+
+				break;
+			}
+			case NBT_Base::NBT_STRING: {
+				int stringSize;
+				char data[NBT_MAX_NAME]{ 0 };
+
+				SDL_RWread(file, &stringSize, SZ_INT, 1);
+				SDL_RWread(file, data, SZ_CHAR, stringSize);
+
+				nbt->setTag(new NBT_Tag<std::string>(nameArr, data));
+
+				break;
+			}
+			case NBT_Base::NBT_POINTER: {
+				void* data;
+
+				SDL_RWread(file, &data, SZ_POINTER, 1);
+
+				nbt->setTag(new NBT_Tag<void*>(nameArr, data));
+
+				break;
+			}
 			case NBT_Base::NBT_INT_ARRAY: {
 				int arraySize;
 

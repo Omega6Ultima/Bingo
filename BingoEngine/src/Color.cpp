@@ -1,8 +1,10 @@
 //Dustin Gehm
 
 #include "Color.h"
+#include "Utils.h"
 
 using Bingo::Colors::Color;
+using Bingo::Utils::Warn;
 
 Color::Color(uchar r, uchar g, uchar b) {
 	values[0] = r;
@@ -50,18 +52,41 @@ Color Color::inverseHue() const {
 	return result;
 }
 
-bool Bingo::Colors::Color::operator==(const Color& other) const {
+bool Color::match(const Color& other) const {
 	return getRed() == other.getRed() &&
-		getGreen() == other.getGreen() &&
-		getBlue() == other.getBlue() &&
-		getAlpha() == other.getAlpha();
+			getGreen() == other.getGreen() &&
+			getBlue() == other.getBlue();
 }
 
-bool Bingo::Colors::Color::operator!=(const Color& other) const {
-	return getRed() != other.getRed() ||
-		getGreen() != other.getGreen() ||
-		getBlue() != other.getBlue() ||
-		getAlpha() != other.getAlpha();
+bool Color::exactMatch(const Color& other) const {
+	return getRed() == other.getRed() &&
+			getGreen() == other.getGreen() &&
+			getBlue() == other.getBlue()&&
+			getAlpha() == other.getAlpha();
+}
+
+bool Color::operator==(const Color& other) const {
+	return match(other);
+}
+
+bool Color::operator!=(const Color& other) const {
+	return !match(other);
+}
+
+Color Color::operator*(const uchar other) const {
+	return operator*(other / 255.0);
+}
+
+Color Color::operator*(const double other) const {
+#if _DEBUG
+	if (other < 0 || other > 1) {
+		Warn("Color modulator is not in the range 0 - 1\n");
+	}
+#endif
+	return Color(static_cast<uchar>(getRed() * other),
+				static_cast<uchar>(getGreen() * other),
+				static_cast<uchar>(getBlue() * other),
+				static_cast<uchar>(getAlpha() * other));
 }
 
 ostream& Bingo::Colors::operator<<(ostream& os, const Color& color) {

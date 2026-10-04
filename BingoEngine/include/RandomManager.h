@@ -4,7 +4,7 @@
 #ifndef _RANDOM_H
 #define _RANDOM_H
 
-#define USE_PSEUDO 1
+constexpr auto USE_PSEUDO = 1;
 
 #if !USE_PSEUDO
 #include <random>
@@ -31,11 +31,22 @@ namespace Bingo {
 		static int randInt(int min, int max);
 		static float randFloat(float min, float max);
 		static double randDouble(double min, double max);
+		static double perlinNoise(double x, double y, double depth = 5, double frequency = 0.7, int seed = 1234);
+		static double perlinNoise(double x, double y, double z, double depth = 5, double frequency = 0.7, int seed = 1234);
+
+	private:
+		static double noise(double x, double y, int seed);
+		static double noise(double x, double y, double z, int seed);
+		static int hashFunc(int x, int y, int seed);
+		static int hashFunc(int x, int y, int z, int seed);
+		static double fade(double v);
+		static double smooth_lerp(double x, double y, double s);
 
 	private:
 #if !USE_PSEUDO
 		static random_device device;
 #endif
+		static const uchar PERLIN_HASH[];
 	};
 
 }

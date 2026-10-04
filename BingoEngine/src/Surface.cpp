@@ -247,17 +247,25 @@ void Surface::markDirty() {
 
 void Surface::fetchPixels() {
 	if (isDirty() || !pixels) {
+		renderTexture();
 		releasePixels();
 
-		pixels = new char[getWidth() * getHeight() * 5];
-		memset(pixels, 0, getWidth() * getHeight() * 5);
+		int numPixels = getWidth() * getHeight();
+		pixels = new Uint32[numPixels];
+		memset(pixels, 0, numPixels);
 
 		saveRenderTarget();
 		setRenderTarget();
 
-		if (SDL_RenderReadPixels(WindowManager::getSingleton().getRenderer(), NULL, SDL_PIXELFORMAT_RGBA8888, pixels, getWidth() * 4)) {
+		if (SDL_RenderReadPixels(WindowManager::getSingleton().getRenderer(), NULL, WindowManager::getSingleton().getPixelFormat(), pixels, getWidth() * sizeof(Uint32))) {
 			Warn("Could not read pixels from renderer", SDL_GetError());
 		}
+
+		pixelFormat = SDL_AllocFormat(WindowManager::getSingleton().getPixelFormat());
+
+		//std::cout << "************************************************\n";
+		//std::cout << "pixel format: " << SDL_GetPixelFormatName(WindowManager::getSingleton().getPixelFormat()) << "\n";
+		//std::cout << "************************************************" << std::endl;
 
 		restoreRenderTarget();
 	}
@@ -265,17 +273,39 @@ void Surface::fetchPixels() {
 
 void Surface::releasePixels() {
 	if (pixels) {
+		if (isDirty()) {
+			if (SDL_UpdateTexture(texture, NULL, pixels, getWidth() * sizeof(Uint32))) {
+				Warn("Could not write pixels to texture");
+			}
+		}
+
 		delete pixels;
 		pixels = NULL;
+
+		SDL_FreeFormat(pixelFormat);
 	}
 }
 
 Color Surface::getPixelAt(uint x, uint y) {
+	uchar result_r = 0;
+	uchar result_g = 0;
+	uchar result_b = 0;
+	uchar result_a = 0;
 	fetchPixels();
 
 	Uint32 pixel = 0;
 	uint w = getWidth();
 	uint h = getHeight();
+
+#if _DEBUG
+	if (x >= w) {
+		throw Exception("X out of bounds");
+	}
+
+	if (y >= h) {
+		throw Exception("Y out of bounds");
+	}
+#endif
 
 	switch (getFlip()) {
 	case FlipMode::FLIP_NONE:
@@ -292,10 +322,46 @@ Color Surface::getPixelAt(uint x, uint y) {
 		break;
 	}
 
-	return Color((pixel >> 24) & 0xFF,
-		(pixel >> 16) & 0xFF,
-		(pixel >> 8) & 0xFF,
-		(pixel & 0xFF));
+	SDL_GetRGBA(pixel, pixelFormat, &result_r, &result_g, &result_b, &result_a);
+
+	return Color(result_r, result_g, result_b, result_a);
+}
+
+void Surface::setPixelAt(uint x, uint y, Color col) {
+	if (!pixels) {
+		fetchPixels();
+	}
+
+	Uint32 pixel = SDL_MapRGBA(pixelFormat, col.getRed(), col.getGreen(), col.getBlue(), col.getAlpha());
+	uint w = getWidth();
+	uint h = getHeight();
+
+#if _DEBUG
+	if (x >= w) {
+		throw Exception("X out of bounds");
+	}
+
+	if (y >= h) {
+		throw Exception("Y out of bounds");
+	}
+#endif
+
+	switch (getFlip()) {
+	case FlipMode::FLIP_NONE:
+		static_cast<Uint32*>(pixels)[y * w + x] = pixel;
+		break;
+	case FlipMode::FLIP_HORIZONTAL:
+		static_cast<Uint32*>(pixels)[y * w + (w - 1 - x)] = pixel;
+		break;
+	case FlipMode::FLIP_VERTICAL:
+		static_cast<Uint32*>(pixels)[(h - 1 - y) * w + x] = pixel;
+		break;
+	default:
+		throw Exception("Invalid FlipMode");
+		break;
+	}
+
+	markDirty();
 }
 
 void Surface::setRotation(uint angle) {

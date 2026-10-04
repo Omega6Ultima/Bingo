@@ -4,6 +4,7 @@
 #include "WindowManager.h"
 
 /**
+ * images/SinglePixel is a 1x1 square of R255 G128 B64
  * images/CyanSquare is a 40x40 Cyan square
  * images/SplitSquare is a 40x40 Red, Yellow, Green, Cyan square
  *		Red is 0,0 to 19,19
@@ -117,10 +118,74 @@ TEST(TestSurface, TestConstruct5) {
 }
 
 TEST(TestSurface, TestGetWidthHeight) {
-	auto s = Bingo::Surfaces::Surface(40, 60);
+	auto s = Bingo::Surfaces::Surface(67, 42);
+
+	EXPECT_EQ(s.getWidth(), 67);
+	EXPECT_EQ(s.getHeight(), 42);
+}
+
+TEST(TestSurface, TestGetWidthHeight2) {
+	auto s = Bingo::Surfaces::Surface("images/CyanSquare.png");
 
 	EXPECT_EQ(s.getWidth(), 40);
-	EXPECT_EQ(s.getHeight(), 60);
+	EXPECT_EQ(s.getHeight(), 40);
+}
+
+TEST(TestSurface, TestGetPixelAt) {
+	auto s = Bingo::Surfaces::Surface("images/CyanSquare.png");
+
+	EXPECT_NO_THROW(s.getPixelAt(20, 20));
+	EXPECT_EQ(s.getPixelAt(20, 20), Bingo::Colors::CYAN);
+}
+
+TEST(TestSurface, TestGetPixelAtOOB) {
+	auto s = Bingo::Surfaces::Surface("images/CyanSquare.png");
+
+	EXPECT_THROW(s.getPixelAt(40, 20), Bingo::Exception);
+
+	EXPECT_THROW(s.getPixelAt(20, 41), Bingo::Exception);
+
+	EXPECT_THROW(s.getPixelAt(41, 41), Bingo::Exception);
+}
+
+TEST(TestSurface, TestSetPixelAt) {
+	auto s = Bingo::Surfaces::Surface("images/SinglePixel.png");
+
+	EXPECT_EQ(s.getPixelAt(0, 0), Bingo::Colors::Color(255, 128, 64));
+
+	EXPECT_NO_THROW(s.fetchPixels());
+	EXPECT_NO_THROW(s.setPixelAt(0, 0, Bingo::Colors::RED));
+	EXPECT_NO_THROW(s.releasePixels());
+
+	EXPECT_EQ(s.getPixelAt(0, 0), Bingo::Colors::RED);
+}
+
+TEST(TestSurface, TestSetPixelAt2) {
+	auto s = Bingo::Surfaces::Surface("images/CyanSquare.png");
+
+	EXPECT_EQ(s.getPixelAt(10, 10), Bingo::Colors::CYAN);
+
+	EXPECT_NO_THROW(s.fetchPixels());
+	EXPECT_NO_THROW(s.setPixelAt(10, 10, Bingo::Colors::RED));
+	EXPECT_NO_THROW(s.setPixelAt(10, 11, Bingo::Colors::GREEN));
+	EXPECT_NO_THROW(s.setPixelAt(11, 10, Bingo::Colors::BLUE));
+	EXPECT_NO_THROW(s.setPixelAt(11, 11, Bingo::Colors::YELLOW));
+	EXPECT_NO_THROW(s.releasePixels());
+
+	EXPECT_EQ(s.getPixelAt(10, 10), Bingo::Colors::RED);
+	EXPECT_EQ(s.getPixelAt(10, 11), Bingo::Colors::GREEN);
+	EXPECT_EQ(s.getPixelAt(11, 10), Bingo::Colors::BLUE);
+	EXPECT_EQ(s.getPixelAt(11, 11), Bingo::Colors::YELLOW);
+}
+
+TEST(TestSurface, TestSetPixelAtOOB) {
+	auto s = Bingo::Surfaces::Surface("images/CyanSquare.png");
+
+	EXPECT_THROW(s.setPixelAt(40, 20, Bingo::Colors::WHITE), Bingo::Exception);
+
+	EXPECT_THROW(s.setPixelAt(20, 41, Bingo::Colors::WHITE), Bingo::Exception);
+
+	EXPECT_THROW(s.setPixelAt(41, 41, Bingo::Colors::WHITE), Bingo::Exception);
 }
 
 TEST(TestSurface, TestSetGetRotation) {
@@ -232,7 +297,7 @@ TEST(TestSurface, TestSetGetDrawColor_Draw) {
 	EXPECT_EQ(s.getPixelAt(20, 20), Bingo::Colors::CYAN);
 
 	// TODO why is drawing this to the screen necessary to read the correct pixel color?
-	//Bingo::Surfaces::WindowManager::getSingleton().draw(s, 100, 100);
+	//Bingo::Surfaces::WindowManager::getSingleton().draw(s, 150, 50);
 
 	s.saveRenderTarget();
 	s.setRenderTarget();

@@ -19,7 +19,7 @@ TEST(TestNBT_Tag, TestConstruct) {
 
 TEST(TestNBT_Tag, TestType) {
 	auto nbt = Bingo::NBT_Tag<int>("test", 10);
-	auto nbt2 = Bingo::NBT_Tag<Bingo::Math::VecN<int, 3>>("test", Bingo::Math::VecN<int, 3>({ 1, 2, 3 }));
+	auto nbt2 = Bingo::NBT_Tag<vector<int>>("test", Bingo::Math::VecN<int, 3>({ 1, 2, 3 }).toVector());
 
 	EXPECT_EQ(nbt.getType(), Bingo::NBT_Base::NBT_INT);
 	EXPECT_EQ(nbt2.getType(), Bingo::NBT_Base::NBT_INT_ARRAY);
@@ -169,11 +169,11 @@ TEST(TestNBT_Compound, TestEqual2) {
 	auto nbt = Bingo::NBT_Compound("test compound");
 	nbt.setTag(new Bingo::NBT_Tag<int>("test int", 1));
 	// TODO need to solve ambiguous cast issue with NBT_Base
-	nbt.setTag(new Bingo::NBT_Tag<Bingo::Math::DynVecN<int>>("test int arr", Bingo::Math::DynVecN<int>(2, { 1, 2 })));
+	nbt.setTag(new Bingo::NBT_Tag<vector<int>>("test int arr", Bingo::Math::DynVecN<int>(2, { 1, 2 }).toVector()));
 
 	auto nbt2 = Bingo::NBT_Compound("test compound");
 	nbt2.setTag(new Bingo::NBT_Tag<int>("test int", 1));
-	nbt2.setTag(new Bingo::NBT_Tag<Bingo::Math::DynVecN<int>>("test int arr", Bingo::Math::DynVecN<int>(2, { 1, 2 })));
+	nbt2.setTag(new Bingo::NBT_Tag<vector<int>>("test int arr", Bingo::Math::DynVecN<int>(2, { 1, 2 }).toVector()));
 
 	EXPECT_EQ(nbt, nbt2);
 }
@@ -188,11 +188,11 @@ TEST(TestNBT_Compound, TestNotEqual) {
 TEST(TestNBT_Compound, TestNotEqual2) {
 	auto nbt = Bingo::NBT_Compound("test compound");
 	nbt.setTag(new Bingo::NBT_Tag<int>("test int", 1));
-	nbt.setTag(new Bingo::NBT_Tag<Bingo::Math::DynVecN<int>>("test int arr", Bingo::Math::DynVecN<int>(2, { 1, 2 })));
+	nbt.setTag(new Bingo::NBT_Tag<vector<int>>("test int arr", Bingo::Math::DynVecN<int>(2, { 1, 2 }).toVector()));
 
 	auto nbt2 = Bingo::NBT_Compound("test compound");
 	nbt2.setTag(new Bingo::NBT_Tag<int>("test int", 1));
-	nbt2.setTag(new Bingo::NBT_Tag<Bingo::Math::DynVecN<int>>("test int arr2", Bingo::Math::DynVecN<int>(2, { 3, 4 })));
+	nbt2.setTag(new Bingo::NBT_Tag<vector<int>>("test int arr2", Bingo::Math::DynVecN<int>(2, { 3, 4 }).toVector()));
 
 	EXPECT_TRUE(nbt != nbt2);
 }

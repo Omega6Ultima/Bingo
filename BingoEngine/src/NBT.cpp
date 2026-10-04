@@ -38,103 +38,72 @@ NBT_Base::~NBT_Base() {
 }
 
 bool NBT_Base::operator==(const NBT_Base& other) const {
+#define CAST_N_COMPARE(TYPE) \
+		auto & castedOther = static_cast<const TYPE&>(other); \
+		\
+		return static_cast<const TYPE&>(*this) == castedOther;
+
 	switch (getType()) {
 	case NBT_COMPOUND: {
-		auto* castedOther = static_cast<const NBT_Compound*>(&other);
-
-		return static_cast<const NBT_Compound*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Compound)
 	}
 	case NBT_BOOL: {
-		auto* castedOther = static_cast<const NBT_Tag<bool>*>(&other);
-
-		return static_cast<const NBT_Tag<bool>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<bool>)
 	}
 	case NBT_CHAR: {
-		auto* castedOther = static_cast<const NBT_Tag<char>*>(&other);
-
-		return static_cast<const NBT_Tag<char>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<char>)
 	}
 	case NBT_UCHAR: {
-		auto* castedOther = static_cast<const NBT_Tag<uchar>*>(&other);
-
-		return static_cast<const NBT_Tag<uchar>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<uchar>)
 	}
 	case NBT_SHORT: {
-		auto* castedOther = static_cast<const NBT_Tag<short>*>(&other);
-
-		return static_cast<const NBT_Tag<short>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<short>)
 	}
 	case NBT_USHORT: {
-		auto* castedOther = static_cast<const NBT_Tag<ushort>*>(&other);
-
-		return static_cast<const NBT_Tag<ushort>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<ushort>)
 	}
 	case NBT_INT: {
-		auto* castedOther = static_cast<const NBT_Tag<int>*>(&other);
-
-		return static_cast<const NBT_Tag<int>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<int>)
 	}
 	case NBT_UINT: {
-		auto* castedOther = static_cast<const NBT_Tag<uint>*>(&other);
-
-		return static_cast<const NBT_Tag<uint>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<uint>)
 	}
 	case NBT_LONG: {
-		auto* castedOther = static_cast<const NBT_Tag<long>*>(&other);
-
-		return static_cast<const NBT_Tag<long>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<long>)
 	}
 	case NBT_ULONG: {
-		auto* castedOther = static_cast<const NBT_Tag<ulong>*>(&other);
-
-		return static_cast<const NBT_Tag<ulong>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<ulong>)
 	}
 	case NBT_LLONG: {
-		auto* castedOther = static_cast<const NBT_Tag<llong>*>(&other);
-
-		return static_cast<const NBT_Tag<llong>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<llong>)
 	}
 	case NBT_ULLONG: {
-		auto* castedOther = static_cast<const NBT_Tag<ullong>*>(&other);
-
-		return static_cast<const NBT_Tag<ullong>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<ullong>)
 	}
 	case NBT_FLOAT: {
-		auto* castedOther = static_cast<const NBT_Tag<float>*>(&other);
-
-		return static_cast<const NBT_Tag<float>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<float>)
 	}
 	case NBT_DOUBLE: {
-		auto* castedOther = static_cast<const NBT_Tag<double>*>(&other);
-
-		return static_cast<const NBT_Tag<double>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<double>)
 	}
 	case NBT_STRING: {
-		auto* castedOther = static_cast<const NBT_Tag<std::string>*>(&other);
-
-		return static_cast<const NBT_Tag<std::string>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<string>)
 	}
 	case NBT_POINTER: {
-		auto* castedOther = static_cast<const NBT_Tag<void*>*>(&other);
-
-		return static_cast<const NBT_Tag<void*>*>(this)->operator==(*castedOther);
+		CAST_N_COMPARE(NBT_Tag<void*>)
 	}
-	// TODO what to cast these as?
-	//case NBT_INT_ARRAY: {
-	//	auto* castedOther = static_cast<const NBT_Tag<bool>*>(&other);
-	//
-	//	return static_cast<NBT_Tag<bool>*>(this)->operator==(*castedOther);
-	//}
-	//case NBT_DOUBLE_ARRAY: {
-	//	auto* castedOther = static_cast<const NBT_Tag<bool>*>(&other);
-	//
-	//	return static_cast<NBT_Tag<bool>*>(this)->operator==(*castedOther);
-	//}
+	case NBT_INT_ARRAY: {
+		CAST_N_COMPARE(NBT_Tag<vector<int>>)
+	}
+	case NBT_DOUBLE_ARRAY: {
+		CAST_N_COMPARE(NBT_Tag<vector<double>>)
+	}
 	default:
 		throw Bingo::Exception("Comparing undefined NBT_Type");
 	}
 
 	// this is here to prevent compile errors
+#undef CAST_N_COMPARE
 	return false;
 }
 
@@ -237,7 +206,10 @@ bool NBT_Compound::operator==(const NBT_Compound& other) const {
 				auto tagCount = other.tags.count(iter->first);
 
 				if (tagCount > 0) {
-					if (!(*(iter->second) == *(other.tags.at(iter->first)))) {
+					const NBT_Base& mine = *(iter->second);
+					const NBT_Base& theirs = *(other.tags.at(iter->first));
+
+					if (mine != theirs) {
 						result = false;
 						break;
 					}
@@ -328,18 +300,8 @@ NBT_Base::NBT_Type NBT_Tag<void*>::getType() const {
 }
 
 template<>
-NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<int>>::getType() const {
-	return NBT_Base::NBT_INT_ARRAY;
-}
-
-template<>
 NBT_Base::NBT_Type NBT_Tag<std::vector<int>>::getType() const {
 	return NBT_Base::NBT_INT_ARRAY;
-}
-
-template<>
-NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<double>>::getType() const {
-	return NBT_Base::NBT_DOUBLE_ARRAY;
 }
 
 template<>
@@ -360,18 +322,6 @@ void NBT_Tag<string>::writeData(SDL_RWops* file) {
 }
 
 template<>
-void NBT_Tag<Bingo::Math::DynVecN<int>>::writeData(SDL_RWops* file) {
-	int nameSize = name.size();
-	int tagSize = data.getSize();
-
-	SDL_RWwrite(file, &type, sizeof(type), 1);
-	SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-	SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-	SDL_RWwrite(file, &tagSize, SZ_INT, 1);
-	SDL_RWwrite(file, data.data(), SZ_INT, tagSize);
-}
-
-template<>
 void NBT_Tag<std::vector<int>>::writeData(SDL_RWops* file) {
 	int nameSize = name.size();
 	int tagSize = data.size();
@@ -381,18 +331,6 @@ void NBT_Tag<std::vector<int>>::writeData(SDL_RWops* file) {
 	SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
 	SDL_RWwrite(file, &tagSize, SZ_INT, 1);
 	SDL_RWwrite(file, data.data(), SZ_INT, tagSize);
-}
-
-template<>
-void NBT_Tag<Bingo::Math::DynVecN<double>>::writeData(SDL_RWops* file) {
-	int nameSize = name.size();
-	int tagSize = data.getSize();
-
-	SDL_RWwrite(file, &type, sizeof(type), 1);
-	SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-	SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-	SDL_RWwrite(file, &tagSize, SZ_INT, 1);
-	SDL_RWwrite(file, data.data(), SZ_DOUBLE, tagSize);
 }
 
 template<>

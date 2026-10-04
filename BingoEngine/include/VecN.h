@@ -16,6 +16,7 @@ using std::acos;
 using std::initializer_list;
 using std::ostream;
 using std::to_string;
+using std::vector;
 
 namespace Bingo {
 
@@ -518,6 +519,10 @@ namespace Bingo {
 			VecN<T, size> projectOnto(const VecN<T, size>& other) const {
 				VecN<T, size> otherNorm = other.normalizeCopy();
 				return otherNorm * dot(otherNorm);
+			}
+
+			std::vector<T> toVector() const {
+				return vector<T>(vals.begin(), vals.end());
 			}
 
 			friend ostream& operator <<(ostream& os, const VecN<T, size>& vec) {
@@ -1194,6 +1199,18 @@ namespace Bingo {
 				}
 
 				return os;
+			}
+
+			std::vector<T> toVector() const {
+				vector<T> result;
+
+				result.reserve(size);
+
+				for (uint c = 0; c < size; c++) {
+					result.push_back(vals[c]);
+				}
+
+				return result;
 			}
 
 		private:

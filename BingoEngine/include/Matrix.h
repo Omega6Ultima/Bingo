@@ -37,13 +37,13 @@ namespace Bingo {
 				memset(vals, 0, sizeof(T) * h * w);
 			}
 
-			Matrix(T val) {
+			Matrix(const T& val) {
 				for (uint c = 0; c < h * w; c++) {
 					vals[c] = val;
 				}
 			}
 
-			Matrix(initializer_list<T> list) {
+			Matrix(const initializer_list<T>& list) {
 #if _DEBUG
 				if (list.size() < h * w) {
 					throw Exception("Not enough elements in initializer_list to fill Matrix");
@@ -51,13 +51,13 @@ namespace Bingo {
 #endif
 				uint c = 0;
 
-				for (auto elem : list) {
+				for (const auto& elem : list) {
 					vals[c] = elem;
 					c++;
 				}
 			}
 
-			Matrix(VecN<T, h * w>& vec) {
+			Matrix(const VecN<T, h * w>& vec) {
 				for (uint c = 0; c < h * w; c++) {
 					vals[c] = vec.get(c);
 				}
@@ -493,7 +493,7 @@ namespace Bingo {
 				memset(vals, 0, sizeof(T) * h * w);
 			}
 
-			DynMatrix(uint height, uint width, T val) {
+			DynMatrix(uint height, uint width, const T& val) {
 				h = height;
 				w = width;
 				uint size = h * w;
@@ -505,7 +505,7 @@ namespace Bingo {
 				}
 			}
 
-			DynMatrix(uint height, uint width, initializer_list<T> list) {
+			DynMatrix(uint height, uint width, const initializer_list<T>& list) {
 				h = height;
 				w = width;
 				vals = new T[h * w];

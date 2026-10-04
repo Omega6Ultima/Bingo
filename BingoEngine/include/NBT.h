@@ -23,7 +23,7 @@ using std::ostream;
 using std::string;
 using std::stringstream;
 
-#define NBT_MAX_NAME 80
+constexpr auto NBT_MAX_NAME = 80;
 
 namespace Bingo {
 
@@ -128,6 +128,7 @@ namespace Bingo {
 		~NBT_Tag() {
 			//
 		}
+		
 
 		void writeData(SDL_RWops* file) override {
 			int nameSize = name.size();
@@ -150,24 +151,24 @@ namespace Bingo {
 		T& getData() {
 			return data;
 		}
-
+		
 		const T& getData() const {
 			return data;
 		}
 
 		string toString() override {
-			//here to print out vectors
+			// Here to print out vectors
 			using Utils::operator<<;
-
+			
 			if (dirty) {
 				stringstream str;
-
+				
 				str << "NBT_Tag{" << name << ":" << data << "}";
-
+				
 				builtStr = str.str();
 				dirty = false;
 			}
-
+			
 			return builtStr;
 		}
 
@@ -175,9 +176,10 @@ namespace Bingo {
 			if (type == other.type && name == other.name && data == other.data) {
 				return true;
 			}
-
+			
 			return false;
 		}
+		
 		inline bool operator!=(const NBT_Tag& other) const {
 			return !operator==(other);
 		}
@@ -188,154 +190,6 @@ namespace Bingo {
 
 	private:
 		T data;
-	};
-
-	template<uint size>
-	class NBT_Tag<Bingo::Math::VecN<int, size>> : public NBT_Base {
-	public:
-		NBT_Tag(string nbtName, Bingo::Math::VecN<int, size> dat)
-			: NBT_Base(nbtName) {
-			type = getType();
-			data = dat;
-		}
-
-		~NBT_Tag() {
-			//
-		}
-
-		void writeData(SDL_RWops* file) override {
-			int nameSize = name.size();
-
-			SDL_RWwrite(file, &type, sizeof(type), 1);
-			SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-			SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-			SDL_RWwrite(file, &data, sizeof(data), 1);
-		}
-
-		NBT_Type getType() const override {
-			return NBT_Base::NBT_INT_ARRAY;
-		}
-
-		void setData(Bingo::Math::VecN<int, size> dat) {
-			data = dat;
-			dirty = true;
-		}
-
-		Bingo::Math::VecN<int, size>& getData() {
-			return data;
-		}
-
-		const Bingo::Math::VecN<int, size>& getData() const {
-			return data;
-		}
-
-		string toString() override {
-			//here to print out vectors
-			using Utils::operator<<;
-
-			if (dirty) {
-				stringstream str;
-
-				str << "NBT_Tag{" << name << ":" << data << "}";
-
-				builtStr = str.str();
-				dirty = false;
-			}
-
-			return builtStr;
-		}
-
-		bool operator==(const NBT_Tag& other) const {
-			if (type == other.type && name == other.name && data == other.data) {
-				return true;
-			}
-
-			return false;
-		}
-		inline bool operator!=(const NBT_Tag& other) const {
-			return !operator==(other);
-		}
-
-		friend ostream& operator <<(ostream& os, NBT_Tag<Bingo::Math::VecN<int, size>>* nbt) {
-			return os << nbt->toString();
-		}
-
-	private:
-		Bingo::Math::VecN<int, size> data;
-	};
-
-	template<uint size>
-	class NBT_Tag<Bingo::Math::VecN<double, size>> : public NBT_Base {
-	public:
-		NBT_Tag(string nbtName, Bingo::Math::VecN<double, size> dat)
-			: NBT_Base(nbtName) {
-			type = getType();
-			data = dat;
-		}
-
-		~NBT_Tag() {
-			//
-		}
-
-		void writeData(SDL_RWops* file) override {
-			int nameSize = name.size();
-
-			SDL_RWwrite(file, &type, sizeof(type), 1);
-			SDL_RWwrite(file, &nameSize, SZ_INT, 1);
-			SDL_RWwrite(file, name.data(), SZ_CHAR, nameSize);
-			SDL_RWwrite(file, &data, sizeof(data), 1);
-		}
-
-		NBT_Type getType() const override {
-			return NBT_Base::NBT_DOUBLE_ARRAY;
-		}
-
-		void setData(Bingo::Math::VecN<double, size> dat) {
-			data = dat;
-			dirty = true;
-		}
-
-		Bingo::Math::VecN<double, size>& getData() {
-			return data;
-		}
-
-		const Bingo::Math::VecN<double, size>& getData() const {
-			return data;
-		}
-
-		string toString() override {
-			//here to print out vectors
-			using Utils::operator<<;
-
-			if (dirty) {
-				stringstream str;
-
-				str << "NBT_Tag{" << name << ":" << data << "}";
-
-				builtStr = str.str();
-				dirty = false;
-			}
-
-			return builtStr;
-		}
-
-		bool operator==(const NBT_Tag& other) const {
-			if (type == other.type && name == other.name && data == other.data) {
-				return true;
-			}
-
-			return false;
-		}
-		inline bool operator!=(const NBT_Tag& other) const {
-			return !operator==(other);
-		}
-
-		friend ostream& operator <<(ostream& os, NBT_Tag<Bingo::Math::VecN<double, size>>* nbt) {
-			return os << nbt->toString();
-		}
-
-	private:
-		Bingo::Math::VecN<double, size> data;
 	};
 
 	template<> NBT_Base::NBT_Type NBT_Tag<bool>::getType() const;
@@ -353,16 +207,10 @@ namespace Bingo {
 	template<> NBT_Base::NBT_Type NBT_Tag<double>::getType() const;
 	template<> NBT_Base::NBT_Type NBT_Tag<string>::getType() const;
 	template<> NBT_Base::NBT_Type NBT_Tag<void*>::getType() const;
-	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<int, 1>>::getType() const;
-	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<int>>::getType() const;
 	template<> NBT_Base::NBT_Type NBT_Tag<std::vector<int>>::getType() const;
-	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::VecN<double, 1>>::getType() const;
-	template<> NBT_Base::NBT_Type NBT_Tag<Bingo::Math::DynVecN<double>>::getType() const;
 	template<> NBT_Base::NBT_Type NBT_Tag<std::vector<double>>::getType() const;
 	template<> void NBT_Tag<string>::writeData(SDL_RWops* file);
-	template<> void NBT_Tag<Bingo::Math::DynVecN<int>>::writeData(SDL_RWops* file);
 	template<> void NBT_Tag<std::vector<int>>::writeData(SDL_RWops* file);
-	template<> void NBT_Tag<Bingo::Math::DynVecN<double>>::writeData(SDL_RWops* file);
 	template<> void NBT_Tag<std::vector<double>>::writeData(SDL_RWops* file);
 	template<> string NBT_Tag<void*>::toString();
 }

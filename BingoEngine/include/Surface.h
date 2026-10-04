@@ -70,6 +70,9 @@ namespace Bingo {
 			//if fetchPixels has not been called this will call it
 			Color getPixelAt(uint x, uint y);
 
+			//set the pixel at the specified x and y to col
+			void setPixelAt(uint x, uint y, Color col);
+
 			/*returns the width of the surface*/
 			inline int getWidth() const {
 				return static_cast<int>(width * scaleFactor[0]);
@@ -243,8 +246,10 @@ namespace Bingo {
 			bool dirty = true;
 			bool autoDraw = false;
 			bool hasPos = false;
-			void* pixels = NULL;
-			int width = 1, height = 1;
+			Uint32* pixels = NULL;
+			SDL_PixelFormat* pixelFormat = NULL;
+			int width = 1;
+			int height = 1;
 			SDL_Rect viewport;
 			vector<SDL_Rect*> newClips;
 			SDL_Rect* activeClip = NULL;

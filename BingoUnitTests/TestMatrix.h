@@ -59,11 +59,10 @@ TEST(TestMatrix, TestConstruct3) {
 	delete mat2;
 }
 
-#if __cplusplus > 201703L
 TEST(TestMatrix, TestConstruct4) {
-	// Note for developer, C++20 cannot find the constructors used here
-	auto mat = Bingo::Math::Matrix<int, 2, 2>(Bingo::Math::VecN<int, 4>({ 1, 2, 4, 8 }));
-	auto mat2 = new Bingo::Math::Matrix<int, 2, 2>(Bingo::Math::VecN<int, 4>({ 1, 2, 4, 8 }));
+	auto srcVecN = Bingo::Math::VecN<int, 4>({ 1, 2, 4, 8 });
+	auto mat = Bingo::Math::Matrix<int, 2, 2>(srcVecN);
+	auto mat2 = new Bingo::Math::Matrix<int, 2, 2>(srcVecN);
 
 	EXPECT_EQ(mat.get(0, 0), 1);
 	EXPECT_EQ(mat.get(0, 1), 2);
@@ -77,9 +76,35 @@ TEST(TestMatrix, TestConstruct4) {
 
 	delete mat2;
 }
-#endif
 
 TEST(TestMatrix, TestConstruct5) {
+	auto mat = Bingo::Math::Matrix<int, 3, 3>(Bingo::Math::VecN<int, 9>({ 9, 8, 7, 6, 5, 4, 3, 2, 1 }));
+	auto mat2 = new Bingo::Math::Matrix<int, 3, 3>(Bingo::Math::VecN<int, 9>({ 9, 8, 7, 6, 5, 4, 3, 2, 1 }));
+
+	EXPECT_EQ(mat.get(0, 0), 9);
+	EXPECT_EQ(mat.get(0, 1), 8);
+	EXPECT_EQ(mat.get(0, 2), 7);
+	EXPECT_EQ(mat.get(1, 0), 6);
+	EXPECT_EQ(mat.get(1, 1), 5);
+	EXPECT_EQ(mat.get(1, 2), 4);
+	EXPECT_EQ(mat.get(2, 0), 3);
+	EXPECT_EQ(mat.get(2, 1), 2);
+	EXPECT_EQ(mat.get(2, 2), 1);
+
+	EXPECT_EQ(mat2->get(0, 0), 9);
+	EXPECT_EQ(mat2->get(0, 1), 8);
+	EXPECT_EQ(mat2->get(0, 2), 7);
+	EXPECT_EQ(mat2->get(1, 0), 6);
+	EXPECT_EQ(mat2->get(1, 1), 5);
+	EXPECT_EQ(mat2->get(1, 2), 4);
+	EXPECT_EQ(mat2->get(2, 0), 3);
+	EXPECT_EQ(mat2->get(2, 1), 2);
+	EXPECT_EQ(mat2->get(2, 2), 1);
+
+	delete mat2;
+}
+
+TEST(TestMatrix, TestConstruct6) {
 	auto dMat = Bingo::Math::DynMatrix<int>(2, 2, { 1, 2, 4, 8 });
 	auto mat = Bingo::Math::Matrix<int, 2, 2>(dMat);
 	auto mat2 = new Bingo::Math::Matrix<int, 2, 2>(dMat);

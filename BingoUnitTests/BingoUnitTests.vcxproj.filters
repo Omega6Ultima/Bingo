@@ -66,6 +66,9 @@
     <ClInclude Include="TestMeshManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TestRandomManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -117,6 +117,7 @@ TEST(TestFileManager, TestWriteReadNBT) {
 
 	nbt.setTag(new Bingo::NBT_Tag<int>("sub_int", 42));
 	nbt.setTag(new Bingo::NBT_Tag<double>("sub_dbl", 2.3));
+	nbt.setTag(new Bingo::NBT_Tag("sub_vecn", Bingo::Math::VecN<int, 4>({ 1, 2, 4, 8 }).toVector()));
 
 	Bingo::NBT_Compound* subCompound = new Bingo::NBT_Compound("sub_cpd");
 	subCompound->setTag(new Bingo::NBT_Tag<std::string>("sub_sub_str", "fourty-two"));
@@ -133,16 +134,15 @@ TEST(TestFileManager, TestWriteReadNBT) {
 		fileMan.closeFile(fileName);
 	}
 	{
-		std::vector<Bingo::NBT_Compound*> readNBT_vec;
+		Bingo::NBT_Compound* readNBT = NULL;
 		fileMan.openFile(fileName, fileMan.READ);
 
-		// using vector::emplace_back to capture return value of readNBT
-		EXPECT_NO_THROW(readNBT_vec.emplace_back(fileMan.readNBT(fileName)));
+		EXPECT_NO_THROW(readNBT = fileMan.readNBT(fileName));
 
-		if (readNBT_vec[0] != NULL) {
-			EXPECT_EQ(*(readNBT_vec[0]), nbt);
+		if (readNBT != NULL) {
+			EXPECT_EQ(*readNBT, nbt);
 
-			delete readNBT_vec[0];
+			delete readNBT;
 		}
 
 		fileMan.closeFile(fileName);
