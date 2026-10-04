@@ -5,12 +5,12 @@
 //#include "TestAnimSurface.h"
 //#include "TestColor.h"
 //#include "TestCompassDirection.h"
-#include "TestFileManager.h" // interactive
+//#include "TestFileManager.h" // interactive
 //#include "TestMaths.h"
-#include "TestMatrix.h"
+//#include "TestMatrix.h"
 //#include "TestMeshManager.h" // TODO working on this
 //#include "TestMinHeap.h"
-#include "TestNBT.h" // TODO 1 test fails
+//#include "TestNBT.h" // TODO 1 test fails
 //#include "TestPhysicalObject.h"
 //#include "TestPositional.h"
 //#include "TestQuaternion.h"

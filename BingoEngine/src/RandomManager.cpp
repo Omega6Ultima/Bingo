@@ -108,7 +108,7 @@ double RandomManager::randDouble(double min, double max) {
 	return result;
 }
 
-double RandomManager::perlinNoise(double x, double y, double depth, double frequency, int seed) {
+double RandomManager::perlinNoise2D(double x, double y, double depth, double frequency, int seed) {
 	double modX = x * frequency;
 	double modY = y * frequency;
 	double amplitude = 1.0;
@@ -118,7 +118,7 @@ double RandomManager::perlinNoise(double x, double y, double depth, double frequ
 	for (int i = 0; i < depth; i++) {
 		divisor += 256 * amplitude;
 
-		result += noise(x, y, seed) * amplitude;
+		result += noise(modX, modY, seed) * amplitude;
 
 		amplitude /= 2.0;
 		modX *= 2.0;
@@ -128,9 +128,10 @@ double RandomManager::perlinNoise(double x, double y, double depth, double frequ
 	return result / divisor;
 }
 
-double RandomManager::perlinNoise(double x, double y, double z, double depth, double frequency, int seed) {
+double RandomManager::perlinNoise3D(double x, double y, double z, double depth, double frequency, int seed) {
 	double modX = x * frequency;
 	double modY = y * frequency;
+	double modZ = z * frequency;
 	double amplitude = 1.0;
 	double result = 0.0;
 	double divisor = 0.0;
@@ -138,11 +139,12 @@ double RandomManager::perlinNoise(double x, double y, double z, double depth, do
 	for (int i = 0; i < depth; i++) {
 		divisor += 256 * amplitude;
 
-		result += noise(x, y, z, seed) * amplitude;
+		result += noise(modX, modY, modZ, seed) * amplitude;
 
 		amplitude /= 2.0;
 		modX *= 2.0;
 		modY *= 2.0;
+		modZ *= 2.0;
 	}
 
 	return result / divisor;
@@ -202,16 +204,26 @@ double RandomManager::noise(double x, double y, double z, int seed) {
 		);
 }
 
-int RandomManager::hashFunc(int x, int y, int seed) {
+uchar RandomManager::hashFunc(int x, int y, int seed) {
+#if USE_PSEUDO
 	auto confine_index = [](int num) -> int { if (num < 0) num += 256; return num; };
 
 	return PERLIN_HASH[confine_index((PERLIN_HASH[confine_index((y + seed) % 256)] + x) % 256)];
+#else
+	int linear = (x * 180601904 + y * -174181987) - seed;
+	return std::abs(linear * ((linear ^ 203663684) >> 16)) & 0xFF;
+#endif
 }
 
-int RandomManager::hashFunc(int x, int y, int z, int seed) {
+uchar RandomManager::hashFunc(int x, int y, int z, int seed) {
+#if USE_PSEUDO
 	auto confine_index = [](int num) -> int { if (num < 0) num += 256; return num; };
 
 	return PERLIN_HASH[confine_index((PERLIN_HASH[confine_index((PERLIN_HASH[confine_index((z + seed) % 256)] + y) % 256)] + x) % 256)];
+#else
+	int linear = (x * 180601904 + y * -174181987 + z * 738599801) - seed;
+	return std::abs(linear * ((linear ^ 203663684) >> 16)) & 0xFF;
+#endif
 }
 
 double RandomManager::fade(double v) {
@@ -226,7 +238,6 @@ double RandomManager::smooth_lerp(double x, double y, double s) {
 
 #if !USE_PSEUDO
 random_device RandomManager::device;
-#endif
 
 const uchar RandomManager::PERLIN_HASH[] = {
 	208,34,231,213,32,248,233,56,161,78,24,140,71,48,140,254,245,255,247,247,40,
@@ -255,3 +266,4 @@ const uchar RandomManager::PERLIN_HASH[] = {
 	135,176,183,191,253,115,184,21,233,58,129,233,142,39,128,211,118,137,139,255,
 	114,20,218,113,154,27,127,246,250,1,8,198,250,209,92,222,173,21,88,102,219
 };
+#endif

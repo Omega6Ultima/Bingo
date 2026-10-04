@@ -18,7 +18,7 @@ TEST(TestRandomManager, TestPerlinNoise) {
 		for (int y = 0; y < h; y++) {
 			double noiseVal = 0.0;
 			
-			EXPECT_NO_THROW(noiseVal = randMan.perlinNoise(x, y));
+			EXPECT_NO_THROW(noiseVal = randMan.perlinNoise2D(x, y, 5, 1.5));
 
 			s.setPixelAt(x, y, Bingo::Colors::WHITE * noiseVal);
 		}
