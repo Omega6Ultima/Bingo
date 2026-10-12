@@ -4,15 +4,15 @@
 #ifndef _SCRIPT_MANAGER_H
 #define _SCRIPT_MANAGER_H
 
-#define S_LANG_LUA 1
-#define S_LANG_PY 1
+#define BINGO_SCRIPT_LANG_LUA 1
+#define BINGO_SCRIPT_LANG_PY 0
 
 #include <string>
 
 #include "Core.h"
 #include "Singleton.h"
 
-#if S_LANG_LUA
+#if BINGO_SCRIPT_LANG_LUA
 //THESE FILES MUST BE INCLUDED AS C CODE!
 extern "C" {
 #include "lua.h"
@@ -21,7 +21,7 @@ extern "C" {
 }
 #endif
 
-#if S_LANG_PY
+#if BINGO_SCRIPT_LANG_PY
 #include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
@@ -60,25 +60,27 @@ namespace Bingo {
 
 		namespace Lua {
 
-			//class LuaState {
-			//public:
-			//	LuaState(lua_State* lState) {
-			//		state = lState;
-			//	}
+			/*class LuaState {
+			public:
+				LuaState(lua_State* lState) {
+					state = lState;
+				}
 
-			//	void pushBool(bool val) {
-			//		lua_pushboolean(state, val);
-			//	}
+				void pushBool(bool val) {
+					lua_pushboolean(state, val);
+				}
 
-			//	bool popBool() {
-			//		//
-			//	}
-			//private:
-			//	lua_State* state;
-			//};
+				bool popBool() {
+					//
+				}
+			private:
+				lua_State* state;
+			};
 
-			//typedef int (*ScriptFunc)(LuaState*);
-			typedef int (*ScriptFunc)(lua_State*);
+			typedef int (*ScriptFunc)(LuaState*);
+			typedef int (*ScriptFunc)(lua_State*); */
+
+			typedef lua_CFunction ScriptFunc;
 
 			class ScriptManager_Lua : public ScriptManager, public Singleton<ScriptManager_Lua> {
 			public:
@@ -95,7 +97,7 @@ namespace Bingo {
 				}
 
 				virtual void execute(string filename) {
-					luaL_dofile(state, (scriptDir + filename).c_str());
+					luaL_dofile(state, (scriptDir + "/" + filename).c_str());
 				}
 
 				virtual void executeStr(string code) {
@@ -106,41 +108,66 @@ namespace Bingo {
 					lua_register(state, name.c_str(), func);
 				}
 
-				void call(string funcName) {
-					lua_getglobal(state, funcName.c_str());
-					//
+				template<typename... Args>
+				std::string call(string funcName, Args... args) {
+					int numInputs = sizeof...(args);
+					std::string result = "";
 
-					//lua_call(state, narg, nresults);
+					// Get function from function name
+					lua_getglobal(state, funcName.c_str());
+
+					// push inputs onto stack
+					push_var(args...);
+
+					lua_pcall(state, numInputs, 1, 0);
+
+					// Get string result and pop said string from stack
+					result = lua_tostring(state, -1);
+
+					lua_pop(state, 1);
+
+					return result;
 				}
 			private:
+				template<typename... Args>
+				void push_var(const bool& first, Args... args) {
+					lua_pushboolean(state, first);
+
+					push_var(args...);
+				}
+
+				template<typename... Args>
+				void push_var(const int& first, Args... args) {
+					lua_pushnumber(state, first);
+
+					push_var(args...);
+				}
+
+				template<typename... Args>
+				void push_var(const double& first, Args... args) {
+					lua_pushnumber(state, first);
+
+					push_var(args...);
+				}
+
+				template<typename... Args>
+				void push_var(const string& first, Args... args) {
+					lua_pushlstring(state, first.data(), first.size());
+
+					push_var(args...);
+				}
+
+				void push_var() {
+					// Overload for when no arguments are left
+				}
+
 				lua_State* state;
 			};
 
 		}
 
+#if BINGO_SCRIPT_LANG_PY
 		namespace Python {
-
-#define PY_REG_START(pyModule, modDocStr) PYBIND11_MODULE(pyModule, m) { m.doc() = modDocStr;
-#define PY_REG_END() }
-
-#define PY_REG_FUNC_3(name, functionName, docStr) m.def(#name, &functionName, docStr);
-#define PY_REG_FUNC_2(name, functionName) PY_REG_FUNC_3(name, functionName, "")
-#define PY_REG_FUNC_1(name) PY_REG_FUNC_2(name, name)
-#define PY_REG_FUNC_0() 
-
-			//4 being the max number of args + 1
-#define PY_REG_FUNC_X(f1, f2, f3, f4, ...) f4
-
-#define FUNC_RECOMPOSER(args) PY_REG_FUNC_X args
-
-#define CHOOSE_FROM_ARG_COUNT(...) FUNC_RECOMPOSER((__VA_ARGS__, PY_REG_FUNC_3, PY_REG_FUNC_2, PY_REG_FUNC_1, ))
-
-#define NO_ARG_EXPANDER() ,,,,PY_REG_FUNC_0
-
-#define MACRO_CHOOSER(...) CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__ ())
-
-			//(token, token, string, token)
-#define PY_REG_FUNC(...) MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 
 			class ScriptManager_Py : public ScriptManager, public Singleton<ScriptManager_Py> {
 			public:
@@ -149,6 +176,8 @@ namespace Bingo {
 					interpGuard = std::make_shared<py::scoped_interpreter>();
 
 					scope = py::module_::import("__main__").attr("__dict__");
+
+					pyModule = py::module_::import("PyBingo");
 				}
 
 				virtual ~ScriptManager_Py() {
@@ -162,12 +191,20 @@ namespace Bingo {
 				virtual void executeStr(string code) {
 					py::eval(code, scope);
 				}
+
+				template<class... Args>
+				void registerFunction(string name, void (*func)(Args... args) ) {
+					pyModule.def(name.c_str(), func, args);
+				}
+
 			private:
 				std::shared_ptr<py::scoped_interpreter> interpGuard;
 				py::object scope;
+				py::module_ pyModule;
 			};
 
 		}
+#endif
 
 	}
 

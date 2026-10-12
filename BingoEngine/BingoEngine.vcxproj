@@ -44,7 +44,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>C:\SDL2-2.0.12\lib\x86;C:\SDL2_image-2.0.5\lib\x86;C:\SDL2_mixer-2.0.4\lib\x86;C:\SDL2_ttf-2.0.15\lib\x86;C:\Users\dgehm\source\repos\tinyfiledialogs\extras_dll_cs_lua_fortran;C:\Program Files %28x86%29\Lua\5.1\lib;C:\Program Files %28x86%29\Python312\libs;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\Debug;C:\Program Files (x86)\Lua\5.1\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\SDL2-2.0.12\lib\x86;C:\SDL2_image-2.0.5\lib\x86;C:\SDL2_mixer-2.0.4\lib\x86;C:\SDL2_ttf-2.0.15\lib\x86;C:\Users\dgehm\source\repos\tinyfiledialogs\extras_dll_cs_lua_fortran;C:\Program Files (x86)\Lua\5.1\lib;C:\Program Files (x86)\Python312\libs;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\Debug;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -159,6 +159,7 @@
     <ClCompile Include="src\Quaternion.cpp" />
     <ClCompile Include="src\RandomManager.cpp" />
     <ClCompile Include="src\Rect.cpp" />
+    <ClCompile Include="src\ScriptManager.cpp" />
     <ClCompile Include="src\SoundManager.cpp" />
     <ClCompile Include="src\Surface.cpp" />
     <ClCompile Include="src\TextSurface.cpp" />

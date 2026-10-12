@@ -83,7 +83,7 @@ using namespace Bingo;
 #define TEST_TILE 0
 #define TEST_MINHEAP 0
 //***python still a little buggy, drop?
-#define TEST_SCRIPT 0
+#define TEST_SCRIPT 1
 
 //file paths and other constants
 #define IMG_PATH "resources/images/"
@@ -246,7 +246,7 @@ int ScoreLN(const LottoNumbers& val) {
 #endif
 
 #if TEST_SCRIPT
-#if S_LANG_LUA
+#if BINGO_SCRIPT_LANG_LUA
 int TestScript_lua(lua_State* state) {
 	lua_pushfstring(state, "testing567");
 
@@ -254,7 +254,7 @@ int TestScript_lua(lua_State* state) {
 }
 #endif
 
-#if S_LANG_PY
+#if BINGO_SCRIPT_LANG_PY
 void TestScript_py() {
 	cout << "Hello Python!" << endl;
 }
@@ -263,10 +263,10 @@ void TestScript2_py() {
 	cout << "Hello World!" << endl;
 }
 
-PY_REG_START(Bingo, "The Python module for the Bingo Engine")
-PY_REG_FUNC(TestScript, TestScript_py, "Function to test calling C++ functions from Python")
-PY_REG_FUNC(TestScript2, TestScript2_py, "Function to test")
-PY_REG_END()
+//PY_REG_START(Bingo, "The Python module for the Bingo Engine")
+//PY_REG_FUNC(TestScript, TestScript_py, "Function to test calling C++ functions from Python")
+//PY_REG_FUNC(TestScript2, TestScript2_py, "Function to test")
+//PY_REG_END()
 #endif
 #endif
 
@@ -340,10 +340,10 @@ int main(int argc, char* argv[]) {
 		RandomManager randomManager;
 		BoundsManager boundsManager;
 		MeshManager meshManager(MSH_PATH);
-#if S_LANG_LUA
+#if BINGO_SCRIPT_LANG_LUA
 		Script::Lua::ScriptManager_Lua scriptManagerL(SCRIPT_PATH);
 #endif
-#if S_LANG_PY
+#if BINGO_SCRIPT_LANG_PY
 		Script::Python::ScriptManager_Py scriptManagerP(SCRIPT_PATH);
 #endif
 
@@ -370,12 +370,12 @@ int main(int argc, char* argv[]) {
 		Surfaces::TextSurface fpsSurf("main", 20, "0.0 fps", Colors::BLACK);
 
 #if TEST_SCRIPT
-#if S_LANG_LUA
+#if BINGO_SCRIPT_LANG_LUA
 		scriptManagerL.registerFunction("TestScript", TestScript_lua);
 		scriptManagerL.execute("Hello.lua");
 #endif
 
-#if S_LANG_PY
+#if BINGO_SCRIPT_LANG_PY
 		scriptManagerP.execute("Hello.py");
 		//scriptManagerP.executeStr(R"(print("Testing234");)");
 #endif

@@ -26,7 +26,7 @@ TEST(TestRandomManager, TestPerlinNoise) {
 
 	s.releasePixels();
 
-	s.setScale(3);
+	s.setScale(1);
 
 	Bingo::Surfaces::WindowManager::getSingleton().draw(s, 50, 50);
 }

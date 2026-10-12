@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\SDL2-2.0.12\include;C:\SDL2_image-2.0.5\include;C:\SDL2_mixer-2.0.4\include;C:\SDL2_ttf-2.0.15\include;C:\Users\dgehm\source\repos\tinyfiledialogs;C:\Program Files (x86)\Lua\5.1\include;C:\Program Files (x86)\Python312\include;C:\Users\dgehm\AppData\Roaming\Python\Python312\site-packages\pybind11\include;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\BingoEngine\include</IncludePath>
-    <LibraryPath>C:\SDL2-2.0.12\lib\x86;C:\SDL2_image-2.0.5\lib\x86;C:\SDL2_mixer-2.0.4\lib\x86;C:\SDL2_ttf-2.0.15\lib\x86;C:\Users\dgehm\source\repos\tinyfiledialogs\extras_dll_cs_lua_fortran;C:\Program Files (x86)\Lua\5.1\lib;C:\Python312\libs;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\SDL2-2.0.12\include;C:\SDL2_image-2.0.5\include;C:\SDL2_mixer-2.0.4\include;C:\SDL2_ttf-2.0.15\include;C:\Users\dgehm\source\repos\tinyfiledialogs;C:\Program Files (x86)\Lua\5.1\include;C:\Program Files (x86)\Python312\include;C:\Users\dgehm\AppData\Roaming\Python\Python312\site-packages\pybind11\include;C:\Users\dgehm\source\repos\Omega6Ultima\Bingo\BingoEngine\include;$(IncludePath)</IncludePath>
@@ -63,6 +63,7 @@
     <ClInclude Include="TestPositional.h" />
     <ClInclude Include="TestQuaternion.h" />
     <ClInclude Include="TestRandomManager.h" />
+    <ClInclude Include="TestScriptManager.h" />
     <ClInclude Include="TestSingleton.h" />
     <ClInclude Include="TestSurface.h" />
     <ClInclude Include="TestTextSurface.h" />
@@ -107,7 +108,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib;tinyfiledialogs32.lib;lua51.lib;lua5.1.lib;python3.lib;python312.lib;BingoEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib;tinyfiledialogs32.lib;lua51.lib;lua5.1.lib;_tkinter.lib;python3_d.lib;python312_d.lib;BingoEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
@@ -142,7 +143,7 @@
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib;tinyfiledialogs32.lib;lua51.lib;lua5.1.lib;python3.lib;python312.lib;BingoEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib;tinyfiledialogs32.lib;lua51.lib;lua5.1.lib;_tkinter.lib;python3.lib;python312.lib;BingoEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
